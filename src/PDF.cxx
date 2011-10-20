@@ -27,7 +27,6 @@ PDF::PDF( const PDF& orig ) {
 
 
 PDF::~PDF() {
-  cerr << "PDF destructor" << endl;
   _hist->Delete();
 }
 

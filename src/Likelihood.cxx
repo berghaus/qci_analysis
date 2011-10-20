@@ -81,14 +81,19 @@ LikelihoodRatio::~LikelihoodRatio() {
 void
 LikelihoodRatio::init() {
 
+  _fitter->SetMaxIterations(5000);
   _fitter->SetMinuitFCN( &_denominatorL );
   _fitter->SetPrintLevel(1);
   _fitter->SetStrategy(2);
   _fitter->CreateMinimizer();
-  _fitter->SetParameter( 0, "alpha", 0, 4.e-6, 0., 4.e-6);
-  int n = _fitter->Minimize();
+  vector<double> vec( 1, 0. );
+  _fitter->SetParameter( 0, "alpha", vec[0], 4.e-6, 0., 4.e-6);
+  int nError = _fitter->Minimize();
+  if (nError != 0) {
+    cout << ": Problem with Minimize(): " << nError << endl;
+    throw( "Problem with Minimization" );
+  }
 
-  vector<double> vec( 1, _fitter->GetParameter(0) );
   _denominator = _denominatorL( vec );
 
   cout << " optimized alpha = " << vec.at(0) << endl;
