@@ -8,4 +8,5 @@ AUTOMAKE_OPTIONS = subdir-objects
 bin_PROGRAMS = analysis
 
 # --- build my programs ---
-analysis_SOURCES = src/analysis.cxx src/PDF.cxx src/Likelihood.cxx
+analysis_SOURCES = src/analysis.cxx src/PDF.cxx src/Likelihood.cxx src/PValueTest.cxx src/PseudoExperiment.cxx
+
