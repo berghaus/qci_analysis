@@ -6,9 +6,9 @@
 #include <TFile.h>
 #include <TFitterMinuit.h>
 
-
 #include "Likelihood.hpp"
 #include "PDF.hpp"
+#include "PseudoExperiment.hpp"
 
 using namespace std;
 
@@ -37,6 +37,9 @@ int main() {
 
   LikelihoodRatio launda( fitter, dataHist, &pdf );
   cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+
+  PseudoExperimentFactory peFactory( &pdf, dataHist );
+  PseudoExperiment * pe = peFactory.build( );
 
   return 0;
 

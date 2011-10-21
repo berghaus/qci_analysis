@@ -11,14 +11,20 @@ PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf, const PseudoEx
 }
 
 
+PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf, const TH1* graft ) 
+ : _pdf  ( pdf )
+ , _graft( static_cast<const PseudoExperiment*>(graft) ) {
+}
+
+
 PseudoExperimentFactory::~PseudoExperimentFactory() {
 }
 
 
-PseudoExperiment
+PseudoExperiment *
 PseudoExperimentFactory::build( const double& alpha  ) {
   PseudoExperiment* result = (PseudoExperiment*)_graft->Clone("PE");
-  return *result;
+  return result;
 }
 
 
