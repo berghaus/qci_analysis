@@ -1,8 +1,11 @@
 #include "Likelihood.hpp"
-#include "PDF.hpp"
+
+#include <cfloat>
 
 #include <TH1.h>
 #include <TFitterMinuit.h>
+
+#include "PDF.hpp"
 
 using namespace std;
 
@@ -31,8 +34,8 @@ Likelihood::operator() ( const std::vector<double>& par ) const
   for ( int bin = 1; bin <= _data->GetNbinsX(); ++bin ) {
     double x = _data->GetBinCenter ( bin );
     int    n = _data->GetBinContent( bin );
-    double prob = pdf( x, n, par );
-    result += -2*log( prob );
+    double logProb = pdf( x, n, par );
+    result += -2*logProb;
   }
 
   return result;
@@ -69,7 +72,14 @@ LikelihoodRatio::LikelihoodRatio( TFitterMinuit * fitter, const TH1* data, const
   , _denominator ( 1. )
   , _denominatorL( data, pdf )
   , _fitter( fitter ) {
+
+  _fitter->SetMinuitFCN( &_denominatorL );
+  _fitter->SetMaxIterations(5000);
+  _fitter->SetPrintLevel(0);
+  _fitter->SetStrategy(2);
+  _fitter->CreateMinimizer();
   init();
+
 }
 
 
@@ -81,19 +91,15 @@ LikelihoodRatio::~LikelihoodRatio() {
 void
 LikelihoodRatio::init() {
 
-  _fitter->SetMaxIterations(5000);
-  _fitter->SetMinuitFCN( &_denominatorL );
-  _fitter->SetPrintLevel(1);
-  _fitter->SetStrategy(2);
-  _fitter->CreateMinimizer();
   vector<double> vec( 1, 0. );
-  _fitter->SetParameter( 0, "alpha", vec[0], 4.e-6, 0., 4.e-6);
+  _fitter->SetParameter( 0, "alpha", vec[0], 1.e-6, 0., 4.e-6);
   int nError = _fitter->Minimize();
   if (nError != 0) {
     cout << ": Problem with Minimize(): " << nError << endl;
     throw( "Problem with Minimization" );
   }
 
+  vec.at(0) = _fitter->GetParameter(0);
   _denominator = _denominatorL( vec );
 
   cout << " optimized alpha = " << vec.at(0) << endl;

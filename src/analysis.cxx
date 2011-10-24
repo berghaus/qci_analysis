@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 
+#include <TCanvas.h>
 #include <TH1.h>
 #include <TH2.h>
 #include <TFile.h>
@@ -9,6 +11,7 @@
 #include "Likelihood.hpp"
 #include "PDF.hpp"
 #include "PseudoExperiment.hpp"
+#include "PValueTest.hpp"
 
 using namespace std;
 
@@ -17,7 +20,7 @@ TH1 * CopyRange( TH1*, int, int );
 
 int main() {
 
-  cout << "hello frank!\n";
+  //  cout << "hello frank!\n";
 
   TFile * pdfFile  = TFile::Open("~/docs/comp/analysis/vanilla.root");
   TFile * dataFile = TFile::Open("~/docs/comp/analysis/data.root");
@@ -30,16 +33,40 @@ int main() {
 
   PDF pdf( pdfHist );
   vector<double> vec( 1, 1./(7000.*7000.) );
-  cout << " pdf( 2, 5 | 0 ) =  " << pdf( 2., 5, vec ) << endl;
+  //cout << " pdf( 2, 5 | 1./(7000)^2 ) =  " << pdf( 2., 5, vec ) << endl;
 
+  vec.at(0) = 0;
   Likelihood l( dataHist, &pdf );
-  cout << " -2lnL( data | 0 ) = " << l( vec ) << endl;
+  //cout << " -2lnL( data | 0 ) = " << l( vec ) << endl;
 
   LikelihoodRatio launda( fitter, dataHist, &pdf );
-  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+  //cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
 
+  cout << "======================\n";
   PseudoExperimentFactory peFactory( &pdf, dataHist );
   PseudoExperiment * pe = peFactory.build( );
+  launda.data( pe );
+  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+
+  cout << "======================\n";
+  PseudoExperiment * pe2 = peFactory.build( 1/pow(8000,2) );
+  launda.data( pe2 );
+  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+
+  cout << "======================\n";
+  PseudoExperiment * pe5 = peFactory.build( 1/pow(3000,2) );
+  launda.data( pe5 );
+  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+
+  cout << "======================\n";
+  PseudoExperiment * pe6 = peFactory.build( 1/pow(1000,2) );
+  launda.data( pe6 );
+  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+
+  cout << "======================\n";
+  PseudoExperiment * pe7 = peFactory.build( 1/pow( 500,2) );
+  launda.data( pe7 );
+  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
 
   return 0;
 
