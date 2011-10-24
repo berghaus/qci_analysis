@@ -14,9 +14,13 @@ public:
   PDF( const PDF& );
   virtual ~PDF();
 
-   // Probability of observind number of events at x given parameters
+  // returns the natural log of the poisson probability of number of events
+  // (2nd argument) using the provided x (1st parameter) and parameters (3rd)
+  // to look up the number of events epxected by the PDF.  Interpolates for
+  // smoothness
   double operator() ( const double&, const int&, const std::vector<double>& ) const;
-   // expectated number of events at x, y
+
+  // expectated number of events at x, y
   double operator() ( const double&, const double& ) const;
 
   TH2* hist() const;

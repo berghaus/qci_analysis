@@ -44,29 +44,32 @@ int main() {
 
   cout << "======================\n";
   PseudoExperimentFactory peFactory( &pdf, dataHist );
-  PseudoExperiment * pe = peFactory.build( );
-  launda.data( pe );
-  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+  // PseudoExperiment * pe = peFactory.build( );
+  // launda.data( pe );
+  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
 
-  cout << "======================\n";
-  PseudoExperiment * pe2 = peFactory.build( 1/pow(8000,2) );
-  launda.data( pe2 );
-  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+  // cout << "======================\n";
+  // PseudoExperiment * pe2 = peFactory.build( 1/pow(8000,2) );
+  // launda.data( pe2 );
+  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
 
-  cout << "======================\n";
-  PseudoExperiment * pe5 = peFactory.build( 1/pow(3000,2) );
-  launda.data( pe5 );
-  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+  // cout << "======================\n";
+  // PseudoExperiment * pe5 = peFactory.build( 1/pow(3000,2) );
+  // launda.data( pe5 );
+  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
 
-  cout << "======================\n";
-  PseudoExperiment * pe6 = peFactory.build( 1/pow(1000,2) );
-  launda.data( pe6 );
-  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+  // cout << "======================\n";
+  // PseudoExperiment * pe6 = peFactory.build( 1/pow(1000,2) );
+  // launda.data( pe6 );
+  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
 
-  cout << "======================\n";
-  PseudoExperiment * pe7 = peFactory.build( 1/pow( 500,2) );
-  launda.data( pe7 );
-  cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+  // cout << "======================\n";
+  // PseudoExperiment * pe7 = peFactory.build( 1/pow( 500,2) );
+  // launda.data( pe7 );
+  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
+
+  PValueTest pv0( 0., launda, &peFactory );
+  cout << " - pvalue = " <<  pv0( dataHist ) << endl;
 
   return 0;
 

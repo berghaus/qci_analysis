@@ -2,7 +2,7 @@
 #define PVALUE_TEST_HPP
 #include <vector>
 #include "PseudoExperiment.hpp"
-#include "LikelihoodRatio.hpp"
+#include "Likelihood.hpp"
 
 class TFitterMinuit;
 class TH1;
@@ -15,7 +15,7 @@ public:
   virtual ~PValueTest();
 
   double operator() ( const TH1* );
-  void init( TFitterMinuit* fitter, const PDF* pdf,  unsigned int nPE = 10000 );
+  void init( unsigned int nPE = 10000 );
 
 private:
   PValueTest( );
@@ -26,8 +26,6 @@ private:
   TH1 * _minus2LnLikelihoodDistribution;
 
   unsigned int              _nPE;
-  std::vector<LikelihoodRatio*> _pes;
-
 
 };
 

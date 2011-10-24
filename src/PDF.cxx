@@ -47,7 +47,7 @@ PDF::operator() (  const double& x, const int& i, const vector<double>& par ) co
   // return log of poisson probability
   if ( i < 0. )        return 0.;
   else if ( i == 0.0 ) return -p;
-  return i*log(p)-p-TMath::LnGamma(i+1.);// == log(TMath::Poisson( i, p ))
+  return i * log(p) - p - TMath::LnGamma(i+1.);// == log(TMath::Poisson( i, p ))
 
 }
 

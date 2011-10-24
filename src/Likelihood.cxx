@@ -102,8 +102,8 @@ LikelihoodRatio::init() {
   vec.at(0) = _fitter->GetParameter(0);
   _denominator = _denominatorL( vec );
 
-  cout << " optimized alpha = " << vec.at(0) << endl;
-  cout << " optimized -2lnL = " << _denominator << endl;
+  // cout << " optimized alpha = " << vec.at(0) << endl;
+  // cout << " optimized -2lnL = " << _denominator << endl;
 
 }
 
@@ -111,7 +111,13 @@ double
 LikelihoodRatio::operator() ( const std::vector<double>& par ) const {
 
   // would nomlize denominator over nuisance parameters .. but none for now
-  
+  if ( _numerator( par ) < _denominator ) {
+    cout << "given alpha        = " << par.at(0) << '\n'
+ 	 << "optimized alpha    = " << _fitter->GetParameter(0) << '\n'
+	 << "-2log(numerator)   = " << _numerator( par ) << '\n'
+	 << "-2log(denominator) = " << _denominator      << '\n'
+	 << "numerator / denominator = " << exp(-0.5*_numerator( par ) ) << " / " << exp(-0.5*_denominator ) << endl;
+  }
   return _numerator( par ) - _denominator ;
 
 }
