@@ -37,7 +37,7 @@ PDF::PDF( const PDF& orig ) {
 PDF::~PDF() {
   TCanvas c("c","",800,600); c.cd(); c.SetLogz();
   _monitor->Draw("COLZ");
-  c.Print("PDF-monitor.png");
+  c.Print("figures/PDF-monitor.png");
   _hist->Delete();
   _graph->Delete();
 }

@@ -49,14 +49,18 @@ int main() {
   double maxAlpha = -1 ;
   double minAlpha = -1 ;
 
-  TProfile dataMinus2LogL("dataMinus2LogL","",500,0,1e-6,0,1e5);
+  TProfile dataMinus2LogL("dataMinus2LogL","",500,0,4e-6,50,1e6);
+  TProfile dataMinus2LogLZoom("dataMinus2LogLZoom","",500,0,4e-8,50,100);
   dataMinus2LogL.SetXTitle("#alpha=1/#Lambda^{2}");
   dataMinus2LogL.SetYTitle("-2lnL(data|#alpha)");
 
-  double delta = 1.e-10;
-  while ( vec.at(0) < 5.e-7 ) {
-    if ( isinf( l(vec) ) ) break;
-    if ( l(vec) < 1.e5 ) dataMinus2LogL.Fill( vec.at(0), l( vec ) );
+  double delta = 1.e-9;
+  while ( vec.at(0) < 4.e-6 ) {
+    if ( isinf( l(vec) ) || isnan( l(vec) )  ) {
+      cout << "PDF broke." << endl; 
+      break;
+    }
+    dataMinus2LogL.Fill( vec.at(0), l( vec ) );
     if ( max - min < 1. ) {
       if ( max < l( vec ) ) { max = l( vec ); maxAlpha = vec.at(0); }
       if ( min > l( vec ) ) { min = l( vec ); minAlpha = vec.at(0); }
@@ -70,16 +74,33 @@ int main() {
        << " |maxAlpha - minAlpha| = " << fabs(maxAlpha-minAlpha) << endl
        << " |max - min| = " << fabs(max-min) << endl;
 
+  
+  vec.at(0) = 0;
+  delta = 1.e-11;
+  while ( vec.at(0) < 4.e-8 ) {
+    if ( isinf( l(vec) ) || isnan( l(vec) )  ) {
+      cout << "PDF broke." << endl; 
+      break;
+    }
+    dataMinus2LogLZoom.Fill( vec.at(0), l( vec ) );
+    vec.at(0) += delta;
+  }
+
+
   TCanvas c("c","",800,600); c.cd(); c.SetLogy();
   dataMinus2LogL.Draw();
-  c.Print("dataMinus2LogL.png");
+  c.Print("figures/dataMinus2LogL.png");
+  c.SetLogy(0);
+  dataMinus2LogLZoom.Draw(); 
+  c.Print("figures/dataMinus2LogLZoom.png");
 
   vec.at(0) = 0;
-  cout << "======================\n";
-  PseudoExperimentFactory peFactory( &pdf, dataHist );
 
-  // PValueTest pv0( 0., launda, &peFactory );
-  // cout << " - pvalue = " <<  pv0( dataHist ) << endl;
+  PseudoExperimentFactory peFactory( &pdf, dataHist );
+  vector<PseudoExperiment*> somePEs = peFactory.build( 1/pow(4000,2), 10 );
+  
+  PValueTest pv0( 0., launda, somePEs );
+  cout << " - pvalue = " <<  pv0( dataHist ) << endl;
 
   return 0;
 

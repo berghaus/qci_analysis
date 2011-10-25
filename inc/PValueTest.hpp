@@ -11,21 +11,19 @@ class PDF;
 class PValueTest {
 
 public:
-  PValueTest( const double, const LikelihoodRatio& , PseudoExperimentFactory* );
+  PValueTest( const double, const LikelihoodRatio& , std::vector<PseudoExperiment*> );
   virtual ~PValueTest();
 
   double operator() ( const TH1* );
-  void init( unsigned int nPE = 10000 );
+  void init( );
 
 private:
   PValueTest( );
-  const double             _alpha; // alpha used for PEs
-  LikelihoodRatio          _testStat;
-  PseudoExperimentFactory* _factory;
+  const double                   _alpha; // alpha used for PEs
+  LikelihoodRatio                _testStat;
+  std::vector<PseudoExperiment*> _pes;
 
   TH1 * _minus2LnLikelihoodDistribution;
-
-  unsigned int              _nPE;
 
 };
 

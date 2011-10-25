@@ -16,19 +16,17 @@
 using namespace std;
 using boost::format;
 
-
-PValueTest::PValueTest( const double alpha, const LikelihoodRatio& testStat, PseudoExperimentFactory* factory )
+PValueTest::PValueTest( const double alpha, const LikelihoodRatio& testStat, vector<PseudoExperiment*> pes)
   : _alpha   ( alpha )
   , _testStat( testStat )
-  , _factory ( factory ) {
+  , _pes ( pes ) {
   init();
 }
 
 
 void
-PValueTest::init( unsigned int nPE ) {
+PValueTest::init() {
 
-  _nPE = nPE;
 
   string hName = str( format("Likelihood-alpha%2.1e") % _alpha  );
   _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(),"",100,0.,-1.);
@@ -36,10 +34,10 @@ PValueTest::init( unsigned int nPE ) {
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
 
   vector<double> par(1,_alpha);
-  PseudoExperiment* pe = 0;
-  for( int i = 0; i < _nPE; ++i ) {
-
-    pe = _factory->build( _alpha );
+  vector<PseudoExperiment*>::iterator itr = _pes.begin();
+  vector<PseudoExperiment*>::iterator end = _pes.end();
+  for( ; itr != end; ++itr ) {
+    PseudoExperiment* pe = *itr;
     _testStat.data( pe );
     _minus2LnLikelihoodDistribution->Fill( _testStat( par ) );
   }
@@ -47,8 +45,7 @@ PValueTest::init( unsigned int nPE ) {
 
 
 PValueTest::PValueTest( )
-  : _alpha( 0 )
-  , _factory ( 0 ) {
+  : _alpha( 0 ) {
 }
 
 
@@ -62,8 +59,6 @@ PValueTest::~PValueTest() {
 
 double
 PValueTest::operator() ( const TH1* data ) {
-
-  if ( !_factory ) throw( runtime_error("must provide PseudoExperimentFactory") );
 
   vector<double> par( 1, _alpha );
   _testStat.data( data );

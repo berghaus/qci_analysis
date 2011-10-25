@@ -1,7 +1,7 @@
 #include "Likelihood.hpp"
 
 #include <cfloat>
-
+#include <stdexcept>
 #include <TH1.h>
 #include <Minuit2/FCNBase.h>
 #include <Minuit2/FunctionMinimum.h>
@@ -17,14 +17,14 @@ using namespace ROOT::Minuit2;
 
 Likelihood::Likelihood()
   : _data( 0 ) {
-  _pars.Add("alpha",0.,1.0e-08,0.,4.e-6);
+  _pars.Add("alpha",0.,2.0e-08,0.,4.e-6);
 }
 
 
 Likelihood::Likelihood( const TH1* data, const PDF* pdf)
   : _data( data )
   , _pdf ( pdf  ) {
-  _pars.Add("alpha",0.,1.0e-08,0.,4.e-6);
+  _pars.Add("alpha",0.,2.0e-08,0.,4.e-6);
 }
 
 
@@ -131,6 +131,7 @@ LikelihoodRatio::operator() ( const std::vector<double>& par ) {
   if ( _numerator( par ) < _denominator() ) {
     cout << "-2lnL("<< par.at(0) << ") = " << _numerator( par ) << '\n'
 	 << "-2lnL("<< _denominator.pars().at(0) << ") = " << _denominator() << '\n';
+    throw( logic_error("minimized likelihood not at minimum") );
     
   }
   return _numerator( par ) - _denominator() ;

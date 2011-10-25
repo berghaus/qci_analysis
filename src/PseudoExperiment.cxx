@@ -30,6 +30,7 @@ PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf,
 
 
 PseudoExperimentFactory::~PseudoExperimentFactory() {
+  
 }
 
 
@@ -50,6 +51,28 @@ PseudoExperimentFactory::build( const double& alpha ) {
     result->SetBinContent( bin, n );
   }
 
+  _generated[alpha].push_back( result );
+  return result;
+}
+
+vector<PseudoExperiment*>
+PseudoExperimentFactory::build( const double& alpha, const int& n ) {
+
+  vector<PseudoExperiment*> result(n);
+
+  if ( _generated.find( alpha ) == _generated.end() || 
+       _generated.find( alpha )->second.size() < n ) {
+
+    do {
+      build( alpha );
+    } while ( _generated.find( alpha )->second.size() < n );
+    copy( _generated.find( alpha )->second.begin(), _generated.find( alpha )->second.end(), result.begin() );
+
+  } else {
+
+    copy( _generated.find( alpha )->second.begin(), _generated.find( alpha )->second.begin()+n, result.begin() );
+
+  }
   return result;
 }
 
