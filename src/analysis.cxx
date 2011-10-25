@@ -4,14 +4,15 @@
 
 #include <TCanvas.h>
 #include <TH1.h>
+#include <TProfile.h>
 #include <TH2.h>
 #include <TFile.h>
-#include <TFitterMinuit.h>
 
 #include "Likelihood.hpp"
 #include "PDF.hpp"
 #include "PseudoExperiment.hpp"
 #include "PValueTest.hpp"
+#include "AtlasStyle.hpp"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ TH1 * CopyRange( TH1*, int, int );
 int main() {
 
   //  cout << "hello frank!\n";
+  SetAtlasStyle();
 
   TFile * pdfFile  = TFile::Open("~/docs/comp/analysis/vanilla.root");
   TFile * dataFile = TFile::Open("~/docs/comp/analysis/data.root");
@@ -29,47 +31,55 @@ int main() {
   TH1 * fullHist= (TH1*)dataFile->Get("Chi_2000-to-7000all");
   TH1 * dataHist= CopyRange( fullHist, 1, 11 );
   
-  TFitterMinuit * fitter = new TFitterMinuit();
-
   PDF pdf( pdfHist );
-  vector<double> vec( 1, 1./(7000.*7000.) );
-  //cout << " pdf( 2, 5 | 1./(7000)^2 ) =  " << pdf( 2., 5, vec ) << endl;
+
+  for ( double chi = 1.; chi < 30.; chi += 1.e-2 ) {
+    for( double alpha = 0.; alpha < 4e-6; alpha += 1.e-8 ) {
+      vector<double> vec( 1, alpha );
+      pdf( chi, 10, vec );
+    }
+  }
+
+  vector<double> vec( 1, 0. );
+  Likelihood l( dataHist, &pdf );
+  LikelihoodRatio launda( dataHist, &pdf );
+
+  double max = 0.;
+  double min = 4e150;
+  double maxAlpha = -1 ;
+  double minAlpha = -1 ;
+
+  TProfile dataMinus2LogL("dataMinus2LogL","",500,0,1e-6,0,1e5);
+  dataMinus2LogL.SetXTitle("#alpha=1/#Lambda^{2}");
+  dataMinus2LogL.SetYTitle("-2lnL(data|#alpha)");
+
+  double delta = 1.e-10;
+  while ( vec.at(0) < 5.e-7 ) {
+    if ( isinf( l(vec) ) ) break;
+    if ( l(vec) < 1.e5 ) dataMinus2LogL.Fill( vec.at(0), l( vec ) );
+    if ( max - min < 1. ) {
+      if ( max < l( vec ) ) { max = l( vec ); maxAlpha = vec.at(0); }
+      if ( min > l( vec ) ) { min = l( vec ); minAlpha = vec.at(0); }
+    }
+    vec.at(0) += delta;
+  }
+
+  cout << "max in min spread:\n" 
+       << " -2lnL(" << minAlpha << ") = " << min << endl
+       << " -2lnL(" << maxAlpha << ") = " << max << endl
+       << " |maxAlpha - minAlpha| = " << fabs(maxAlpha-minAlpha) << endl
+       << " |max - min| = " << fabs(max-min) << endl;
+
+  TCanvas c("c","",800,600); c.cd(); c.SetLogy();
+  dataMinus2LogL.Draw();
+  c.Print("dataMinus2LogL.png");
 
   vec.at(0) = 0;
-  Likelihood l( dataHist, &pdf );
-  //cout << " -2lnL( data | 0 ) = " << l( vec ) << endl;
-
-  LikelihoodRatio launda( fitter, dataHist, &pdf );
-  //cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
-
   cout << "======================\n";
   PseudoExperimentFactory peFactory( &pdf, dataHist );
-  // PseudoExperiment * pe = peFactory.build( );
-  // launda.data( pe );
-  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
 
-  // cout << "======================\n";
-  // PseudoExperiment * pe2 = peFactory.build( 1/pow(8000,2) );
-  // launda.data( pe2 );
-  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
-
-  // cout << "======================\n";
-  // PseudoExperiment * pe5 = peFactory.build( 1/pow(3000,2) );
-  // launda.data( pe5 );
-  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
-
-  // cout << "======================\n";
-  // PseudoExperiment * pe6 = peFactory.build( 1/pow(1000,2) );
-  // launda.data( pe6 );
-  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
-
-  // cout << "======================\n";
-  // PseudoExperiment * pe7 = peFactory.build( 1/pow( 500,2) );
-  // launda.data( pe7 );
-  // cout << " -2lnlaunda(0) = " << launda( vec ) << endl;
-
-  PValueTest pv0( 0., launda, &peFactory );
-  cout << " - pvalue = " <<  pv0( dataHist ) << endl;
+  // PValueTest pv0( 0., launda, &peFactory );
+  // cout << " - pvalue = " <<  pv0( dataHist ) << endl;
 
   return 0;
 
@@ -84,7 +94,7 @@ TH1 * CopyRange( TH1* h, int min, int max ) {
   for ( int i = min; i <= max; ++i ) {
     lowEdges.push_back( h->GetBinLowEdge( i ) );
     content. push_back( h->GetBinContent( i ) );
-    errors.  push_back ( h->GetBinError( i ));
+    errors.  push_back( h->GetBinError( i ) );
   }
 
   if ( max != h->GetNbinsX() ) lowEdges.push_back( h->GetBinLowEdge( max+1 ) );

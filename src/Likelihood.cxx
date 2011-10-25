@@ -3,25 +3,40 @@
 #include <cfloat>
 
 #include <TH1.h>
-#include <TFitterMinuit.h>
+#include <Minuit2/FCNBase.h>
+#include <Minuit2/FunctionMinimum.h>
+#include <Minuit2/MnMigrad.h>
+#include <Minuit2/MnPrint.h>
+#include <Minuit2/CombinedMinimizer.h>
+#include <Minuit2/MnStrategy.h>
 
 #include "PDF.hpp"
 
 using namespace std;
-
+using namespace ROOT::Minuit2;
 
 Likelihood::Likelihood()
-  : _data( 0 )
-{}
+  : _data( 0 ) {
+  _pars.Add("alpha",0.,1.0e-08,0.,4.e-6);
+}
 
 
 Likelihood::Likelihood( const TH1* data, const PDF* pdf)
   : _data( data )
-  , _pdf ( pdf  )
-{}
+  , _pdf ( pdf  ) {
+  _pars.Add("alpha",0.,1.0e-08,0.,4.e-6);
+}
 
 
 Likelihood::~Likelihood() {
+}
+
+
+double
+Likelihood::operator() ( ) const {
+
+  return (*this)( _pars.Params() );
+
 }
 
 
@@ -55,6 +70,29 @@ const TH1* Likelihood::data() const { return _data; }
 const PDF* Likelihood::pdf () const { return _pdf; }
 
 
+double
+Likelihood::Minimize(){
+  return Minimize( _pars );
+}
+
+double
+Likelihood::Minimize( MnUserParameters& pars ){
+
+  CombinedMinimizer combMin;
+  MnStrategy        strat(2);
+  FunctionMinimum   minResults( combMin.Minimize( *this, pars, strat, 10000, 0.1 ) );
+
+  _isMinimized = minResults.IsValid();
+  pars = minResults.UserParameters();
+  return pars.Params().at(0);
+  
+}
+
+
+vector<double> Likelihood::pars() { return _pars.Params(); }
+
+
+
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
@@ -65,19 +103,12 @@ LikelihoodRatio::LikelihoodRatio()
 }
 
 
-LikelihoodRatio::LikelihoodRatio( TFitterMinuit * fitter, const TH1* data, const PDF* pdf )
+LikelihoodRatio::LikelihoodRatio( const TH1* data, const PDF* pdf )
   : _data( (TH1*)data->Clone("data") )
   , _pdf ( pdf )
   , _numerator( data, pdf )
-  , _denominator ( 1. )
-  , _denominatorL( data, pdf )
-  , _fitter( fitter ) {
+  , _denominator( data, pdf ) {
 
-  _fitter->SetMinuitFCN( &_denominatorL );
-  _fitter->SetMaxIterations(5000);
-  _fitter->SetPrintLevel(0);
-  _fitter->SetStrategy(2);
-  _fitter->CreateMinimizer();
   init();
 
 }
@@ -90,35 +121,19 @@ LikelihoodRatio::~LikelihoodRatio() {
 
 void
 LikelihoodRatio::init() {
-
-  vector<double> vec( 1, 0. );
-  _fitter->SetParameter( 0, "alpha", vec[0], 1.e-6, 0., 4.e-6);
-  int nError = _fitter->Minimize();
-  if (nError != 0) {
-    cout << ": Problem with Minimize(): " << nError << endl;
-    throw( "Problem with Minimization" );
-  }
-
-  vec.at(0) = _fitter->GetParameter(0);
-  _denominator = _denominatorL( vec );
-
-  // cout << " optimized alpha = " << vec.at(0) << endl;
-  // cout << " optimized -2lnL = " << _denominator << endl;
-
+  _denominator.Minimize();
 }
 
 double
-LikelihoodRatio::operator() ( const std::vector<double>& par ) const {
+LikelihoodRatio::operator() ( const std::vector<double>& par ) {
 
   // would nomlize denominator over nuisance parameters .. but none for now
-  if ( _numerator( par ) < _denominator ) {
-    cout << "given alpha        = " << par.at(0) << '\n'
- 	 << "optimized alpha    = " << _fitter->GetParameter(0) << '\n'
-	 << "-2log(numerator)   = " << _numerator( par ) << '\n'
-	 << "-2log(denominator) = " << _denominator      << '\n'
-	 << "numerator / denominator = " << exp(-0.5*_numerator( par ) ) << " / " << exp(-0.5*_denominator ) << endl;
+  if ( _numerator( par ) < _denominator() ) {
+    cout << "-2lnL("<< par.at(0) << ") = " << _numerator( par ) << '\n'
+	 << "-2lnL("<< _denominator.pars().at(0) << ") = " << _denominator() << '\n';
+    
   }
-  return _numerator( par ) - _denominator ;
+  return _numerator( par ) - _denominator() ;
 
 }
 
@@ -127,16 +142,16 @@ double LikelihoodRatio::Up() const { return 1.; }
 
 void LikelihoodRatio::data( const TH1* data ) {
   _data = (TH1*)data->Clone("data");
-  _numerator.   data( data );
-  _denominatorL.data( data );
+  _numerator.  data( data );
+  _denominator.data( data );
   init();
 }
 
 
 void LikelihoodRatio::pdf ( const PDF* pdf )   {
   _pdf  = pdf;
-  _numerator.   pdf( pdf );
-  _denominatorL.pdf( pdf );
+  _numerator.  pdf( pdf );
+  _denominator.pdf( pdf );
   init();
 }
 

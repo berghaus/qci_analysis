@@ -8,6 +8,7 @@ AUTOMAKE_OPTIONS = subdir-objects
 bin_PROGRAMS = analysis
 
 # --- build my programs ---
-analysis_SOURCES = src/analysis.cxx src/PDF.cxx src/Likelihood.cxx src/PValueTest.cxx src/PseudoExperiment.cxx
+analysis_SOURCES = src/analysis.cxx src/PDF.cxx src/Likelihood.cxx src/PValueTest.cxx src/PseudoExperiment.cxx \
+	src/AtlasStyle.cxx
 analysis_LDADD   = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 

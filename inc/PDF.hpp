@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include <TProfile2D.h>
+
 class TGraph2D;
 class TH2;
 
@@ -29,6 +31,8 @@ public:
 private:
   TH2* _hist;
   TGraph2D *_graph;
+
+  TProfile2D* _monitor;
 
 };
 

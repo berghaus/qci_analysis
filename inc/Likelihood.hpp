@@ -5,6 +5,8 @@
 #include <vector>
 
 #include <Minuit2/FCNBase.h>
+#include <Minuit2/MnUserParameters.h>
+#include <Minuit2/MnUserParameterState.h>
 
 #include "PDF.hpp"
 
@@ -21,6 +23,7 @@ public:
   Likelihood( const TH1*, const PDF* );
   virtual ~Likelihood();
 
+  double operator() ( ) const;
   double operator() ( const std::vector<double>& ) const;
 
   double Up() const;
@@ -31,12 +34,21 @@ public:
 
   const TH1* data() const;
   const PDF* pdf () const;
-  
+
+  double Minimize();
+  double Minimize( ROOT::Minuit2::MnUserParameters& );
+
+  std::vector<double> pars();
 
 private:
 
   const TH1* _data;
   const PDF* _pdf;
+
+
+  bool _isMinimized;
+  ROOT::Minuit2::MnUserParameters     _pars;
+  ROOT::Minuit2::MnUserParameterState _parsState;
 
 };
 
@@ -49,10 +61,10 @@ public:
   LikelihoodRatio();
 
   // assume ownership of TH1 but not the PDF
-  LikelihoodRatio( TFitterMinuit *, const TH1*, const PDF* );
+  LikelihoodRatio( const TH1*, const PDF* );
   virtual ~LikelihoodRatio();
 
-  double operator() ( const std::vector<double>& ) const;
+  double operator() ( const std::vector<double>& );
 
   double Up() const;
 
@@ -69,9 +81,7 @@ private:
   TH1* _data;
   const PDF* _pdf;
   Likelihood _numerator;   // fit over nuisance parameters
-  double     _denominator; // result of global fit
-  Likelihood _denominatorL; // global fit
-  TFitterMinuit * _fitter; // does not seem to like getting deleted
+  Likelihood _denominator; // global fit
 
 };
 
