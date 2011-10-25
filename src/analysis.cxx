@@ -28,6 +28,7 @@ int main() {
   TFile * dataFile = TFile::Open("~/docs/comp/analysis/data.root");
 
   TH2 * pdfHist = (TH2*)pdfFile-> Get("PDF-2000-m_{jj}-7000 GeV");
+  pdfHist->Smooth();
   TH1 * fullHist= (TH1*)dataFile->Get("Chi_2000-to-7000all");
   TH1 * dataHist= CopyRange( fullHist, 1, 11 );
   
@@ -40,9 +41,18 @@ int main() {
     }
   }
 
+  PseudoExperimentFactory peFactory( &pdf, dataHist );
+  vector<PseudoExperiment*> somePEs = peFactory.build( 1/pow(707.1,2), 10 );
+  
+  // PValueTest pv0( 0., launda, somePEs );
+  // cout << " - pvalue = " <<  pv0( dataHist ) << endl;
+
+  TH1 * peHist = somePEs.at(2);
+
   vector<double> vec( 1, 0. );
-  Likelihood l( dataHist, &pdf );
-  LikelihoodRatio launda( dataHist, &pdf );
+  Likelihood l( peHist, &pdf );
+  LikelihoodRatio launda( peHist, &pdf );
+
 
   double max = 0.;
   double min = 4e150;
@@ -50,7 +60,6 @@ int main() {
   double minAlpha = -1 ;
 
   TProfile dataMinus2LogL("dataMinus2LogL","",500,0,4e-6,50,1e6);
-  TProfile dataMinus2LogLZoom("dataMinus2LogLZoom","",500,0,4e-8,50,100);
   dataMinus2LogL.SetXTitle("#alpha=1/#Lambda^{2}");
   dataMinus2LogL.SetYTitle("-2lnL(data|#alpha)");
 
@@ -74,33 +83,12 @@ int main() {
        << " |maxAlpha - minAlpha| = " << fabs(maxAlpha-minAlpha) << endl
        << " |max - min| = " << fabs(max-min) << endl;
 
-  
-  vec.at(0) = 0;
-  delta = 1.e-11;
-  while ( vec.at(0) < 4.e-8 ) {
-    if ( isinf( l(vec) ) || isnan( l(vec) )  ) {
-      cout << "PDF broke." << endl; 
-      break;
-    }
-    dataMinus2LogLZoom.Fill( vec.at(0), l( vec ) );
-    vec.at(0) += delta;
-  }
-
-
   TCanvas c("c","",800,600); c.cd(); c.SetLogy();
   dataMinus2LogL.Draw();
   c.Print("figures/dataMinus2LogL.png");
-  c.SetLogy(0);
-  dataMinus2LogLZoom.Draw(); 
-  c.Print("figures/dataMinus2LogLZoom.png");
-
   vec.at(0) = 0;
 
-  PseudoExperimentFactory peFactory( &pdf, dataHist );
-  vector<PseudoExperiment*> somePEs = peFactory.build( 1/pow(4000,2), 10 );
-  
-  PValueTest pv0( 0., launda, somePEs );
-  cout << " - pvalue = " <<  pv0( dataHist ) << endl;
+
 
   return 0;
 

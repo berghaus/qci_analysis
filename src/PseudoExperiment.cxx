@@ -1,8 +1,12 @@
 #include "PseudoExperiment.hpp"
+#include <algorithm>
+#include <functional>
 #include <iostream>
 #include <string>
 
 #include <boost/format.hpp>
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
 
 #include <TCanvas.h>
 #include <TH2.h>
@@ -30,6 +34,12 @@ PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf,
 
 
 PseudoExperimentFactory::~PseudoExperimentFactory() {
+
+  // delete all PEs
+  typedef std::map<double,std::vector<PseudoExperiment*> > pes_t;
+  foreach( pes_t::value_type& x, _generated )
+    for_each(x.second.begin(), x.second.end(), bind2nd(mem_fun(&PseudoExperiment::Delete),"") );
+
   
 }
 
