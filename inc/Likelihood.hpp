@@ -9,6 +9,7 @@
 #include <Minuit2/MnUserParameterState.h>
 
 #include "PDF.hpp"
+#include "TestStatMonitor.hpp"
 
 class TH1;
 class TFitterMinuit;
@@ -39,6 +40,8 @@ public:
   double Minimize( ROOT::Minuit2::MnUserParameters& );
 
   std::vector<double> pars();
+
+  void accept( TestStatMonitor& );
 
 private:
 
@@ -73,6 +76,8 @@ public:
 
   TH1* data() const;
   const PDF* pdf () const;
+
+  void accept( TestStatMonitor& );
 
 private:
 

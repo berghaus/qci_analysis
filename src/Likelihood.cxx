@@ -92,6 +92,10 @@ Likelihood::Minimize( MnUserParameters& pars ){
 vector<double> Likelihood::pars() { return _pars.Params(); }
 
 
+void
+Likelihood::accept( TestStatMonitor& monitor ){
+}
+
 
 //--------------------------------------------------------------------------------
 //--------------------------------------------------------------------------------
@@ -158,3 +162,7 @@ void LikelihoodRatio::pdf ( const PDF* pdf )   {
 
 TH1* LikelihoodRatio::data() const { return _data; }
 const PDF* LikelihoodRatio::pdf () const { return _pdf; }
+
+void
+LikelihoodRatio::accept( TestStatMonitor& monitor ){
+}
