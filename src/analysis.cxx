@@ -34,59 +34,59 @@ int main() {
   
   PDF pdf( pdfHist );
 
-  for ( double chi = 1.; chi < 30.; chi += 1.e-2 ) {
-    for( double alpha = 0.; alpha < 4e-6; alpha += 1.e-8 ) {
-      vector<double> vec( 1, alpha );
-      pdf( chi, 10, vec );
-    }
-  }
+  // for ( double chi = 1.; chi < 30.; chi += 1.e-2 ) {
+  //   for( double alpha = 0.; alpha < 4e-6; alpha += 1.e-8 ) {
+  //     vector<double> vec( 1, alpha );
+  //     pdf( chi, 10, vec );
+  //   }
+  // }
 
   PseudoExperimentFactory peFactory( &pdf, dataHist );
-  vector<PseudoExperiment*> somePEs = peFactory.build( 1/pow(707.1,2), 10 );
+  vector<PseudoExperiment*> somePEs = peFactory.build( 0., 100 );
   
-  // PValueTest pv0( 0., launda, somePEs );
-  // cout << " - pvalue = " <<  pv0( dataHist ) << endl;
-
   TH1 * peHist = somePEs.at(2);
 
   vector<double> vec( 1, 0. );
-  Likelihood l( peHist, &pdf );
-  LikelihoodRatio launda( peHist, &pdf );
+  Likelihood l( dataHist, &pdf );
+  LikelihoodRatio launda( dataHist, &pdf );
+
+  PValueTest pv0( 0., launda, somePEs );
+  cout << " * pvalue = " <<  pv0( dataHist ) << endl;
 
 
-  double max = 0.;
-  double min = 4e150;
-  double maxAlpha = -1 ;
-  double minAlpha = -1 ;
+  // double max = 0.;
+  // double min = 4e150;
+  // double maxAlpha = -1 ;
+  // double minAlpha = -1 ;
 
-  TProfile dataMinus2LogL("dataMinus2LogL","",500,0,4e-6,50,1e6);
-  dataMinus2LogL.SetXTitle("#alpha=1/#Lambda^{2}");
-  dataMinus2LogL.SetYTitle("-2lnL(data|#alpha)");
+  // TProfile dataMinus2LogL("dataMinus2LogL","",500,0,1e-7,50,1e2);
+  // dataMinus2LogL.SetXTitle("#alpha=1/#Lambda^{2}");
+  // dataMinus2LogL.SetYTitle("-2lnL(data|#alpha)");
 
-  double delta = 1.e-9;
-  while ( vec.at(0) < 4.e-6 ) {
-    if ( isinf( l(vec) ) || isnan( l(vec) )  ) {
-      cout << "PDF broke." << endl; 
-      break;
-    }
-    dataMinus2LogL.Fill( vec.at(0), l( vec ) );
-    if ( max - min < 1. ) {
-      if ( max < l( vec ) ) { max = l( vec ); maxAlpha = vec.at(0); }
-      if ( min > l( vec ) ) { min = l( vec ); minAlpha = vec.at(0); }
-    }
-    vec.at(0) += delta;
-  }
+  // double delta = 1.e-11;
+  // while ( vec.at(0) < 1.e-7 ) {
+  //   if ( isinf( l(vec) ) || isnan( l(vec) )  ) {
+  //     cout << "PDF broke." << endl; 
+  //     break;
+  //   }
+  //   dataMinus2LogL.Fill( vec.at(0), l( vec ) );
+  //   if ( max - min < 1. ) {
+  //     if ( max < l( vec ) ) { max = l( vec ); maxAlpha = vec.at(0); }
+  //     if ( min > l( vec ) ) { min = l( vec ); minAlpha = vec.at(0); }
+  //   }
+  //   vec.at(0) += delta;
+  // }
 
-  cout << "max in min spread:\n" 
-       << " -2lnL(" << minAlpha << ") = " << min << endl
-       << " -2lnL(" << maxAlpha << ") = " << max << endl
-       << " |maxAlpha - minAlpha| = " << fabs(maxAlpha-minAlpha) << endl
-       << " |max - min| = " << fabs(max-min) << endl;
+  // cout << "max in min spread:\n" 
+  //      << " -2lnL(" << minAlpha << ") = " << min << endl
+  //      << " -2lnL(" << maxAlpha << ") = " << max << endl
+  //      << " |maxAlpha - minAlpha| = " << fabs(maxAlpha-minAlpha) << endl
+  //      << " |max - min| = " << fabs(max-min) << endl;
 
-  TCanvas c("c","",800,600); c.cd(); c.SetLogy();
-  dataMinus2LogL.Draw();
-  c.Print("figures/dataMinus2LogL.png");
-  vec.at(0) = 0;
+  // TCanvas c("c","",800,600); c.cd(); c.SetLogy();
+  // dataMinus2LogL.Draw();
+  // c.Print("figures/dataMinus2LogL.png");
+  // vec.at(0) = 0;
 
 
 
