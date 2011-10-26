@@ -88,8 +88,6 @@ int main() {
   // c.Print("figures/dataMinus2LogL.png");
   // vec.at(0) = 0;
 
-
-
   return 0;
 
 }
