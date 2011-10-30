@@ -7,6 +7,7 @@
 
 class TGraph2D;
 class TH2;
+class PDFMonitor;
 
 class PDF {
 
@@ -27,6 +28,8 @@ public:
 
   TH2* hist() const;
   void hist( const TH2* );
+
+  void accept( PDFMonitor& );
 
 private:
   TH2* _hist;

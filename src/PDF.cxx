@@ -8,6 +8,8 @@
 #include <TH2.h>
 #include <TGraph2D.h>
 
+#include "PDFMonitor.hpp"
+
 using namespace std;
 
 PDF::PDF()
@@ -72,3 +74,5 @@ TH2* PDF::hist() const { return _hist; }
 
 
 void PDF::hist( const TH2* hist ) { _hist = (TH2*)hist->Clone("PDF"); }
+
+void PDF::accept( PDFMonitor& mon ) { mon.monitor( *this ); }
