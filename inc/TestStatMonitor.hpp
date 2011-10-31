@@ -25,9 +25,9 @@ private:
   std::string _folder;
   std::string _ext;
 
-  std::map<double,TH2*> _likelihoods;
-  std::map<double,TH2*> _likelihoodRatios;
-  std::map<double,TH1*> _minimizedAlpha;
+  TH2* _likelihood;
+  TH2* _likelihoodRatio;
+  TH1* _minimizedAlpha;
 
 };
 

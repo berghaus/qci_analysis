@@ -2,6 +2,10 @@
 #include <vector>
 #include <cmath>
 
+#include <boost/foreach.hpp>
+#define foreach BOOST_FOREACH
+
+
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TProfile.h>
@@ -15,6 +19,7 @@
 #include "AtlasStyle.hpp"
 
 #include "PDFMonitor.hpp"
+#include "TestStatMonitor.hpp"
 
 using namespace std;
 
@@ -39,18 +44,27 @@ int main() {
 
   pdf.accept( pdfMon );
 
-
   PseudoExperimentFactory peFactory( &pdf, dataHist );
-  vector<PseudoExperiment*> somePEs = peFactory.build( 0., 100 );
+  vector<PseudoExperiment*> somePEs = peFactory.build( 0., 1.e4 );
   
   TH1 * peHist = somePEs.at(2);
 
   vector<double> vec( 1, 0. );
+
+  TestStatMonitor tm("figures/Likelihood/",".png" );
+  foreach( PseudoExperiment* pe, somePEs ) {
+    Likelihood_FCN      l( pe, &pdf );
+    LikelihoodRatio_FCN launda( pe, &pdf );
+
+    l.     accept( tm );
+    launda.accept( tm );
+    
+  }
   Likelihood_FCN  l( dataHist, &pdf );
   LikelihoodRatio_FCN launda( dataHist, &pdf );
 
-  PValueTest pv0( 0., launda, somePEs );
-  cout << " * pvalue = " <<  pv0( dataHist ) << endl;
+  // PValueTest pv0( 0., launda, somePEs );
+  // cout << " * pvalue = " <<  pv0( dataHist ) << endl;
 
 
   // double max = 0.;

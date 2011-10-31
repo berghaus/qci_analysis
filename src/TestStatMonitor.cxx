@@ -1,13 +1,17 @@
 #include "TestStatMonitor.hpp"
 #include <cmath>
+#include <cstdlib>
 #include <string>
 
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
+#include "TCanvas.h"
 #include "TH1.h"
 #include "TH2.h"
+
+#include "Likelihood.hpp"
 
 using namespace std;
 using namespace boost::assign;
@@ -29,28 +33,52 @@ TestStatMonitor::TestStatMonitor( const string& folder, const string& ext )
 void
 TestStatMonitor::init() {
 
-  vector<double> alphas = list_of(0)             (1/pow(8000,2)) (1/pow(7000,2)) (1/pow(6000,2))
-                                 (1/pow(5000,2)) (1/pow(4000,2)) (1/pow(3000,2)) (1/pow(1500,2))
-                                 (1/pow(1000,2)) (1/pow( 750,2)) (1/pow( 500,2));
-  foreach( double alpha, alphas ) {
-    _likelihoods     [alpha] = new TH2D("","",100,0,-1,100,0,-1);
-    _likelihoodRatios[alpha] = new TH2D("","",100,0,-1,100,0,-1);
-    _minimizedAlpha  [alpha] = new TH1D("","",100,alphas.front(),alphas.back());
-  }
+  _likelihood      = new TH2D("Likelihood"     ,"likelihood",     100, 0.,4.e-6,100,0,-1);
+  _likelihoodRatio = new TH2D("LikelihoodRatio","likelihoodRatio",100, 0.,4.e-6,100,0,-1);
+  _minimizedAlpha  = new TH1D("MinimizedAlpha" ,"minimizedAlpha", 100, 0.,4.e-6 );
+
 }
 
 
 TestStatMonitor::~TestStatMonitor() {
+
+  TCanvas c("TestStatCanvas","",800,600); c.cd();
+
+  _likelihood     ->Draw("COLZ");
+  c.Print( (_folder+string( _likelihood->GetName() )+_ext).c_str() );
+
+  _likelihoodRatio->Draw("COLZ");
+  c.Print( (_folder+string( _likelihoodRatio->GetName() )+_ext).c_str() );
+
+  _minimizedAlpha ->Draw();
+  c.Print( (_folder+string( _minimizedAlpha->GetName() )+_ext).c_str() );
+  
+  _likelihood     ->Delete();
+  _likelihoodRatio->Delete();
+  _minimizedAlpha ->Delete();
 }
 
 
 void
 TestStatMonitor::monitor( Likelihood_FCN& l ) {
 
+  for( int i = 0; i < 100; ++i ) {
+    double randAlpha = 4.e-6 * double( rand() % 1000 ) / 1000.;
+    _likelihood->Fill( randAlpha, l( vector<double>(1, randAlpha ) ) );
+  }
+  
+  if ( l.isMinimized() )
+    _minimizedAlpha->Fill( l.pars().at(0) );
+
 }
 
 
 void
 TestStatMonitor::monitor( LikelihoodRatio_FCN& launda ) {
+  for( int i = 0; i < 100; ++i ) {
+    double randAlpha = 4.e-6 * double( rand() % 1000 ) / 1000.;
+    _likelihoodRatio->Fill( randAlpha, launda( vector<double>(1, randAlpha ) ) );
+  }
+
 }
 

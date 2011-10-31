@@ -142,7 +142,7 @@ LikelihoodRatio_FCN::operator() ( const std::vector<double>& par ) {
   if ( _numerator( par ) < _denominator() ) {
     cout << "-2lnL("<< par.at(0) << ") = " << _numerator( par ) << '\n'
 	 << "-2lnL("<< _denominator.pars().at(0) << ") = " << _denominator() << '\n';
-    throw( logic_error("minimized likelihood not at minimum") );
+    //throw( logic_error("minimized likelihood not at minimum") );
     
   }
   return _numerator( par ) - _denominator() ;
