@@ -63,11 +63,20 @@ Likelihood_FCN::Up() const
 }
 
 
-void Likelihood_FCN::data( const TH1* data ) { _data = data; }
-void Likelihood_FCN::pdf ( const PDF* pdf )  { _pdf  = pdf; }
+void Likelihood_FCN::data( const TH1* data ) {
+  _data = data;
+  _isMinimized = false;
+}
 
-const TH1* Likelihood_FCN::data() const { return _data; }
-const PDF* Likelihood_FCN::pdf () const { return _pdf; }
+
+void Likelihood_FCN::pdf ( const PDF* pdf )  {
+  _pdf  = pdf;
+  _isMinimized = false;
+}
+
+const TH1* Likelihood_FCN::data()        const { return _data; }
+const PDF* Likelihood_FCN::pdf ()        const { return _pdf; }
+bool       Likelihood_FCN::isMinimized() const { return _isMinimized; }
 
 
 double

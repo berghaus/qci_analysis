@@ -35,6 +35,7 @@ public:
 
   const TH1* data() const;
   const PDF* pdf () const;
+  bool       isMinimized() const;
 
   double Minimize();
   double Minimize( ROOT::Minuit2::MnUserParameters& );
