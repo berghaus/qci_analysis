@@ -16,7 +16,7 @@
 using namespace std;
 using boost::format;
 
-PValueTest::PValueTest( const double alpha, const LikelihoodRatio& testStat, vector<PseudoExperiment*> pes)
+PValueTest::PValueTest( const double alpha, const LikelihoodRatio_FCN& testStat, vector<PseudoExperiment*> pes)
   : _alpha   ( alpha )
   , _testStat( testStat )
   , _pes ( pes ) {
@@ -28,7 +28,7 @@ void
 PValueTest::init() {
 
 
-  string hName = str( format("Likelihood-alpha%2.1e") % _alpha  );
+  string hName = str( format("Likelihood_FCN-alpha%2.1e") % _alpha  );
   _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(),"",100,0.,-1.);
   string xTitle = str( format("-2ln#lambda(%2.1e GeV^{-2})") % _alpha  );
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
@@ -50,7 +50,7 @@ PValueTest::PValueTest( )
 
 
 PValueTest::~PValueTest() {
-  //for_each( _pes.begin(), _pes.end(), boost::checked_deleter<LikelihoodRatio>() );
+  //for_each( _pes.begin(), _pes.end(), boost::checked_deleter<LikelihoodRatio_FCN>() );
   TCanvas c("c","",800,600);
   _minus2LnLikelihoodDistribution->Draw();
   string cName = _minus2LnLikelihoodDistribution->GetName();

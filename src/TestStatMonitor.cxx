@@ -45,14 +45,12 @@ TestStatMonitor::~TestStatMonitor() {
 
 
 void
-TestStatMonitor::monitor( Likelihood& l ) {
-
-  
+TestStatMonitor::monitor( Likelihood_FCN& l ) {
 
 }
 
 
 void
-TestStatMonitor::monitor( LikelihoodRatio& launda ) {
+TestStatMonitor::monitor( LikelihoodRatio_FCN& launda ) {
 }
 

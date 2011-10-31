@@ -5,8 +5,8 @@
 
 class TH1;
 class TH2;
-class Likelihood;
-class LikelihoodRatio;
+class Likelihood_FCN;
+class LikelihoodRatio_FCN;
 
 class TestStatMonitor {
 
@@ -16,8 +16,8 @@ public:
   TestStatMonitor( const std::string&, const std::string& );
   virtual ~TestStatMonitor();
 
-  virtual void monitor( Likelihood& );
-  virtual void monitor( LikelihoodRatio& );
+  virtual void monitor( Likelihood_FCN& );
+  virtual void monitor( LikelihoodRatio_FCN& );
 
 private:
   void init();

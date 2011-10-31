@@ -15,25 +15,25 @@
 using namespace std;
 using namespace ROOT::Minuit2;
 
-Likelihood::Likelihood()
+Likelihood_FCN::Likelihood_FCN()
   : _data( 0 ) {
   _pars.Add("alpha",0.,2.0e-08,0.,4.e-6);
 }
 
 
-Likelihood::Likelihood( const TH1* data, const PDF* pdf)
+Likelihood_FCN::Likelihood_FCN( const TH1* data, const PDF* pdf)
   : _data( data )
   , _pdf ( pdf  ) {
   _pars.Add("alpha",0.,2.0e-08,0.,4.e-6);
 }
 
 
-Likelihood::~Likelihood() {
+Likelihood_FCN::~Likelihood_FCN() {
 }
 
 
 double
-Likelihood::operator() ( ) const {
+Likelihood_FCN::operator() ( ) const {
 
   return (*this)( _pars.Params() );
 
@@ -41,7 +41,7 @@ Likelihood::operator() ( ) const {
 
 
 double
-Likelihood::operator() ( const std::vector<double>& par ) const
+Likelihood_FCN::operator() ( const std::vector<double>& par ) const
 {
   const PDF& pdf = *_pdf;
 
@@ -57,26 +57,26 @@ Likelihood::operator() ( const std::vector<double>& par ) const
 }
 
 double
-Likelihood::Up() const
+Likelihood_FCN::Up() const
 {
   return 1.;
 }
 
 
-void Likelihood::data( const TH1* data ) { _data = data; }
-void Likelihood::pdf ( const PDF* pdf )  { _pdf  = pdf; }
+void Likelihood_FCN::data( const TH1* data ) { _data = data; }
+void Likelihood_FCN::pdf ( const PDF* pdf )  { _pdf  = pdf; }
 
-const TH1* Likelihood::data() const { return _data; }
-const PDF* Likelihood::pdf () const { return _pdf; }
+const TH1* Likelihood_FCN::data() const { return _data; }
+const PDF* Likelihood_FCN::pdf () const { return _pdf; }
 
 
 double
-Likelihood::Minimize(){
+Likelihood_FCN::Minimize(){
   return Minimize( _pars );
 }
 
 double
-Likelihood::Minimize( MnUserParameters& pars ){
+Likelihood_FCN::Minimize( MnUserParameters& pars ){
 
   CombinedMinimizer combMin;
   MnStrategy        strat(2);
@@ -89,12 +89,10 @@ Likelihood::Minimize( MnUserParameters& pars ){
 }
 
 
-vector<double> Likelihood::pars() { return _pars.Params(); }
+vector<double> Likelihood_FCN::pars() { return _pars.Params(); }
 
 
-void
-Likelihood::accept( TestStatMonitor& monitor ){
-}
+void Likelihood_FCN::accept( TestStatMonitor& mon ){ }
 
 
 //--------------------------------------------------------------------------------
@@ -102,12 +100,12 @@ Likelihood::accept( TestStatMonitor& monitor ){
 //--------------------------------------------------------------------------------
 
 
-LikelihoodRatio::LikelihoodRatio()
+LikelihoodRatio_FCN::LikelihoodRatio_FCN()
   : _data( 0 ) {
 }
 
 
-LikelihoodRatio::LikelihoodRatio( const TH1* data, const PDF* pdf )
+LikelihoodRatio_FCN::LikelihoodRatio_FCN( const TH1* data, const PDF* pdf )
   : _data( (TH1*)data->Clone("data") )
   , _pdf ( pdf )
   , _numerator( data, pdf )
@@ -118,18 +116,18 @@ LikelihoodRatio::LikelihoodRatio( const TH1* data, const PDF* pdf )
 }
 
 
-LikelihoodRatio::~LikelihoodRatio() {
+LikelihoodRatio_FCN::~LikelihoodRatio_FCN() {
   _data->Delete();
 }
 
 
 void
-LikelihoodRatio::init() {
+LikelihoodRatio_FCN::init() {
   _denominator.Minimize();
 }
 
 double
-LikelihoodRatio::operator() ( const std::vector<double>& par ) {
+LikelihoodRatio_FCN::operator() ( const std::vector<double>& par ) {
 
   // would nomlize denominator over nuisance parameters .. but none for now
   if ( _numerator( par ) < _denominator() ) {
@@ -143,9 +141,9 @@ LikelihoodRatio::operator() ( const std::vector<double>& par ) {
 }
 
 
-double LikelihoodRatio::Up() const { return 1.; }
+double LikelihoodRatio_FCN::Up() const { return 1.; }
 
-void LikelihoodRatio::data( const TH1* data ) {
+void LikelihoodRatio_FCN::data( const TH1* data ) {
   _data = (TH1*)data->Clone("data");
   _numerator.  data( data );
   _denominator.data( data );
@@ -153,16 +151,16 @@ void LikelihoodRatio::data( const TH1* data ) {
 }
 
 
-void LikelihoodRatio::pdf ( const PDF* pdf )   {
+void LikelihoodRatio_FCN::pdf ( const PDF* pdf )   {
   _pdf  = pdf;
   _numerator.  pdf( pdf );
   _denominator.pdf( pdf );
   init();
 }
 
-TH1* LikelihoodRatio::data() const { return _data; }
-const PDF* LikelihoodRatio::pdf () const { return _pdf; }
+TH1* LikelihoodRatio_FCN::data() const { return _data; }
+const PDF* LikelihoodRatio_FCN::pdf () const { return _pdf; }
 
 void
-LikelihoodRatio::accept( TestStatMonitor& monitor ){
+LikelihoodRatio_FCN::accept( TestStatMonitor& monitor ){
 }

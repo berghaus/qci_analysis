@@ -46,8 +46,8 @@ int main() {
   TH1 * peHist = somePEs.at(2);
 
   vector<double> vec( 1, 0. );
-  Likelihood l( dataHist, &pdf );
-  LikelihoodRatio launda( dataHist, &pdf );
+  Likelihood_FCN  l( dataHist, &pdf );
+  LikelihoodRatio_FCN launda( dataHist, &pdf );
 
   PValueTest pv0( 0., launda, somePEs );
   cout << " * pvalue = " <<  pv0( dataHist ) << endl;

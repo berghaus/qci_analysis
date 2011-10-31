@@ -15,14 +15,14 @@ class TH1;
 class TFitterMinuit;
 class PDF;
 
-class Likelihood : public ROOT::Minuit2::FCNBase {
+class Likelihood_FCN : public ROOT::Minuit2::FCNBase {
 
 public:
-  Likelihood();
+  Likelihood_FCN();
 
   // does not assume ownership of TH1 or PDF
-  Likelihood( const TH1*, const PDF* );
-  virtual ~Likelihood();
+  Likelihood_FCN( const TH1*, const PDF* );
+  virtual ~Likelihood_FCN();
 
   double operator() ( ) const;
   double operator() ( const std::vector<double>& ) const;
@@ -57,15 +57,15 @@ private:
 
 
 
-class LikelihoodRatio {
+class LikelihoodRatio_FCN {
 
 public:
 
-  LikelihoodRatio();
+  LikelihoodRatio_FCN();
 
   // assume ownership of TH1 but not the PDF
-  LikelihoodRatio( const TH1*, const PDF* );
-  virtual ~LikelihoodRatio();
+  LikelihoodRatio_FCN( const TH1*, const PDF* );
+  virtual ~LikelihoodRatio_FCN();
 
   double operator() ( const std::vector<double>& );
 
@@ -85,8 +85,8 @@ private:
 
   TH1* _data;
   const PDF* _pdf;
-  Likelihood _numerator;   // fit over nuisance parameters
-  Likelihood _denominator; // global fit
+  Likelihood_FCN _numerator;   // fit over nuisance parameters
+  Likelihood_FCN _denominator; // global fit
 
 };
 
