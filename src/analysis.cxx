@@ -14,6 +14,8 @@
 #include "PValueTest.hpp"
 #include "AtlasStyle.hpp"
 
+#include "PDFMonitor.hpp"
+
 using namespace std;
 
 
@@ -33,13 +35,10 @@ int main() {
   TH1 * dataHist= CopyRange( fullHist, 1, 11 );
   
   PDF pdf( pdfHist );
+  PDFMonitor pdfMon;
 
-  // for ( double chi = 1.; chi < 30.; chi += 1.e-2 ) {
-  //   for( double alpha = 0.; alpha < 4e-6; alpha += 1.e-8 ) {
-  //     vector<double> vec( 1, alpha );
-  //     pdf( chi, 10, vec );
-  //   }
-  // }
+  pdf.accept( pdfMon );
+
 
   PseudoExperimentFactory peFactory( &pdf, dataHist );
   vector<PseudoExperiment*> somePEs = peFactory.build( 0., 100 );

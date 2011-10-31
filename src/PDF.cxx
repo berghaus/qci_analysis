@@ -21,10 +21,7 @@ PDF::PDF()
 
 PDF::PDF( TH2* hist ) 
   : _hist ( (TH2*)hist->Clone("PDF") )
-  , _graph( new TGraph2D( hist ) )
-  , _monitor( new TProfile2D("PDF-Monitor","",100,1,30,100,0.,4e-6) ) {
-  _monitor->SetXTitle("#chi");
-  _monitor->SetYTitle("#alpha=1/#Lambda^{2}");
+  , _graph( new TGraph2D( hist ) ) {
 }
 
 
@@ -32,14 +29,10 @@ PDF::PDF( const PDF& orig ) {
 
   hist( orig.hist() );
   _graph = new TGraph2D( orig.hist() );
-  _monitor = orig._monitor;
 }
 
 
 PDF::~PDF() {
-  TCanvas c("c","",800,600); c.cd(); c.SetLogz();
-  _monitor->Draw("COLZ");
-  c.Print("figures/PDF-monitor.png");
   _hist->Delete();
   _graph->Delete();
 }
@@ -51,9 +44,7 @@ PDF::operator() (  const double& x, const int& i, const vector<double>& par ) co
   if ( par.at(0) != par.at(0) ) return 0.;
 
   if ( par.size() != 1 ) throw( domain_error("PDF needs at least the compositeness parameter in passed vector") );
-  double p = _graph->Interpolate( x, par.at(0) ); // predicted events at x for parameters
-
-  _monitor->Fill( x, par.at(0), p );
+  double p = interpolate( x, par.at(0) ); // predicted events at x for parameters
 
   // return log of poisson probability
   if ( i < 0. )        return 0.;
@@ -67,6 +58,12 @@ double
 PDF::operator() ( const double& chi, const double& alpha ) const {
   unsigned int pdfBin = _hist->FindBin( chi, alpha );
   return _hist->GetBinContent( pdfBin );
+}
+
+
+double
+PDF::interpolate( const double& x, const double& y) const {
+  return _hist->Interpolate( x, y );
 }
 
 

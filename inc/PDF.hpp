@@ -31,11 +31,11 @@ public:
 
   void accept( PDFMonitor& );
 
+  double interpolate( const double&, const double& ) const;
+
 private:
   TH2* _hist;
   TGraph2D *_graph;
-
-  TProfile2D* _monitor;
 
 };
 
