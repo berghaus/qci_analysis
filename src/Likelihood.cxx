@@ -92,7 +92,7 @@ Likelihood_FCN::Minimize( MnUserParameters& pars ){
 vector<double> Likelihood_FCN::pars() { return _pars.Params(); }
 
 
-void Likelihood_FCN::accept( TestStatMonitor& mon ){ }
+void Likelihood_FCN::accept( TestStatMonitor& mon ){ mon.monitor(*this); }
 
 
 //--------------------------------------------------------------------------------
@@ -161,6 +161,4 @@ void LikelihoodRatio_FCN::pdf ( const PDF* pdf )   {
 TH1* LikelihoodRatio_FCN::data() const { return _data; }
 const PDF* LikelihoodRatio_FCN::pdf () const { return _pdf; }
 
-void
-LikelihoodRatio_FCN::accept( TestStatMonitor& monitor ){
-}
+void LikelihoodRatio_FCN::accept( TestStatMonitor& mon ){ mon.monitor(*this); }
