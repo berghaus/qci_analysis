@@ -46,7 +46,39 @@ int main() {
 
   PseudoExperimentFactory peFactory( &pdf, dataHist );
   vector<PseudoExperiment*> somePEs = peFactory.build( 0., 1.e4 );
-  
+  vector<PseudoExperiment*> morePEs = peFactory.build( 1/pow(8000,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow(7000,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow(6000,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow(5000,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow(4000,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow(3000,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow(2000,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow(1500,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow(1000,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow( 750,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
+  morePEs = peFactory.build( 1/pow( 500,2), 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+
   TH1 * peHist = somePEs.at(2);
 
   vector<double> vec( 1, 0. );

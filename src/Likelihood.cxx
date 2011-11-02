@@ -91,8 +91,8 @@ Likelihood_FCN::Minimize( MnUserParameters& pars ){
   MnStrategy        strat(2);
   FunctionMinimum   minResults( combMin.Minimize( *this, pars, strat, 10000, 0.1 ) );
 
+  _pars = pars = minResults.UserParameters();
   _isMinimized = minResults.IsValid();
-  pars = minResults.UserParameters();
   return pars.Params().at(0);
   
 }

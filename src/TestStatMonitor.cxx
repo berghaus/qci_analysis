@@ -33,9 +33,9 @@ TestStatMonitor::TestStatMonitor( const string& folder, const string& ext )
 void
 TestStatMonitor::init() {
 
-  _likelihood      = new TH2D("Likelihood"     ,"likelihood",     100, 0.,4.e-6,100,0,-1);
-  _likelihoodRatio = new TH2D("LikelihoodRatio","likelihoodRatio",100, 0.,4.e-6,100,0,-1);
-  _minimizedAlpha  = new TH1D("MinimizedAlpha" ,"minimizedAlpha", 100, 0.,4.e-6 );
+  _likelihood      = new TH2D("Likelihood"     ,"likelihood",     500, 0.,4.e-6,500,0,-1);
+  _likelihoodRatio = new TH2D("LikelihoodRatio","likelihoodRatio",500, 0.,4.e-6,500,0,-1);
+  _minimizedAlpha  = new TH1D("MinimizedAlpha" ,"minimizedAlpha", 400, 0.,4.e-6 );
 
 }
 
