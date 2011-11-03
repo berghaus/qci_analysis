@@ -9,6 +9,6 @@ bin_PROGRAMS = analysis
 
 # --- build my programs ---
 analysis_SOURCES = src/analysis.cxx src/PDF.cxx src/Likelihood.cxx src/PValueTest.cxx src/PseudoExperiment.cxx \
-	src/AtlasStyle.cxx src/TestStatMonitor.cxx src/PDFMonitor.cxx
-analysis_LDADD   = -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
+	src/AtlasStyle.cxx src/TestStatMonitor.cxx src/PDFMonitor.cxx src/ControlFrame.cxx src/ControlFrameDict.cxx
+analysis_LDADD   = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 

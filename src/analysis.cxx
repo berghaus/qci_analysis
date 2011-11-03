@@ -1,11 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <cstdlib>
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
-
+#include <TApplication.h>
 #include <TCanvas.h>
 #include <TH1.h>
 #include <TProfile.h>
@@ -17,6 +18,7 @@
 #include "PseudoExperiment.hpp"
 #include "PValueTest.hpp"
 #include "AtlasStyle.hpp"
+#include "ControlFrame.hpp"
 
 #include "PDFMonitor.hpp"
 #include "TestStatMonitor.hpp"
@@ -26,10 +28,15 @@ using namespace std;
 
 TH1 * CopyRange( TH1*, int, int );
 
-int main() {
+int main( int argc, char* argv[] ) {
 
-  //  cout << "hello frank!\n";
-  SetAtlasStyle();
+  TApplication theApp("Analysis", &argc, argv);
+  // for GUI;
+  TGClient windowClient;
+  const TGWindow * rootWindow = windowClient.GetRoot();
+
+  TCanvas * c = new TCanvas("c","",800,600); c->cd();
+  ControlFrame * control = new ControlFrame( rootWindow, 350, 80 );
 
   TFile * pdfFile  = TFile::Open("~/docs/comp/analysis/vanilla.root");
   TFile * dataFile = TFile::Open("~/docs/comp/analysis/data.root");
@@ -38,6 +45,16 @@ int main() {
   pdfHist->Smooth();
   TH1 * fullHist= (TH1*)dataFile->Get("Chi_2000-to-7000all");
   TH1 * dataHist= CopyRange( fullHist, 1, 11 );
+
+  dataHist->Draw();
+
+
+  theApp.Run(kTRUE);
+
+  return 0;
+
+  SetAtlasStyle();
+
   
   PDF pdf( pdfHist );
   PDFMonitor pdfMon;
