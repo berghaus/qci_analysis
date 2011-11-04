@@ -21,10 +21,10 @@ Likelihood_FCN::Likelihood_FCN()
 }
 
 
-Likelihood_FCN::Likelihood_FCN( const TH1* data, const PDF* pdf)
+Likelihood_FCN::Likelihood_FCN( const TH1* data, const PDF* pdf, const double alpha )
   : _data( data )
   , _pdf ( pdf  ) {
-  _pars.Add("alpha",0.,2.0e-08,0.,4.e-6);
+  _pars.Add( "alpha", alpha, 2.0e-08, 0., 4.e-6 );
 }
 
 

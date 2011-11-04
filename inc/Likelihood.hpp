@@ -15,32 +15,31 @@ class TH1;
 class TFitterMinuit;
 class PDF;
 
-class Likelihood_FCN : public ROOT::Minuit2::FCNBase {
+class Likelihood_FCN: public ROOT::Minuit2::FCNBase {
 
 public:
   Likelihood_FCN();
 
   // does not assume ownership of TH1 or PDF
-  Likelihood_FCN( const TH1*, const PDF* );
+  Likelihood_FCN( const TH1*, const PDF*, const double alpha = 0. );
   virtual ~Likelihood_FCN();
 
-  double operator() ( ) const;
-  double operator() ( const std::vector<double>& ) const;
+  double operator()() const;
+  double operator()( const std::vector< double >& ) const;
 
   double Up() const;
 
-
   void data( const TH1* );
-  void pdf ( const PDF* );
+  void pdf( const PDF* );
 
   const TH1* data() const;
-  const PDF* pdf () const;
-  bool       isMinimized() const;
+  const PDF* pdf() const;
+  bool isMinimized() const;
 
   double Minimize();
   double Minimize( ROOT::Minuit2::MnUserParameters& );
 
-  std::vector<double> pars();
+  std::vector< double > pars();
 
   void accept( TestStatMonitor& );
 
@@ -49,14 +48,11 @@ private:
   const TH1* _data;
   const PDF* _pdf;
 
-
   bool _isMinimized;
-  ROOT::Minuit2::MnUserParameters     _pars;
+  ROOT::Minuit2::MnUserParameters _pars;
   ROOT::Minuit2::MnUserParameterState _parsState;
 
 };
-
-
 
 class LikelihoodRatio_FCN {
 
@@ -68,15 +64,15 @@ public:
   LikelihoodRatio_FCN( const TH1*, const PDF* );
   virtual ~LikelihoodRatio_FCN();
 
-  double operator() ( const std::vector<double>& );
+  double operator()( const std::vector< double >& );
 
   double Up() const;
 
   void data( const TH1* );
-  void pdf ( const PDF* );
+  void pdf( const PDF* );
 
   TH1* data() const;
-  const PDF* pdf () const;
+  const PDF* pdf() const;
 
   void accept( TestStatMonitor& );
 
@@ -90,6 +86,5 @@ private:
   Likelihood_FCN _denominator; // global fit
 
 };
-
 
 #endif // LIKELIHOOD_HPP
