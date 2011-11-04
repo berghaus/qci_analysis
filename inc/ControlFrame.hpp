@@ -8,9 +8,9 @@
 class ControlFrame : public TGMainFrame {
 
 private:
-   TGCompositeFrame *fCframe;
-   TGTextButton     *fStart, *fPause, *fExit;
-   Bool_t            start, pause;
+   TGCompositeFrame *_cFrame;
+   TGTextButton     *_start, *_pause, *fExit;
+   Bool_t            _isRunning, _isPaused;
 
 public:
    ControlFrame(const TGWindow *p, UInt_t w, UInt_t h);

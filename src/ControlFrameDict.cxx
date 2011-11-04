@@ -116,12 +116,12 @@ void ControlFrame::ShowMembers(TMemberInspector &R__insp)
       // Inspect the data members of an object of class ControlFrame.
       TClass *R__cl = ::ControlFrame::IsA();
       if (R__cl || R__insp.IsA()) { }
-      R__insp.Inspect(R__cl, R__insp.GetParent(), "*fCframe", &fCframe);
-      R__insp.Inspect(R__cl, R__insp.GetParent(), "*fStart", &fStart);
-      R__insp.Inspect(R__cl, R__insp.GetParent(), "*fPause", &fPause);
+      R__insp.Inspect(R__cl, R__insp.GetParent(), "*fCframe", &_cFrame);
+      R__insp.Inspect(R__cl, R__insp.GetParent(), "*fStart", &_start);
+      R__insp.Inspect(R__cl, R__insp.GetParent(), "*fPause", &_pause);
       R__insp.Inspect(R__cl, R__insp.GetParent(), "*fExit", &fExit);
-      R__insp.Inspect(R__cl, R__insp.GetParent(), "start", &start);
-      R__insp.Inspect(R__cl, R__insp.GetParent(), "pause", &pause);
+      R__insp.Inspect(R__cl, R__insp.GetParent(), "start", &_isRunning);
+      R__insp.Inspect(R__cl, R__insp.GetParent(), "pause", &_isPaused);
       TGMainFrame::ShowMembers(R__insp);
 }
 

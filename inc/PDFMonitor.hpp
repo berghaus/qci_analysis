@@ -10,7 +10,7 @@ class PDFMonitor {
 public:
   PDFMonitor();
   PDFMonitor( const std::string&, const std::string );
-  ~PDFMonitor();
+  virtual ~PDFMonitor();
 
   virtual void monitor( PDF& );
 
