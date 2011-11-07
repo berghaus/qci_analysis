@@ -41,7 +41,7 @@ int main( int argc, char* argv[] ) {
   TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/vanilla.root" );
   TFile * dataFile = TFile::Open( "~/docs/comp/analysis/data.root" );
 
-  TH2 * pdfHist = (TH2*) pdfFile->Get( "PDF-2000-m_{jj}-7000 GeV" );
+  TGraph2D * pdfHist = (TGraph2D*) pdfFile->Get( "PDF-2000-m_{jj}-7000GeV" );
   //pdfHist->Smooth();
   TH1 * fullHist = (TH1*) dataFile->Get( "Chi_2000-to-7000all" );
   TH1 * dataHist = CopyRange( fullHist, 1, 11 );

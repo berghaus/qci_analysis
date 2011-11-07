@@ -14,6 +14,7 @@ class PDF {
 public:
   PDF();
   PDF( TH2* );
+  PDF( TGraph2D* );
   PDF( const PDF& );
   virtual ~PDF();
 
