@@ -18,14 +18,14 @@ using namespace ROOT::Minuit2;
 Likelihood_FCN::Likelihood_FCN() :
     _data( 0 ) {
 
-  _pars.Add( "alpha", 0., 2.0e-08, 0., 4.e-6 );
+  _pars.Add( "alpha", 0., 2.0e-2, 0., 4. );
 }
 
 Likelihood_FCN::Likelihood_FCN( const TH1* data, const PDF* pdf, const double alpha ) :
     _data( data ),
     _pdf( pdf ) {
 
-  _pars.Add( "alpha", alpha, 2.0e-08, 0., 4.e-6 );
+  _pars.Add( "alpha", alpha, 2.0e-02, 0., 4. );
 
 }
 
@@ -129,6 +129,8 @@ void LikelihoodRatio_FCN::init() {
 double LikelihoodRatio_FCN::operator()( const std::vector< double >& par ) {
 
   // would nomlize denominator over nuisance parameters .. but none for now
+  if ( !_denominator.isMinimized() ) _denominator.Minimize();
+
   if ( _numerator( par ) < _denominator() ) {
     cout << "-2lnL(" << par.at( 0 ) << ") = " << _numerator( par ) << '\n' << "-2lnL(" << _denominator.pars().at( 0 )
          << ") = " << _denominator() << '\n';

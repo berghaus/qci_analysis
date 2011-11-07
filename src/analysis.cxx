@@ -60,7 +60,7 @@ int main( int argc, char* argv[] ) {
   //vector<PseudoExperiment*> morePEs = peFactory.build( 0., 1.e4 );
   //somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
 
-  vector< PseudoExperiment* > morePEs = peFactory.build( 1 / pow( double( 2225. ), 2 ), 1.e3 );
+  vector< PseudoExperiment* > morePEs = peFactory.build( 1 / pow( double( 2. ), 2 ), 1.e3 );
   somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
 
   TH1 * peHist = somePEs.at( 2 );
@@ -69,7 +69,7 @@ int main( int argc, char* argv[] ) {
 
   TestStatMonitor tm( "figures/Likelihood/", ".png" );
   foreach( PseudoExperiment* pe, somePEs ) {
-    Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2225. ), 2 ) );
+    Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
     LikelihoodRatio_FCN launda( pe, &pdf );
 
     l.accept( tm );
@@ -90,12 +90,12 @@ int main( int argc, char* argv[] ) {
   double maxAlpha = -1;
   double minAlpha = -1;
 
-  TProfile dataMinus2LogL( "dataMinus2LogL", "", 5000, 0, 4e-6, 0., 1e5 );
+  TProfile dataMinus2LogL( "dataMinus2LogL", "", 5000, 0, 4, 0., 1e6 );
   dataMinus2LogL.SetXTitle( "#alpha=1/#Lambda^{2}" );
   dataMinus2LogL.SetYTitle( "-2lnL(data|#alpha)" );
 
-  double delta = 4.e-6/(2*5000.);
-  while ( vec.at( 0 ) < 4.e-6 ) {
+  double delta = 4./(2*5000.);
+  while ( vec.at( 0 ) < 4. ) {
     if ( isinf( l( vec ) ) || isnan( l( vec ) ) ) {
       cout << "PDF broke." << endl;
       break;
@@ -120,7 +120,7 @@ int main( int argc, char* argv[] ) {
 
   TCanvas datac( "datac", "", 500, 500 );
   datac.cd();
-  datac.SetLogy();
+  //datac.SetLogy();
   dataMinus2LogL.Draw();
   datac.Print( "figures/dataMinus2LogL.png" );
   vec.at( 0 ) = 0;

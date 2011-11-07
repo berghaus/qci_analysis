@@ -46,9 +46,9 @@ void TestStatMonitor::finalize() {
 
 void TestStatMonitor::init() {
 
-  _likelihood = new TH2D( "Likelihood", "likelihood", 2000, 0., 4.e-6, 5000, 0, -1 );
-  _likelihoodRatio = new TH2D( "LikelihoodRatio", "likelihoodRatio", 2000, 0., 4.e-6, 5000, 0, -1 );
-  _minimizedAlpha = new TH1D( "MinimizedAlpha", "minimizedAlpha", 2000, 0., 4.e-6 );
+  _likelihood = new TH2D( "Likelihood", "likelihood", 2000, 0., 4., 5000, 0, -1 );
+  _likelihoodRatio = new TH2D( "LikelihoodRatio", "likelihoodRatio", 2000, 0., 4., 5000, 0, -1 );
+  _minimizedAlpha = new TH1D( "MinimizedAlpha", "minimizedAlpha", 2000, 0., 4. );
 
 }
 
@@ -62,7 +62,7 @@ TestStatMonitor::~TestStatMonitor() {
 void TestStatMonitor::monitor( Likelihood_FCN& l ) {
 
   for( int i = 0; i < 1000; ++i ) {
-    double randAlpha = 4.e-6 * double( rand() % 1000 ) / 1000.;
+    double randAlpha = 4. * double( rand() % 2000 ) / 2000.;
     _likelihood->Fill( randAlpha, l( vector< double >( 1, randAlpha ) ) );
   }
 
@@ -72,7 +72,7 @@ void TestStatMonitor::monitor( Likelihood_FCN& l ) {
 
 void TestStatMonitor::monitor( LikelihoodRatio_FCN& launda ) {
   for( int i = 0; i < 100; ++i ) {
-    double randAlpha = 4.e-6 * double( rand() % 1000 ) / 1000.;
+    double randAlpha = 4. * double( rand() % 2000 ) / 2000.;
     _likelihoodRatio->Fill( randAlpha, launda( vector< double >( 1, randAlpha ) ) );
   }
 
