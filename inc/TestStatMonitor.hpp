@@ -19,6 +19,8 @@ public:
   virtual void monitor( Likelihood_FCN& );
   virtual void monitor( LikelihoodRatio_FCN& );
 
+  virtual void finalize();
+
 private:
   void init();
 
@@ -30,6 +32,5 @@ private:
   TH1* _minimizedAlpha;
 
 };
-
 
 #endif // TEST_STAT_MONITOR_HPP
