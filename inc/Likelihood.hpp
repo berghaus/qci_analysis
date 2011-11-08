@@ -61,7 +61,7 @@ public:
   LikelihoodRatio_FCN();
 
   // assume ownership of TH1 but not the PDF
-  LikelihoodRatio_FCN( const TH1*, const PDF* );
+  LikelihoodRatio_FCN( const TH1* data, const PDF* pdf, const double& alpha = 0. );
   virtual ~LikelihoodRatio_FCN();
 
   double operator()( const std::vector< double >& );

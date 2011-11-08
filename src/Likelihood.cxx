@@ -108,11 +108,11 @@ LikelihoodRatio_FCN::LikelihoodRatio_FCN() :
     _data( 0 ) {
 }
 
-LikelihoodRatio_FCN::LikelihoodRatio_FCN( const TH1* data, const PDF* pdf ) :
+LikelihoodRatio_FCN::LikelihoodRatio_FCN( const TH1* data, const PDF* pdf, const double& alpha ) :
     _data( (TH1*) data->Clone( "data" ) ),
     _pdf( pdf ),
-    _numerator( data, pdf ),
-    _denominator( data, pdf ) {
+    _numerator( data, pdf, alpha ),
+    _denominator( data, pdf, alpha ) {
 
   init();
 

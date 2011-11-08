@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <stdexcept>
-
+#include <boost/lexical_cast.hpp>
 #include <TCanvas.h>
 #include <TMath.h>
 #include <TH2.h>
@@ -11,6 +11,7 @@
 #include "PDFMonitor.hpp"
 
 using namespace std;
+using boost::lexical_cast;
 
 PDF::PDF() :
     _hist( 0 ),
@@ -23,14 +24,14 @@ PDF::PDF( TH2* hist ) :
 }
 
 PDF::PDF( TGraph2D* graph ) :
-    _hist( _graph->GetHistogram() ),
+    _hist( graph->GetHistogram() ),
     _graph( (TGraph2D*)graph->Clone( "PDFGraph" ) ) {
 }
 
 PDF::PDF( const PDF& orig ) {
 
   hist( orig.hist() );
-  _graph = new TGraph2D( orig.hist() );
+  _graph = orig._graph;
 }
 
 PDF::~PDF() {
@@ -45,10 +46,14 @@ double PDF::operator()( const double& x, const int& i, const vector< double >& p
   if ( par.size() != 1 ) throw( domain_error( "PDF needs at least the compositeness parameter in passed vector" ) );
   double p = interpolate( x, par.at( 0 ) ); // predicted events at x for parameters
 
+  double result = 0;
+  if ( p <= 0 ) throw logic_error(  lexical_cast<string>(__FILE__) +" "+ lexical_cast<string>(__LINE__) +": Predicted zero or less events");
   // return log of poisson probability
-  if ( i < 0. ) return 0.;
-  else if ( i == 0.0 ) return -p;
-  return i * log( p ) - p - TMath::LnGamma( i + 1. ); // == log(TMath::Poisson( i, p ))
+  if ( i < 0. ) result = 0.;
+  else if ( i == 0.0 ) result = -p;
+  else result = i * log( p ) - p - TMath::LnGamma( i + 1. ); // == log(TMath::Poisson( i, p ))
+
+  return result;
 
 }
 
@@ -58,7 +63,7 @@ double PDF::operator()( const double& chi, const double& alpha ) const {
 }
 
 double PDF::interpolate( const double& x, const double& y ) const {
-  return _hist->Interpolate( x, y );
+  return _graph->Interpolate( x, y );
 }
 
 TH2* PDF::hist() const {

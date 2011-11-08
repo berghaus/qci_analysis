@@ -30,15 +30,14 @@ TH1 * CopyRange( TH1*, int, int );
 int main( int argc, char* argv[] ) {
 
   TApplication theApp( "Analysis", &argc, argv );
+  SetAtlasStyle();
   // for GUI;
   TGClient windowClient;
   const TGWindow * rootWindow = windowClient.GetRoot();
 
-  TCanvas * c = new TCanvas( "c", "", 500, 500 );
-  c->cd();
   ControlFrame * control = new ControlFrame( rootWindow, 350, 80 );
 
-  TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/vanilla.root" );
+  TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/kFactor.root" );
   TFile * dataFile = TFile::Open( "~/docs/comp/analysis/data.root" );
 
   TGraph2D * pdfHist = (TGraph2D*) pdfFile->Get( "PDF-2000-m_{jj}-7000GeV" );
@@ -46,9 +45,8 @@ int main( int argc, char* argv[] ) {
   TH1 * fullHist = (TH1*) dataFile->Get( "Chi_2000-to-7000all" );
   TH1 * dataHist = CopyRange( fullHist, 1, 11 );
 
+  TCanvas * c = new TCanvas( "c", "", 500, 500 ); c->cd();
   dataHist->Draw();
-
-  SetAtlasStyle();
 
   PDF pdf( pdfHist );
   PDFMonitor pdfMon;
@@ -70,7 +68,7 @@ int main( int argc, char* argv[] ) {
   TestStatMonitor tm( "figures/Likelihood/", ".png" );
   foreach( PseudoExperiment* pe, somePEs ) {
     Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
-    LikelihoodRatio_FCN launda( pe, &pdf );
+    LikelihoodRatio_FCN launda( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
 
     l.accept( tm );
     launda.accept( tm );
@@ -96,10 +94,6 @@ int main( int argc, char* argv[] ) {
 
   double delta = 4./(2*5000.);
   while ( vec.at( 0 ) < 4. ) {
-    if ( isinf( l( vec ) ) || isnan( l( vec ) ) ) {
-      cout << "PDF broke." << endl;
-      break;
-    }
     dataMinus2LogL.Fill( vec.at( 0 ), l( vec ) );
     if ( max - min < 1. ) {
       if ( max < l( vec ) ) {
