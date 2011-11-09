@@ -1,20 +1,18 @@
 #ifndef PDF_HPP
 #define PDF_HPP
 
+#include <map>
 #include <vector>
 
-#include <TProfile2D.h>
-
-class TGraph2D;
-class TH2;
+class TFile;
+class TGraphErrors;
 class PDFMonitor;
 
 class PDF {
 
 public:
   PDF();
-  PDF( TH2* );
-  PDF( TGraph2D* );
+  PDF( TFile* );
   PDF( const PDF& );
   virtual ~PDF();
 
@@ -27,16 +25,17 @@ public:
   // expectated number of events at x, y
   double operator() ( const double&, const double& ) const;
 
-  TH2* hist() const;
-  void hist( const TH2* );
+  void init();
 
   void accept( PDFMonitor& );
 
   double interpolate( const double&, const double& ) const;
 
+  std::map<double,TGraphErrors*> eventCounts() const;
+
 private:
-  TH2* _hist;
-  TGraph2D *_graph;
+  TFile* _file;
+  std::map<double,TGraphErrors*> _eventCounts;
 
 };
 

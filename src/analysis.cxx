@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <cmath>
+#include <cfloat>
 #include <cstdlib>
 
 #include <boost/foreach.hpp>
@@ -26,6 +27,8 @@
 using namespace std;
 
 TH1 * CopyRange( TH1*, int, int );
+TProfile * MapMinus2LogLikelihood( TH1*, PDF& );
+TProfile * MapMinus2LogLikelihoodRatio( TH1*, PDF&, double );
 
 int main( int argc, char* argv[] ) {
 
@@ -40,15 +43,13 @@ int main( int argc, char* argv[] ) {
   TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/kFactor.root" );
   TFile * dataFile = TFile::Open( "~/docs/comp/analysis/data.root" );
 
-  TGraph2D * pdfHist = (TGraph2D*) pdfFile->Get( "PDF-2000-m_{jj}-7000GeV" );
-  //pdfHist->Smooth();
-  TH1 * fullHist = (TH1*) dataFile->Get( "Chi_2000-to-7000all" );
-  TH1 * dataHist = CopyRange( fullHist, 1, 11 );
+  TH1 * dataHist = (TH1*) dataFile->Get( "Chi_2000-to-7000all" );
 
-  TCanvas * c = new TCanvas( "c", "", 500, 500 ); c->cd();
+  TCanvas * c = new TCanvas( "c", "", 500, 500 );
+  c->cd();
   dataHist->Draw();
 
-  PDF pdf( pdfHist );
+  PDF pdf( pdfFile );
   PDFMonitor pdfMon;
 
   pdf.accept( pdfMon );
@@ -58,17 +59,15 @@ int main( int argc, char* argv[] ) {
   //vector<PseudoExperiment*> morePEs = peFactory.build( 0., 1.e4 );
   //somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
 
-  vector< PseudoExperiment* > morePEs = peFactory.build( 1 / pow( double( 2. ), 2 ), 1.e3 );
+  vector< PseudoExperiment* > morePEs = peFactory.build( 1 / pow( double( 2. ), 2 ), 1.e2 );
   somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
 
-  TH1 * peHist = somePEs.at( 2 );
-
-  vector< double > vec( 1, 0. );
-
   TestStatMonitor tm( "figures/Likelihood/", ".png" );
-  foreach( PseudoExperiment* pe, somePEs ) {
+  foreach( PseudoExperiment* pe, somePEs )
+  {
     Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
     LikelihoodRatio_FCN launda( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
+    l.Minimize();
 
     l.accept( tm );
     launda.accept( tm );
@@ -77,47 +76,40 @@ int main( int argc, char* argv[] ) {
 
   tm.finalize();
 
-  Likelihood_FCN l( dataHist, &pdf );
-  LikelihoodRatio_FCN launda( dataHist, &pdf );
-
-//  PValueTest pv0( 0., launda, somePEs );
-//  cout << " * pvalue = " << pv0( dataHist ) << endl;
-
-  double max = 0.;
-  double min = 4e150;
-  double maxAlpha = -1;
-  double minAlpha = -1;
-
-  TProfile dataMinus2LogL( "dataMinus2LogL", "", 5000, 0, 4, 0., 1e6 );
-  dataMinus2LogL.SetXTitle( "#alpha=1/#Lambda^{2}" );
-  dataMinus2LogL.SetYTitle( "-2lnL(data|#alpha)" );
-
-  double delta = 4./(2*5000.);
-  while ( vec.at( 0 ) < 4. ) {
-    dataMinus2LogL.Fill( vec.at( 0 ), l( vec ) );
-    if ( max - min < 1. ) {
-      if ( max < l( vec ) ) {
-        max = l( vec );
-        maxAlpha = vec.at( 0 );
-      }
-      if ( min > l( vec ) ) {
-        min = l( vec );
-        minAlpha = vec.at( 0 );
-      }
-    }
-    vec.at( 0 ) += delta;
-  }
-
-  cout << "max in min spread:\n" << " -2lnL(" << minAlpha << ") = " << min << endl << " -2lnL(" << maxAlpha << ") = "
-       << max << endl << " |maxAlpha - minAlpha| = " << fabs( maxAlpha - minAlpha ) << endl << " |max - min| = "
-       << fabs( max - min ) << endl;
-
-  TCanvas datac( "datac", "", 500, 500 );
-  datac.cd();
-  //datac.SetLogy();
-  dataMinus2LogL.Draw();
+  //  PValueTest pv0( 0., launda, somePEs );
+  //  cout << " * pvalue = " << pv0( dataHist ) << endl;
+  TProfile * dataMinus2LogL = MapMinus2LogLikelihood( dataHist, pdf );
+  TProfile * dataMinus2LogLambda = MapMinus2LogLikelihoodRatio( dataHist, pdf, 0. );
+  TCanvas datac( "datac", "", 1000, 500 );
+  datac.Divide( 2, 1 );
+  datac.cd( 1 );
+  dataMinus2LogL->Draw();
+  datac.cd( 2 );
+  dataMinus2LogLambda->Draw();
   datac.Print( "figures/dataMinus2LogL.png" );
-  vec.at( 0 ) = 0;
+
+  vector< PseudoExperiment* > someMorePEs = peFactory.build( 2., 1.e2 );
+  TH1 * peHist = someMorePEs.at( 2 );
+  TProfile * peMinus2LogL = MapMinus2LogLikelihood( peHist, pdf );
+  TProfile * peMinus2LogLambda = MapMinus2LogLikelihoodRatio( peHist, pdf, 2. );
+  TCanvas pec( "pec", "", 1000, 500 );
+  pec.Divide( 2, 1 );
+  pec.cd( 1 );
+  peMinus2LogL->Draw();
+  pec.cd( 2 );
+  peMinus2LogLambda->Draw();
+  pec.Print( "figures/peMinus2LogL.png" );
+
+  peHist = somePEs.at( 2 );
+  peMinus2LogL = MapMinus2LogLikelihood( peHist, pdf );
+  peMinus2LogLambda = MapMinus2LogLikelihoodRatio( peHist, pdf, 0.25 );
+  TCanvas pec2( "pec2", "", 1000, 500 );
+  pec2.Divide( 2, 1 );
+  pec2.cd( 1 );
+  peMinus2LogL->Draw();
+  pec2.cd( 2 );
+  peMinus2LogLambda->Draw();
+  pec2.Print( "figures/peMinus2LogL.png" );
 
   theApp.Run( kTRUE );
 
@@ -142,6 +134,60 @@ TH1 * CopyRange( TH1* h, int min, int max ) {
   for( int i = 0; i <= content.size(); ++i ) {
     result->SetBinContent( i + 1, content[i] );
     result->SetBinError( i + 1, errors[i] );
+  }
+
+  return result;
+
+}
+
+TProfile * MapMinus2LogLikelihood( TH1* exp, PDF& pdf ) {
+
+  Likelihood_FCN l( exp, &pdf );
+
+  double max = 0.;
+  double min = DBL_MAX;
+  double maxAlpha = -1;
+  double minAlpha = -1;
+
+  string name = exp->GetName();
+  TProfile* result = new TProfile( ( name + "_Minus2LogL" ).c_str(), "", 2000, 0, 4, 0., 1e6 );
+  result->SetXTitle( "#alpha=1/#Lambda^{2}" );
+  result->SetYTitle( ( "-2lnL(" + name + "|#alpha)" ).c_str() );
+
+  vector< double > vec( 1, 0. );
+  int nBins = result->GetNbinsX();
+  double xMax = result->GetXaxis()->GetBinUpEdge( nBins );
+  double delta = xMax / ( 2 * nBins );
+  while ( vec.at( 0 ) < xMax ) {
+    result->Fill( vec.at( 0 ), l( vec ) );
+    vec.at( 0 ) += delta;
+  }
+
+  return result;
+
+}
+
+TProfile * MapMinus2LogLikelihoodRatio( TH1* exp, PDF& pdf, double alpha ) {
+
+  LikelihoodRatio_FCN l( exp, &pdf, alpha );
+
+  double max = 0.;
+  double min = DBL_MAX;
+  double maxAlpha = -1;
+  double minAlpha = -1;
+
+  string name = exp->GetName();
+  TProfile* result = new TProfile( ( name + "_Minus2LogL" ).c_str(), "", 2000, 0, 4, 0., 1e6 );
+  result->SetXTitle( "#alpha=1/#Lambda^{2}" );
+  result->SetYTitle( ( name + " #lambda(#alpha)" ).c_str() );
+
+  vector< double > vec( 1, 0. );
+  int nBins = result->GetNbinsX();
+  double xMax = result->GetXaxis()->GetBinUpEdge( nBins );
+  double delta = xMax / ( 2 * nBins );
+  while ( vec.at( 0 ) < xMax ) {
+    result->Fill( vec.at( 0 ), l( vec ) );
+    vec.at( 0 ) += delta;
   }
 
   return result;

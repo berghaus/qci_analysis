@@ -88,6 +88,7 @@ double Likelihood_FCN::Minimize( MnUserParameters& pars ) {
 
   _pars = pars = minResults.UserParameters();
   _isMinimized = minResults.IsValid();
+  if ( !_isMinimized ) cout << "invalid fit!\n";
   return pars.Params().at( 0 );
 
 }

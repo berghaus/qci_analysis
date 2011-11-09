@@ -47,8 +47,16 @@ void TestStatMonitor::finalize() {
 void TestStatMonitor::init() {
 
   _likelihood = new TH2D( "Likelihood", "likelihood", 2000, 0., 4., 5000, 0, -1 );
+  _likelihood->SetXTitle("#alpha = 1/#Lambda^{2}");
+  _likelihood->SetYTitle("L(data|#alpha)");
+
   _likelihoodRatio = new TH2D( "LikelihoodRatio", "likelihoodRatio", 2000, 0., 4., 5000, 0, -1 );
+  _likelihoodRatio->SetXTitle("#alpha = 1/#Lambda^{2}");
+  _likelihoodRatio->SetYTitle("#lambda(#alpha)");
+
   _minimizedAlpha = new TH1D( "MinimizedAlpha", "minimizedAlpha", 2000, 0., 4. );
+  _minimizedAlpha->SetXTitle("#alpha = 1/#Lambda^{2}");
+  _minimizedAlpha->SetYTitle("Number of PEs");
 
 }
 
