@@ -10,6 +10,7 @@
 #include "TGraphErrors.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TF1.h"
 
 #include "PDF.hpp"
 using namespace std;
@@ -44,10 +45,16 @@ void PDFMonitor::monitor( PDF& pdf ) {
     double chi = ec.first;
     TGraphErrors *graph = ec.second;
     string title = str( format(  "#chi = %2.1f" ) % chi );
-
-    pdfCanvas->cd( nPad )->SetLogx();
+    string fname = str( format(  "FunChi%2.1f" ) % chi );
+    TF1 * f = new TF1( fname.c_str(), "[0]+[1]*x**2", 0., 4. );
+    f->SetLineWidth(1);
+    f->SetLineColor(kRed);
+    graph->Fit( fname.c_str() );
+    pdfCanvas->cd( nPad );//->SetLogx();
     graph->SetTitle( title.c_str() );
     graph->Draw("AP");
+    graph->GetXaxis()->SetTitle("#alpha = 1/#Lambda^{2}");
+    graph->GetYaxis()->SetTitle("n(#alpha)");
 
     // interpolation vector
     vector< double > alphas( 1, 0. );

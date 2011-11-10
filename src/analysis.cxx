@@ -54,6 +54,10 @@ int main( int argc, char* argv[] ) {
 
   pdf.accept( pdfMon );
 
+  theApp.Run( kTRUE );
+
+  return 0;
+
   PseudoExperimentFactory peFactory( &pdf, dataHist );
   vector< PseudoExperiment* > somePEs;
   //vector<PseudoExperiment*> morePEs = peFactory.build( 0., 1.e4 );
