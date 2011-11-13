@@ -20,10 +20,11 @@ public:
 private:
   PValueTest( );
   const double                   _alpha; // alpha used for PEs
-  LikelihoodRatio_FCN                _testStat;
+  LikelihoodRatio_FCN            _testStat;
   std::vector<PseudoExperiment*> _pes;
 
   TH1 * _minus2LnLikelihoodDistribution;
+  std::vector<double> _testStats;
 
 };
 

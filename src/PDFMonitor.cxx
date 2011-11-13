@@ -50,9 +50,11 @@ void PDFMonitor::monitor( PDF& pdf ) {
     f->SetLineWidth(1);
     f->SetLineColor(kRed);
     graph->Fit( fname.c_str() );
-    pdfCanvas->cd( nPad );//->SetLogx();
+    TVirtualPad * pad = pdfCanvas->cd( nPad );
+    // pad->SetLogx();
+    // pad->SetLogy();
     graph->SetTitle( title.c_str() );
-    graph->Draw("AP");
+    //graph->Draw("AP");
     graph->GetXaxis()->SetTitle("#alpha = 1/#Lambda^{2}");
     graph->GetYaxis()->SetTitle("n(#alpha)");
 
@@ -66,7 +68,9 @@ void PDFMonitor::monitor( PDF& pdf ) {
     }
     TGraph * interpolation = new TGraph( alphas.size(), &alphas[0], &interpol[0] );
     interpolation->SetLineColor( kBlue );
-    interpolation->Draw( "SAMEL" );
+    interpolation->GetXaxis()->SetTitle("#alpha = 1/#Lambda^{2}");
+    interpolation->GetYaxis()->SetTitle("n(#alpha)");
+    interpolation->Draw( "AL" );
     ++nPad;
   }
 

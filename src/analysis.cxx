@@ -45,25 +45,23 @@ int main( int argc, char* argv[] ) {
 
   TH1 * dataHist = (TH1*) dataFile->Get( "Chi_2000-to-7000all" );
 
-  TCanvas * c = new TCanvas( "c", "", 500, 500 );
-  c->cd();
-  dataHist->Draw();
+  double nData = dataHist->Integral();
+  cout << "nData = " << nData << endl;
 
-  PDF pdf( pdfFile );
+  PDF pdf( pdfFile, dataHist->Integral() );
+  pdf.useFit();
   PDFMonitor pdfMon;
 
   pdf.accept( pdfMon );
 
-  theApp.Run( kTRUE );
-
-  return 0;
-
   PseudoExperimentFactory peFactory( &pdf, dataHist );
   vector< PseudoExperiment* > somePEs;
-  //vector<PseudoExperiment*> morePEs = peFactory.build( 0., 1.e4 );
-  //somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+  vector<PseudoExperiment*> morePEs = peFactory.build( 0., 1.e4 );
+  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+  vector< PseudoExperiment* > pValPEs;
+  pValPEs.insert( pValPEs.end(), morePEs.begin(), morePEs.end() );
 
-  vector< PseudoExperiment* > morePEs = peFactory.build( 1 / pow( double( 2. ), 2 ), 1.e2 );
+  morePEs = peFactory.build( 1 / pow( double( 2. ), 2 ), 1.e4 );
   somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
 
   TestStatMonitor tm( "figures/Likelihood/", ".png" );
@@ -75,13 +73,13 @@ int main( int argc, char* argv[] ) {
 
     l.accept( tm );
     launda.accept( tm );
-
   }
 
   tm.finalize();
 
-  //  PValueTest pv0( 0., launda, somePEs );
-  //  cout << " * pvalue = " << pv0( dataHist ) << endl;
+  LikelihoodRatio_FCN lambda( dataHist, &pdf, 0. );
+  PValueTest pv0( 0., lambda, pValPEs );
+
   TProfile * dataMinus2LogL = MapMinus2LogLikelihood( dataHist, pdf );
   TProfile * dataMinus2LogLambda = MapMinus2LogLikelihoodRatio( dataHist, pdf, 0. );
   TCanvas datac( "datac", "", 1000, 500 );
@@ -115,8 +113,13 @@ int main( int argc, char* argv[] ) {
   peMinus2LogLambda->Draw();
   pec2.Print( "figures/peMinus2LogL.png" );
 
-  theApp.Run( kTRUE );
+  TCanvas * dataCanvas = new TCanvas( "dataCanvas", "", 500, 500 );
+  dataCanvas->cd();
+  dataHist->Draw();
 
+  cout << " * pvalue = " << pv0( dataHist ) << endl;
+
+  theApp.Run( kTRUE );
   return 0;
 
 }

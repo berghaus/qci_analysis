@@ -5,6 +5,7 @@
 #include <vector>
 
 class TFile;
+class TF1;
 class TGraphErrors;
 class PDFMonitor;
 
@@ -12,7 +13,7 @@ class PDF {
 
 public:
   PDF();
-  PDF( TFile* );
+  PDF( TFile*, const double );
   PDF( const PDF& );
   virtual ~PDF();
 
@@ -31,11 +32,19 @@ public:
 
   double interpolate( const double&, const double& ) const;
 
-  std::map<double,TGraphErrors*> eventCounts() const;
+  std::map< double, TGraphErrors* > eventCounts() const;
+  std::map< double, std::vector< double > > pdfFitParams() const;
+
+  void useFit( const bool useFit = true );
 
 private:
   TFile* _file;
+  TF1* _pdfFit;
+  TF1* _normalizedPdfFit;
+  double _nData;
   std::map<double,TGraphErrors*> _eventCounts;
+  std::map<double,std::vector< double > > _pdfFitParams;
+  bool _useFit;
 
 };
 

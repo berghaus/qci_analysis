@@ -39,8 +39,10 @@ PValueTest::init() {
   for( ; itr != end; ++itr ) {
     PseudoExperiment* pe = *itr;
     _testStat.data( pe );
+    _testStats.push_back( _testStat( par ) );
     _minus2LnLikelihoodDistribution->Fill( _testStat( par ) );
   }
+  sort( _testStats.begin(), _testStats.end() );
 }
 
 
@@ -51,10 +53,10 @@ PValueTest::PValueTest( )
 
 PValueTest::~PValueTest() {
   //for_each( _pes.begin(), _pes.end(), boost::checked_deleter<LikelihoodRatio_FCN>() );
-  TCanvas c("c","",800,600);
+  TCanvas* c = new TCanvas("PcalueCanvas","",500,500); c->cd();
   _minus2LnLikelihoodDistribution->Draw();
   string cName = _minus2LnLikelihoodDistribution->GetName();
-  c.Print( (cName+".png").c_str() );
+  c->Print( (cName+".png").c_str() );
 }
 
 double
@@ -62,9 +64,14 @@ PValueTest::operator() ( const TH1* data ) {
 
   vector<double> par( 1, _alpha );
   _testStat.data( data );
-  int dataOutcomeBin = _minus2LnLikelihoodDistribution->FindBin( _testStat( par ) );
-
-  return _minus2LnLikelihoodDistribution->Integral(dataOutcomeBin,-1) / _minus2LnLikelihoodDistribution->Integral();
+  double dataLL = _testStat( par );
+  vector<double>::iterator itr = find( _testStats.begin(), _testStats.end(), dataLL );
+  int nOver = (_testStats.end()-itr)/sizeof(dataLL);
+  cout << "data LL = " << dataLL << '\n';
+  cout << "nPE   = " << _testStats.size() << '\n';
+  cout << "nOver = " << nOver << '\n';
+  cout << "pVal  = " << double(nOver) / double( _testStats.size() ) << endl;
+  return  double(nOver) / double(_testStats.size());
 
 }
 
