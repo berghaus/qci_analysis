@@ -131,13 +131,6 @@ double LikelihoodRatio_FCN::operator()( const std::vector< double >& par ) {
 
   // would nomlize denominator over nuisance parameters .. but none for now
   if ( !_denominator.isMinimized() ) _denominator.Minimize();
-
-  if ( _numerator( par ) < _denominator() ) {
-    cout << "-2lnL(" << par.at( 0 ) << ") = " << _numerator( par ) << '\n' << "-2lnL(" << _denominator.pars().at( 0 )
-         << ") = " << _denominator() << '\n';
-    //throw( logic_error("minimized likelihood not at minimum") );
-
-  }
   return _numerator( par ) - _denominator();
 
 }

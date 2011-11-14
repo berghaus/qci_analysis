@@ -19,7 +19,8 @@ using boost::format;
 PValueTest::PValueTest( const double alpha, const LikelihoodRatio_FCN& testStat, vector<PseudoExperiment*> pes)
   : _alpha   ( alpha )
   , _testStat( testStat )
-  , _pes ( pes ) {
+  , _pes ( pes )
+  , _testStats( pes.size() ) {
   init();
 }
 
@@ -29,7 +30,7 @@ PValueTest::init() {
 
 
   string hName = str( format("Likelihood_FCN-alpha%2.1e") % _alpha  );
-  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(),"",100,0.,-1.);
+  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(),"",1000,0.,-1.);
   string xTitle = str( format("-2ln#lambda(%2.1e GeV^{-2})") % _alpha  );
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
 
@@ -65,12 +66,9 @@ PValueTest::operator() ( const TH1* data ) {
   vector<double> par( 1, _alpha );
   _testStat.data( data );
   double dataLL = _testStat( par );
-  vector<double>::iterator itr = find( _testStats.begin(), _testStats.end(), dataLL );
-  int nOver = (_testStats.end()-itr)/sizeof(dataLL);
-  cout << "data LL = " << dataLL << '\n';
-  cout << "nPE   = " << _testStats.size() << '\n';
-  cout << "nOver = " << nOver << '\n';
-  cout << "pVal  = " << double(nOver) / double( _testStats.size() ) << endl;
+  vector<double>::iterator itr = lower_bound( _testStats.begin(), _testStats.end(), dataLL );
+  int nOver = distance( itr, _testStats.end() );
+
   return  double(nOver) / double(_testStats.size());
 
 }

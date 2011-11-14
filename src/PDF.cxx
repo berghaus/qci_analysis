@@ -81,9 +81,7 @@ void PDF::init() {
       graph->Fit( _pdfFit );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter(0) );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter(1) );
-      cout << "currently looking at " << chi << endl;
       if ( chi == 0. ) {
-	cout << "Filling in for chi = 0\n";
 	_normalizedPdfFit->SetParameter( 2, _pdfFit->GetParameter(0) );
 	_normalizedPdfFit->SetParameter( 3, _pdfFit->GetParameter(1) );
 	_normalizedPdfFit->SetParameter( 4, _nData );

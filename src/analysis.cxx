@@ -50,74 +50,72 @@ int main( int argc, char* argv[] ) {
 
   PDF pdf( pdfFile, dataHist->Integral() );
   pdf.useFit();
-  PDFMonitor pdfMon;
+  // PDFMonitor pdfMon;
 
-  pdf.accept( pdfMon );
+  // pdf.accept( pdfMon );
 
+  double alpha = 0.;
   PseudoExperimentFactory peFactory( &pdf, dataHist );
   vector< PseudoExperiment* > somePEs;
-  vector<PseudoExperiment*> morePEs = peFactory.build( 0., 1.e4 );
+  vector<PseudoExperiment*> morePEs = peFactory.build( alpha, 1.e4 );
   somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
-  vector< PseudoExperiment* > pValPEs;
-  pValPEs.insert( pValPEs.end(), morePEs.begin(), morePEs.end() );
+  vector< PseudoExperiment* > pValPEs = morePEs;
 
-  morePEs = peFactory.build( 1 / pow( double( 2. ), 2 ), 1.e4 );
-  somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
+  // TestStatMonitor tm( "figures/Likelihood/", ".png" );
+  // foreach( PseudoExperiment* pe, somePEs )
+  // {
+  //   Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
+  //   LikelihoodRatio_FCN launda( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
+  //   l.Minimize();
 
-  TestStatMonitor tm( "figures/Likelihood/", ".png" );
-  foreach( PseudoExperiment* pe, somePEs )
-  {
-    Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
-    LikelihoodRatio_FCN launda( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
-    l.Minimize();
+  //   l.accept( tm );
+  //   launda.accept( tm );
+  // }
 
-    l.accept( tm );
-    launda.accept( tm );
-  }
+  // tm.finalize();
 
-  tm.finalize();
+  LikelihoodRatio_FCN lambda( dataHist, &pdf, alpha );
+  PValueTest pv0( alpha, lambda, pValPEs );
 
-  LikelihoodRatio_FCN lambda( dataHist, &pdf, 0. );
-  PValueTest pv0( 0., lambda, pValPEs );
+  // TProfile * dataMinus2LogL = MapMinus2LogLikelihood( dataHist, pdf );
+  // TProfile * dataMinus2LogLambda = MapMinus2LogLikelihoodRatio( dataHist, pdf, 0. );
+  // TCanvas datac( "datac", "", 1000, 500 );
+  // datac.Divide( 2, 1 );
+  // datac.cd( 1 );
+  // dataMinus2LogL->Draw();
+  // datac.cd( 2 );
+  // dataMinus2LogLambda->Draw();
+  // datac.Print( "figures/dataMinus2LogL.png" );
 
-  TProfile * dataMinus2LogL = MapMinus2LogLikelihood( dataHist, pdf );
-  TProfile * dataMinus2LogLambda = MapMinus2LogLikelihoodRatio( dataHist, pdf, 0. );
-  TCanvas datac( "datac", "", 1000, 500 );
-  datac.Divide( 2, 1 );
-  datac.cd( 1 );
-  dataMinus2LogL->Draw();
-  datac.cd( 2 );
-  dataMinus2LogLambda->Draw();
-  datac.Print( "figures/dataMinus2LogL.png" );
+  // vector< PseudoExperiment* > someMorePEs = peFactory.build( 2., 1.e2 );
+  // TH1 * peHist = someMorePEs.at( 2 );
+  // TProfile * peMinus2LogL = MapMinus2LogLikelihood( peHist, pdf );
+  // TProfile * peMinus2LogLambda = MapMinus2LogLikelihoodRatio( peHist, pdf, 2. );
+  // TCanvas pec( "pec", "", 1000, 500 );
+  // pec.Divide( 2, 1 );
+  // pec.cd( 1 );
+  // peMinus2LogL->Draw();
+  // pec.cd( 2 );
+  // peMinus2LogLambda->Draw();
+  // pec.Print( "figures/peMinus2LogL.png" );
 
-  vector< PseudoExperiment* > someMorePEs = peFactory.build( 2., 1.e2 );
-  TH1 * peHist = someMorePEs.at( 2 );
-  TProfile * peMinus2LogL = MapMinus2LogLikelihood( peHist, pdf );
-  TProfile * peMinus2LogLambda = MapMinus2LogLikelihoodRatio( peHist, pdf, 2. );
-  TCanvas pec( "pec", "", 1000, 500 );
-  pec.Divide( 2, 1 );
-  pec.cd( 1 );
-  peMinus2LogL->Draw();
-  pec.cd( 2 );
-  peMinus2LogLambda->Draw();
-  pec.Print( "figures/peMinus2LogL.png" );
+  // peHist = somePEs.at( 2 );
+  // peMinus2LogL = MapMinus2LogLikelihood( peHist, pdf );
+  // peMinus2LogLambda = MapMinus2LogLikelihoodRatio( peHist, pdf, 0.25 );
+  // TCanvas pec2( "pec2", "", 1000, 500 );
+  // pec2.Divide( 2, 1 );
+  // pec2.cd( 1 );
+  // peMinus2LogL->Draw();
+  // pec2.cd( 2 );
+  // peMinus2LogLambda->Draw();
+  // pec2.Print( "figures/peMinus2LogL.png" );
 
-  peHist = somePEs.at( 2 );
-  peMinus2LogL = MapMinus2LogLikelihood( peHist, pdf );
-  peMinus2LogLambda = MapMinus2LogLikelihoodRatio( peHist, pdf, 0.25 );
-  TCanvas pec2( "pec2", "", 1000, 500 );
-  pec2.Divide( 2, 1 );
-  pec2.cd( 1 );
-  peMinus2LogL->Draw();
-  pec2.cd( 2 );
-  peMinus2LogLambda->Draw();
-  pec2.Print( "figures/peMinus2LogL.png" );
+  // TCanvas * dataCanvas = new TCanvas( "dataCanvas", "", 500, 500 );
+  // dataCanvas->cd();
+  // dataHist->Draw();
 
-  TCanvas * dataCanvas = new TCanvas( "dataCanvas", "", 500, 500 );
-  dataCanvas->cd();
-  dataHist->Draw();
-
-  cout << " * pvalue = " << pv0( dataHist ) << endl;
+  double pValue = pv0( dataHist );
+  cout << " * pvalue( Lambda = " << sqrt(1/alpha) << ") = " << pValue << endl;
 
   theApp.Run( kTRUE );
   return 0;

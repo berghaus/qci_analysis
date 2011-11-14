@@ -15,10 +15,10 @@ public:
   virtual ~PValueTest();
 
   double operator() ( const TH1* );
-  void init( );
+  void init();
 
 private:
-  PValueTest( );
+  PValueTest();
   const double                   _alpha; // alpha used for PEs
   LikelihoodRatio_FCN            _testStat;
   std::vector<PseudoExperiment*> _pes;
