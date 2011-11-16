@@ -50,9 +50,9 @@ int main( int argc, char* argv[] ) {
 
   PDF pdf( pdfFile, dataHist->Integral() );
   pdf.useFit();
-  // PDFMonitor pdfMon;
+  PDFMonitor pdfMon;
 
-  // pdf.accept( pdfMon );
+  pdf.accept( pdfMon );
 
   double alpha = 0.;
   PseudoExperimentFactory peFactory( &pdf, dataHist );

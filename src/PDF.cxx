@@ -28,16 +28,16 @@ using boost::lexical_cast;
 PDF::PDF() :
   _file( 0 ),
   _nData( 1 ),
-  _pdfFit( new TF1( "PDFFit", "[0]+[1]*x**2", 0., 4. ) ),
-  _normalizedPdfFit( new TF1( "PDFFit", "([0]+[1]*x**2)/([2]+[3]*x**2)*[4]", 0., 4. ) ),
+  _pdfFit( new TF1( "PDFFit", "[0]+[1]*x", 0., 4. ) ),
+  _normalizedPdfFit( new TF1( "PDFFit", "([0]+[1]*x)/([2]+[3]*x)*[4]", 0., 4. ) ),
   _useFit( 0 ) {
 }
 
 PDF::PDF( TFile* file, const double nData ) :
   _file( file ),
   _nData( nData ),
-  _pdfFit( new TF1( "PDFFit", "[0]+[1]*x**2", 0., 4. ) ),
-  _normalizedPdfFit( new TF1( "PDFFit", "([0]+[1]*x**2)/([2]+[3]*x**2)*[4]", 0., 4. ) ),
+  _pdfFit( new TF1( "PDFFit", "[0]+[1]*x", 0., 4. ) ),
+  _normalizedPdfFit( new TF1( "PDFFit", "([0]+[1]*x)/([2]+[3]*x)*[4]", 0., 4. ) ),
   _useFit( 0 ) {
   init();
 }

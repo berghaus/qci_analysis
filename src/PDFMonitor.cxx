@@ -46,7 +46,7 @@ void PDFMonitor::monitor( PDF& pdf ) {
     TGraphErrors *graph = ec.second;
     string title = str( format(  "#chi = %2.1f" ) % chi );
     string fname = str( format(  "FunChi%2.1f" ) % chi );
-    TF1 * f = new TF1( fname.c_str(), "[0]+[1]*x**2", 0., 4. );
+    TF1 * f = new TF1( fname.c_str(), "[0]+[1]*x", 0., 4. );
     f->SetLineWidth(1);
     f->SetLineColor(kRed);
     graph->Fit( fname.c_str() );
@@ -54,24 +54,24 @@ void PDFMonitor::monitor( PDF& pdf ) {
     pad->SetLogx();
     pad->SetLogy();
     graph->SetTitle( title.c_str() );
-    //graph->Draw("AP");
+    graph->Draw("AP");
     graph->GetXaxis()->SetTitle("#alpha = 1/#Lambda^{2}");
     graph->GetYaxis()->SetTitle("n(#alpha)");
 
     // interpolation vector
-    vector< double > alphas( 1, 0. );
-    vector< double > interpol( 1, pdf.interpolate( chi, alphas.back() ) );
-    double delta = 1.e-3;
-    while ( alphas.back() < 4. ) {
-      alphas.push_back( alphas.back() + delta );
-      interpol.push_back( pdf.interpolate( chi, alphas.back() ) );
-    }
-    TGraph * interpolation = new TGraph( alphas.size(), &alphas[0], &interpol[0] );
-    interpolation->SetLineColor( kBlue );
-    interpolation->SetTitle( title.c_str() );
-    interpolation->GetXaxis()->SetTitle("#alpha = 1/#Lambda^{2}");
-    interpolation->GetYaxis()->SetTitle("n(#alpha)");
-    interpolation->Draw( "AL" );
+    // vector< double > alphas( 1, 0. );
+    // vector< double > interpol( 1, pdf.interpolate( chi, alphas.back() ) );
+    // double delta = 1.e-3;
+    // while ( alphas.back() < 4. ) {
+    //   alphas.push_back( alphas.back() + delta );
+    //   interpol.push_back( pdf.interpolate( chi, alphas.back() ) );
+    // }
+    // TGraph * interpolation = new TGraph( alphas.size(), &alphas[0], &interpol[0] );
+    // interpolation->SetLineColor( kBlue );
+    // interpolation->SetTitle( title.c_str() );
+    // interpolation->GetXaxis()->SetTitle("#alpha = 1/#Lambda^{2}");
+    // interpolation->GetYaxis()->SetTitle("n(#alpha)");
+    // interpolation->Draw( "AL" );
     ++nPad;
   }
 
