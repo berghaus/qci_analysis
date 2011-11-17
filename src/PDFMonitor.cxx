@@ -1,4 +1,5 @@
 #include "PDFMonitor.hpp"
+#include <cmath>
 #include <map>
 #include <string>
 #include <vector>
@@ -34,8 +35,11 @@ void PDFMonitor::monitor( PDF& pdf ) {
 
   // make some histograms
   TCanvas *pdfCanvas = new TCanvas( "PDFMonCanvas", "", 800, 600 );
-  pdfCanvas->cd();
+  TCanvas *interpolCanvas = new TCanvas( "InterpolCanvas", "", 800, 600 );
   pdfCanvas->Divide( 4, 3 );
+  interpolCanvas->Divide( 4, 3 );
+
+  pdfCanvas->cd();
   int nPad = 1;
 
   typedef map< double, TGraphErrors* > chiGraphMap_t;
@@ -44,38 +48,44 @@ void PDFMonitor::monitor( PDF& pdf ) {
   {
     double chi = ec.first;
     TGraphErrors *graph = ec.second;
-    string title = str( format(  "#chi = %2.1f" ) % chi );
-    string fname = str( format(  "FunChi%2.1f" ) % chi );
-    TF1 * f = new TF1( fname.c_str(), "[0]+[1]*x", 0., 4. );
-    f->SetLineWidth(1);
-    f->SetLineColor(kRed);
-    graph->Fit( fname.c_str() );
+    string title = str( format( "#chi = %2.1f" ) % chi );
     TVirtualPad * pad = pdfCanvas->cd( nPad );
-    pad->SetLogx();
-    pad->SetLogy();
+    TF1 * func = graph->GetFunction( "PDFFit" );
+    func->SetLineColor( kRed );
     graph->SetTitle( title.c_str() );
-    graph->Draw("AP");
-    graph->GetXaxis()->SetTitle("#alpha = 1/#Lambda^{2}");
-    graph->GetYaxis()->SetTitle("n(#alpha)");
+    graph->Draw( "AP" );
+    graph->GetXaxis()->SetTitle( "#alpha = 1/#Lambda^{4} [TeV^{-4}]" );
+    graph->GetYaxis()->SetTitle( "n(#alpha)" );
+    ++nPad;
+  }
 
-    // interpolation vector
-    // vector< double > alphas( 1, 0. );
-    // vector< double > interpol( 1, pdf.interpolate( chi, alphas.back() ) );
-    // double delta = 1.e-3;
-    // while ( alphas.back() < 4. ) {
-    //   alphas.push_back( alphas.back() + delta );
-    //   interpol.push_back( pdf.interpolate( chi, alphas.back() ) );
-    // }
-    // TGraph * interpolation = new TGraph( alphas.size(), &alphas[0], &interpol[0] );
-    // interpolation->SetLineColor( kBlue );
-    // interpolation->SetTitle( title.c_str() );
-    // interpolation->GetXaxis()->SetTitle("#alpha = 1/#Lambda^{2}");
-    // interpolation->GetYaxis()->SetTitle("n(#alpha)");
-    // interpolation->Draw( "AL" );
+  interpolCanvas->cd();
+  nPad = 1;
+  foreach( chiGraphMap_t::value_type ec, graphs )
+  {
+    double chi = ec.first;
+    string title = str( format( "#chi = %2.1f" ) % chi );
+    string fname = str( format( "FunChi%2.1f" ) % chi );
+    TVirtualPad * pad = interpolCanvas->cd( nPad );
+
+    vector< double > scales( 1, 0.1 );
+    vector< double > interpol( 1, pdf.interpolate( chi, 1./pow(scales.back(),4) ) );
+    double delta = 0.1;
+    while ( scales.back() < 20. ) {
+      scales.push_back( scales.back() + delta );
+      interpol.push_back( pdf.interpolate( chi, 1./pow(scales.back(),4) ) );
+    }
+    TGraph * interpolation = new TGraph( scales.size(), &scales[0], &interpol[0] );
+    interpolation->SetLineColor( kBlue );
+    interpolation->SetTitle( title.c_str() );
+    interpolation->GetXaxis()->SetTitle( "#Lambda [TeV]" );
+    interpolation->GetYaxis()->SetTitle( "n(#Lambda)" );
+    interpolation->Draw( "AL" );
     ++nPad;
   }
 
   pdfCanvas->Print( ( _folder + "PDFs" + _ext ).c_str() );
+  interpolCanvas->Print( ( _folder + "Interpolation" + _ext ).c_str() );
 
 }
 

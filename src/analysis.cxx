@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cfloat>
 #include <cstdlib>
+#include <limits>
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
@@ -54,38 +55,38 @@ int main( int argc, char* argv[] ) {
 
   pdf.accept( pdfMon );
 
-  double alpha = 0.;
+  double alpha = 0; // TeV
   PseudoExperimentFactory peFactory( &pdf, dataHist );
   vector< PseudoExperiment* > somePEs;
-  vector<PseudoExperiment*> morePEs = peFactory.build( alpha, 1.e4 );
+  vector< PseudoExperiment* > morePEs = peFactory.build( alpha, 1.e2 );
   somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
   vector< PseudoExperiment* > pValPEs = morePEs;
 
-  // TestStatMonitor tm( "figures/Likelihood/", ".png" );
-  // foreach( PseudoExperiment* pe, somePEs )
-  // {
-  //   Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
-  //   LikelihoodRatio_FCN launda( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
-  //   l.Minimize();
+  TestStatMonitor tm( "figures/Likelihood/", ".png" );
+  foreach( PseudoExperiment* pe, somePEs )
+  {
+    Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
+    LikelihoodRatio_FCN launda( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
+    l.Minimize();
 
-  //   l.accept( tm );
-  //   launda.accept( tm );
-  // }
+    l.accept( tm );
+    launda.accept( tm );
+  }
 
-  // tm.finalize();
+  tm.finalize();
 
   LikelihoodRatio_FCN lambda( dataHist, &pdf, alpha );
   PValueTest pv0( alpha, lambda, pValPEs );
 
-  // TProfile * dataMinus2LogL = MapMinus2LogLikelihood( dataHist, pdf );
-  // TProfile * dataMinus2LogLambda = MapMinus2LogLikelihoodRatio( dataHist, pdf, 0. );
-  // TCanvas datac( "datac", "", 1000, 500 );
-  // datac.Divide( 2, 1 );
-  // datac.cd( 1 );
-  // dataMinus2LogL->Draw();
-  // datac.cd( 2 );
-  // dataMinus2LogLambda->Draw();
-  // datac.Print( "figures/dataMinus2LogL.png" );
+  TProfile * dataMinus2LogL = MapMinus2LogLikelihood( dataHist, pdf );
+  TProfile * dataMinus2LogLambda = MapMinus2LogLikelihoodRatio( dataHist, pdf, 0. );
+  TCanvas datac( "datac", "", 1000, 500 );
+  datac.Divide( 2, 1 );
+  datac.cd( 1 );
+  dataMinus2LogL->Draw();
+  datac.cd( 2 );
+  dataMinus2LogLambda->Draw();
+  datac.Print( "figures/dataMinus2LogL.png" );
 
   // vector< PseudoExperiment* > someMorePEs = peFactory.build( 2., 1.e2 );
   // TH1 * peHist = someMorePEs.at( 2 );
@@ -115,7 +116,7 @@ int main( int argc, char* argv[] ) {
   // dataHist->Draw();
 
   double pValue = pv0( dataHist );
-  cout << " * pvalue( Lambda = " << sqrt(1/alpha) << ") = " << pValue << endl;
+  cout << " * pvalue( Lambda = " << 1. / pow( alpha, 0.25 ) << ") = " << pValue << endl;
 
   theApp.Run( kTRUE );
   return 0;
@@ -155,17 +156,18 @@ TProfile * MapMinus2LogLikelihood( TH1* exp, PDF& pdf ) {
   double minAlpha = -1;
 
   string name = exp->GetName();
-  TProfile* result = new TProfile( ( name + "_Minus2LogL" ).c_str(), "", 2000, 0, 4, 0., 1e6 );
-  result->SetXTitle( "#alpha=1/#Lambda^{2}" );
-  result->SetYTitle( ( "-2lnL(" + name + "|#alpha)" ).c_str() );
+  TProfile* result = new TProfile( ( name + "_Minus2LogL" ).c_str(), "", 2000, 0.4, 20, 0., 1e6 );
+  result->SetXTitle( "#Lambda [TeV]" );
+  result->SetYTitle( ( "-2lnL( " + name + " | #Lambda )" ).c_str() );
 
-  vector< double > vec( 1, 0. );
+  double scale = result->GetXaxis()->GetBinLowEdge( 1 );
   int nBins = result->GetNbinsX();
   double xMax = result->GetXaxis()->GetBinUpEdge( nBins );
   double delta = xMax / ( 2 * nBins );
-  while ( vec.at( 0 ) < xMax ) {
-    result->Fill( vec.at( 0 ), l( vec ) );
-    vec.at( 0 ) += delta;
+  while ( scale < xMax ) {
+    vector< double > vec( 1, 1. / pow( scale, 4 ) );
+    result->Fill( scale, l( vec ) );
+    scale += delta;
   }
 
   return result;
@@ -182,17 +184,18 @@ TProfile * MapMinus2LogLikelihoodRatio( TH1* exp, PDF& pdf, double alpha ) {
   double minAlpha = -1;
 
   string name = exp->GetName();
-  TProfile* result = new TProfile( ( name + "_Minus2LogL" ).c_str(), "", 2000, 0, 4, 0., 1e6 );
-  result->SetXTitle( "#alpha=1/#Lambda^{2}" );
-  result->SetYTitle( ( name + " #lambda(#alpha)" ).c_str() );
+  TProfile* result = new TProfile( ( name + "_Minus2LogL" ).c_str(), "", 2000, 0.4, 20, 0., 1e6 );
+  result->SetXTitle( "#Lambda [TeV]" );
+  result->SetYTitle( ( name + " #lambda( #Lambda )" ).c_str() );
 
-  vector< double > vec( 1, 0. );
+  double scale = result->GetXaxis()->GetBinLowEdge( 1 );
   int nBins = result->GetNbinsX();
   double xMax = result->GetXaxis()->GetBinUpEdge( nBins );
   double delta = xMax / ( 2 * nBins );
-  while ( vec.at( 0 ) < xMax ) {
-    result->Fill( vec.at( 0 ), l( vec ) );
-    vec.at( 0 ) += delta;
+  while ( scale < xMax ) {
+    vector< double > vec( 1, 1. / pow( scale, 4 ) );
+    result->Fill( scale, l( vec ) );
+    scale += delta;
   }
 
   return result;

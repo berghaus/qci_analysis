@@ -16,8 +16,8 @@
 using namespace std;
 using boost::format;
 
-PValueTest::PValueTest( const double alpha, const LikelihoodRatio_FCN& testStat, vector<PseudoExperiment*> pes)
-  : _alpha   ( alpha )
+PValueTest::PValueTest( const double scale, const LikelihoodRatio_FCN& testStat, vector<PseudoExperiment*> pes)
+  : _scale   ( scale )
   , _testStat( testStat )
   , _pes ( pes )
   , _testStats( pes.size() ) {
@@ -29,12 +29,12 @@ void
 PValueTest::init() {
 
 
-  string hName = str( format("Likelihood_FCN-alpha%2.1e") % _alpha  );
+  string hName = str( format("Likelihood_FCN-alpha%2.1e") % _scale  );
   _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(),"",1000,0.,-1.);
-  string xTitle = str( format("-2ln#lambda(%2.1e GeV^{-2})") % _alpha  );
+  string xTitle = str( format("-2ln#lambda(%2.1e GeV^{-2})") % _scale  );
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
 
-  vector<double> par(1,_alpha);
+  vector<double> par(1,_scale);
   vector<PseudoExperiment*>::iterator itr = _pes.begin();
   vector<PseudoExperiment*>::iterator end = _pes.end();
   for( ; itr != end; ++itr ) {
@@ -48,7 +48,7 @@ PValueTest::init() {
 
 
 PValueTest::PValueTest( )
-  : _alpha( 0 ) {
+  : _scale( 0 ) {
 }
 
 
@@ -63,7 +63,7 @@ PValueTest::~PValueTest() {
 double
 PValueTest::operator() ( const TH1* data ) {
 
-  vector<double> par( 1, _alpha );
+  vector<double> par( 1, _scale );
   _testStat.data( data );
   double dataLL = _testStat( par );
   vector<double>::iterator itr = lower_bound( _testStats.begin(), _testStats.end(), dataLL );

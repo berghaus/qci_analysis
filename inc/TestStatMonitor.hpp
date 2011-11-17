@@ -30,6 +30,7 @@ private:
   TH2* _likelihood;
   TH2* _likelihoodRatio;
   TH1* _minimizedAlpha;
+  TH1* _minimizedLaunda;
 
 };
 

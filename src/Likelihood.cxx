@@ -18,14 +18,14 @@ using namespace ROOT::Minuit2;
 Likelihood_FCN::Likelihood_FCN() :
     _data( 0 ) {
 
-  _pars.Add( "alpha", 0., 2.0e-2, 0., 4. );
+  _pars.Add( "alpha", 0., 0.001, 0., 16. );
 }
 
 Likelihood_FCN::Likelihood_FCN( const TH1* data, const PDF* pdf, const double alpha ) :
     _data( data ),
     _pdf( pdf ) {
 
-  _pars.Add( "alpha", alpha, 2.0e-02, 0., 4. );
+  _pars.Add( "alpha", alpha, 0.001, 0., 16. );
 
 }
 
@@ -89,7 +89,7 @@ double Likelihood_FCN::Minimize( MnUserParameters& pars ) {
   _pars = pars = minResults.UserParameters();
   _isMinimized = minResults.IsValid();
   if ( !_isMinimized ) cout << "invalid fit!\n";
-  return pars.Params().at( 0 );
+  return 1./pow(pars.Params().at( 0 ), 0.25 );
 
 }
 
@@ -109,11 +109,11 @@ LikelihoodRatio_FCN::LikelihoodRatio_FCN() :
     _data( 0 ) {
 }
 
-LikelihoodRatio_FCN::LikelihoodRatio_FCN( const TH1* data, const PDF* pdf, const double& alpha ) :
+LikelihoodRatio_FCN::LikelihoodRatio_FCN( const TH1* data, const PDF* pdf, const double& scale ) :
     _data( (TH1*) data->Clone( "data" ) ),
     _pdf( pdf ),
-    _numerator( data, pdf, alpha ),
-    _denominator( data, pdf, alpha ) {
+    _numerator( data, pdf, scale ),
+    _denominator( data, pdf, scale ) {
 
   init();
 
@@ -156,6 +156,7 @@ void LikelihoodRatio_FCN::pdf( const PDF* pdf ) {
 TH1* LikelihoodRatio_FCN::data() const {
   return _data;
 }
+
 const PDF* LikelihoodRatio_FCN::pdf() const {
   return _pdf;
 }

@@ -2,6 +2,7 @@
 #define PDF_HPP
 
 #include <map>
+#include <string>
 #include <vector>
 
 class TFile;
@@ -34,6 +35,7 @@ public:
 
   std::map< double, TGraphErrors* > eventCounts() const;
   std::map< double, std::vector< double > > pdfFitParams() const;
+  TF1* pdfFit( const std::string& ) const;
 
   void useFit( const bool useFit = true );
 
