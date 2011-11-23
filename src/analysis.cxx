@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -7,6 +8,7 @@
 
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
+#include <boost/checked_delete.hpp>
 
 #include <TApplication.h>
 #include <TCanvas.h>
@@ -41,13 +43,10 @@ int main( int argc, char* argv[] ) {
 
   ControlFrame * control = new ControlFrame( rootWindow, 350, 80 );
 
-  TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/kFactor.root" );
-  TFile * dataFile = TFile::Open( "~/docs/comp/analysis/data.root" );
+  TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/kFactor.root", "READ" );
+  TFile * dataFile = TFile::Open( "~/docs/comp/analysis/data.root", "READ" );
 
   TH1 * dataHist = (TH1*) dataFile->Get( "Chi_2000-to-7000all" );
-
-  double nData = dataHist->Integral();
-  cout << "nData = " << nData << endl;
 
   PDF pdf( pdfFile, dataHist->Integral() );
   pdf.useFit();
@@ -63,62 +62,42 @@ int main( int argc, char* argv[] ) {
   vector< PseudoExperiment* > pValPEs = morePEs;
 
   TestStatMonitor tm( "figures/Likelihood/", ".png" );
+
+  vector< LikelihoodRatio* > likelihoodRatios;
+  likelihoodRatios.reserve( somePEs.size() );
   foreach( PseudoExperiment* pe, somePEs )
   {
-    Likelihood_FCN l( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
-    LikelihoodRatio_FCN launda( pe, &pdf, 1 / pow( double( 2. ), 2 ) );
-    l.Minimize();
-
-    l.accept( tm );
-    launda.accept( tm );
+    PDF * pePDF = new PDF( pdfFile, pe->Integral() );
+    likelihoodRatios.push_back( new LikelihoodRatio( pe, pePDF, alpha ) );
   }
-
+  foreach( LikelihoodRatio* lambda, likelihoodRatios )
+  {
+    lambda->accept( tm );
+    lambda->denominator().accept( tm );
+  }
   tm.finalize();
 
-  LikelihoodRatio_FCN lambda( dataHist, &pdf, alpha );
-  PValueTest pv0( alpha, lambda, pValPEs );
+//  TProfile * dataMinus2LogL = MapMinus2LogLikelihood( dataHist, pdf );
+//  TProfile * dataMinus2LogLambda = MapMinus2LogLikelihoodRatio( dataHist, pdf, 0. );
+//  TCanvas datac( "datac", "", 1000, 500 );
+//  datac.Divide( 2, 1 );
+//  datac.cd( 1 );
+//  dataMinus2LogL->Draw();
+//  datac.cd( 2 );
+//  dataMinus2LogLambda->Draw();
+//  datac.Print( "figures/dataMinus2LogL.png" );
 
-  TProfile * dataMinus2LogL = MapMinus2LogLikelihood( dataHist, pdf );
-  TProfile * dataMinus2LogLambda = MapMinus2LogLikelihoodRatio( dataHist, pdf, 0. );
-  TCanvas datac( "datac", "", 1000, 500 );
-  datac.Divide( 2, 1 );
-  datac.cd( 1 );
-  dataMinus2LogL->Draw();
-  datac.cd( 2 );
-  dataMinus2LogLambda->Draw();
-  datac.Print( "figures/dataMinus2LogL.png" );
-
-  // vector< PseudoExperiment* > someMorePEs = peFactory.build( 2., 1.e2 );
-  // TH1 * peHist = someMorePEs.at( 2 );
-  // TProfile * peMinus2LogL = MapMinus2LogLikelihood( peHist, pdf );
-  // TProfile * peMinus2LogLambda = MapMinus2LogLikelihoodRatio( peHist, pdf, 2. );
-  // TCanvas pec( "pec", "", 1000, 500 );
-  // pec.Divide( 2, 1 );
-  // pec.cd( 1 );
-  // peMinus2LogL->Draw();
-  // pec.cd( 2 );
-  // peMinus2LogLambda->Draw();
-  // pec.Print( "figures/peMinus2LogL.png" );
-
-  // peHist = somePEs.at( 2 );
-  // peMinus2LogL = MapMinus2LogLikelihood( peHist, pdf );
-  // peMinus2LogLambda = MapMinus2LogLikelihoodRatio( peHist, pdf, 0.25 );
-  // TCanvas pec2( "pec2", "", 1000, 500 );
-  // pec2.Divide( 2, 1 );
-  // pec2.cd( 1 );
-  // peMinus2LogL->Draw();
-  // pec2.cd( 2 );
-  // peMinus2LogLambda->Draw();
-  // pec2.Print( "figures/peMinus2LogL.png" );
-
-  // TCanvas * dataCanvas = new TCanvas( "dataCanvas", "", 500, 500 );
-  // dataCanvas->cd();
-  // dataHist->Draw();
-
-  double pValue = pv0( dataHist );
+  PValueTest pv0( alpha, likelihoodRatios );
+  LikelihoodRatio dataLikelihoodRatio( dataHist, new PDF( pdfFile, dataHist->Integral() ), alpha );
+  double pValue = pv0( dataLikelihoodRatio );
   cout << " * pvalue( Lambda = " << 1. / pow( alpha, 0.25 ) << ") = " << pValue << endl;
+  pv0.finalize();
 
   theApp.Run( kTRUE );
+
+  pdfFile->Close();
+  dataFile->Close();
+  for_each( likelihoodRatios.begin(), likelihoodRatios.end(), boost::checked_deleter< LikelihoodRatio >() );
   return 0;
 
 }
@@ -176,7 +155,7 @@ TProfile * MapMinus2LogLikelihood( TH1* exp, PDF& pdf ) {
 
 TProfile * MapMinus2LogLikelihoodRatio( TH1* exp, PDF& pdf, double alpha ) {
 
-  LikelihoodRatio_FCN l( exp, &pdf, alpha );
+  LikelihoodRatio l( exp, &pdf, alpha );
 
   double max = 0.;
   double min = DBL_MAX;

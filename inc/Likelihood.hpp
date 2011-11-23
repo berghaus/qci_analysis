@@ -54,15 +54,15 @@ private:
 
 };
 
-class LikelihoodRatio_FCN {
+class LikelihoodRatio {
 
 public:
 
-  LikelihoodRatio_FCN();
+  LikelihoodRatio();
 
   // assume ownership of TH1 but not the PDF
-  LikelihoodRatio_FCN( const TH1* data, const PDF* pdf, const double& alpha = 0. );
-  virtual ~LikelihoodRatio_FCN();
+  LikelihoodRatio( const TH1* data, const PDF* pdf, const double& alpha = 0. );
+  virtual ~LikelihoodRatio();
 
   double operator()( const std::vector< double >& );
 
@@ -73,6 +73,8 @@ public:
 
   TH1* data() const;
   const PDF* pdf() const;
+  Likelihood_FCN numerator() const;   // fit over nuisance parameters
+  Likelihood_FCN denominator() const; // global fit
 
   void accept( TestStatMonitor& );
 

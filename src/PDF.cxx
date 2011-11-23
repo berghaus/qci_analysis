@@ -60,7 +60,8 @@ PDF::PDF( const PDF& orig ) {
 }
 
 PDF::~PDF() {
-  _file->Close();
+  _pdfFit->Delete();
+  _normalizedPdfFit->Delete();
 }
 
 void PDF::init() {

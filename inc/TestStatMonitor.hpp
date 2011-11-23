@@ -3,10 +3,12 @@
 #include <map>
 #include <string>
 
+#include "Random.hpp"
+
 class TH1;
 class TH2;
 class Likelihood_FCN;
-class LikelihoodRatio_FCN;
+class LikelihoodRatio;
 
 class TestStatMonitor {
 
@@ -17,7 +19,7 @@ public:
   virtual ~TestStatMonitor();
 
   virtual void monitor( Likelihood_FCN& );
-  virtual void monitor( LikelihoodRatio_FCN& );
+  virtual void monitor( LikelihoodRatio& );
 
   virtual void finalize();
 
@@ -31,6 +33,12 @@ private:
   TH2* _likelihoodRatio;
   TH1* _minimizedAlpha;
   TH1* _minimizedLaunda;
+
+  Random<double> _randomCompScale;
+
+  double _minScale;
+  double _maxScale;
+  int _nBinsScale;
 
 };
 
