@@ -80,10 +80,10 @@ void PDF::init() {
       TGraphErrors * graph = (TGraphErrors*) obj;
       _eventCounts[chi] = graph;
       for( int i = 0; i < graph->GetN(); ++i ) {
-        cout << "(n, alpha, n(alpha) ) = ( " << i << ", " << graph->GetX()[i] << ", " << graph->GetY()[i] << " )\n";
-        if ( graph->GetX()[i] == 0. ) _pdfFit->FixParameter(0, graph->GetY()[i] );
+        //cout << "(n, alpha, n(alpha) ) = ( " << i << ", " << graph->GetX()[i] << ", " << graph->GetY()[i] << " )\n";
+        if ( graph->GetX()[i] == 0. ) _pdfFit->FixParameter( 0, graph->GetY()[i] );
       }
-      graph->Fit( _pdfFit );
+      graph->Fit( _pdfFit, "Q" );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 0 ) );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 1 ) );
       if ( chi == 0. ) {

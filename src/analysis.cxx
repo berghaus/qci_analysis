@@ -57,7 +57,7 @@ int main( int argc, char* argv[] ) {
   double alpha = 0; // TeV
   PseudoExperimentFactory peFactory( &pdf, dataHist );
   vector< PseudoExperiment* > somePEs;
-  vector< PseudoExperiment* > morePEs = peFactory.build( alpha, 1.e2 );
+  vector< PseudoExperiment* > morePEs = peFactory.build( alpha, 5.e2 );
   somePEs.insert( somePEs.end(), morePEs.begin(), morePEs.end() );
   vector< PseudoExperiment* > pValPEs = morePEs;
 

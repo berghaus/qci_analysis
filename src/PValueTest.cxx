@@ -27,7 +27,7 @@ PValueTest::PValueTest( const double alpha, const vector< LikelihoodRatio* >& la
 void PValueTest::init() {
 
   string hName = str( format( "Likelihood_FCN-alpha%2.1e" ) % _alpha );
-  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", 1000, 0., -1. );
+  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", 1050, -0.05, 1.0 );
   string xTitle = str( format( "-2ln#lambda(%2.0f TeV )" ) % _alpha );
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
 
