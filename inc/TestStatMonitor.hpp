@@ -29,12 +29,15 @@ private:
   std::string _folder;
   std::string _ext;
 
-  TH2* _likelihood;
-  TH2* _likelihoodRatio;
+  TH2* _likelihoodVsScale;
+  TH2* _likelihoodRatioVsScale;
+  TH2* _likelihoodVsAlpha;
+  TH2* _likelihoodRatioVsAlpha;
   TH1* _minimizedAlpha;
   TH1* _minimizedLaunda;
 
   Random<double> _randomCompScale;
+  Random<double> _randomAlpha;
 
   double _minScale;
   double _maxScale;
