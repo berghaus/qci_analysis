@@ -29,14 +29,14 @@ PDF::PDF() :
     _file( 0 ),
     _nData( 1 ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ),
-    _useFit( 0 ) {
+    _useFit( true ) {
 }
 
 PDF::PDF( TFile* file, const double nData ) :
     _file( file ),
     _nData( nData ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ),
-    _useFit( 0 ) {
+    _useFit( true ) {
   init();
 }
 
