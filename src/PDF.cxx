@@ -29,7 +29,6 @@ PDF::PDF() :
     _file( 0 ),
     _nData( 1 ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ),
-    _normalizedPdfFit( new TF1( "PDFFit", "([0]+[1]*x+[2]*sqrt(x))/([3]+[4]*x+[5]*sqrt(x))*[6]", 0., 4. ) ),
     _useFit( 0 ) {
 }
 
@@ -37,7 +36,6 @@ PDF::PDF( TFile* file, const double nData ) :
     _file( file ),
     _nData( nData ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ),
-    _normalizedPdfFit( new TF1( "PDFFit", "([0]+[1]*x+[2]*sqrt(x))/([3]+[4]*x+[5]*sqrt(x))*[6]", 0., 4. ) ),
     _useFit( 0 ) {
   init();
 }
@@ -61,7 +59,6 @@ PDF::PDF( const PDF& orig ) {
 
 PDF::~PDF() {
   _pdfFit->Delete();
-  _normalizedPdfFit->Delete();
 }
 
 void PDF::init() {
@@ -80,19 +77,13 @@ void PDF::init() {
       TGraphErrors * graph = (TGraphErrors*) obj;
       _eventCounts[chi] = graph;
       /*for( int i = 0; i < graph->GetN(); ++i ) {
-        //cout << "(n, alpha, n(alpha) ) = ( " << i << ", " << graph->GetX()[i] << ", " << graph->GetY()[i] << " )\n";
-        if ( graph->GetX()[i] == 0. ) _pdfFit->FixParameter( 0, graph->GetY()[i] );
-      }*/
+       //cout << "(n, alpha, n(alpha) ) = ( " << i << ", " << graph->GetX()[i] << ", " << graph->GetY()[i] << " )\n";
+       if ( graph->GetX()[i] == 0. ) _pdfFit->FixParameter( 0, graph->GetY()[i] );
+       }*/
       graph->Fit( _pdfFit, "Q" );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 0 ) );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 1 ) );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 2 ) );
-      if ( chi == 0. ) {
-        _normalizedPdfFit->SetParameter( 3, _pdfFit->GetParameter( 0 ) );
-        _normalizedPdfFit->SetParameter( 4, _pdfFit->GetParameter( 1 ) );
-        _normalizedPdfFit->SetParameter( 5, _pdfFit->GetParameter( 2 ) );
-        _normalizedPdfFit->SetParameter( 6, _nData );
-      }
     }
   }
 }
@@ -127,6 +118,16 @@ double PDF::interpolate( const double& chi, const double& alpha ) const {
 
   if ( _useFit ) {
     typedef map< double, vector< double > > chiFitParams_t;
+    // sum over all chi bins
+    double sumOverChi = 0.;
+    foreach( chiFitParams_t::value_type ec, _pdfFitParams )
+    {
+      _pdfFit->SetParameter( 0, ec.second[0] );
+      _pdfFit->SetParameter( 1, ec.second[1] );
+      _pdfFit->SetParameter( 2, ec.second[2] );
+      sumOverChi += _pdfFit->Eval( alpha );
+    }
+    // find chi value of interest
     double lastDistance = DBL_MAX;
     foreach( chiFitParams_t::value_type ec, _pdfFitParams )
     {
@@ -136,12 +137,8 @@ double PDF::interpolate( const double& chi, const double& alpha ) const {
       _pdfFit->SetParameter( 0, ec.second[0] );
       _pdfFit->SetParameter( 1, ec.second[1] );
       _pdfFit->SetParameter( 2, ec.second[2] );
-
-      _normalizedPdfFit->SetParameter( 0, ec.second[0] );
-      _normalizedPdfFit->SetParameter( 1, ec.second[1] );
-      _normalizedPdfFit->SetParameter( 2, ec.second[2] );
     }
-    return _normalizedPdfFit->Eval( alpha );
+    return _nData * _pdfFit->Eval( alpha ) / sumOverChi;
 
   } else {
 
