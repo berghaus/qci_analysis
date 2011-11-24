@@ -18,14 +18,14 @@ using namespace ROOT::Minuit2;
 Likelihood_FCN::Likelihood_FCN() :
     _data( 0 ) {
 
-  _pars.Add( "alpha", 0., 0.001, 0., 16. );
+  _pars.Add( "alpha", 0., 1.e-4, 0., 16. );
 }
 
 Likelihood_FCN::Likelihood_FCN( const TH1* data, const PDF* pdf, const double alpha ) :
     _data( data ),
     _pdf( pdf ) {
 
-  _pars.Add( "alpha", alpha, 0.001, 0., 16. );
+  _pars.Add( "alpha", alpha, 1.e-4, 0., 16. );
 
 }
 
