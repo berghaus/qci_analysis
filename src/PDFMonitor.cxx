@@ -7,6 +7,7 @@
 #include <vector>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
+#include <boost/checked_delete.hpp>
 
 #include "TCanvas.h"
 #include "TGraph.h"
@@ -18,7 +19,7 @@
 #include "PDF.hpp"
 using namespace std;
 #define foreach BOOST_FOREACH
-using boost::format;
+using namespace boost;
 
 PDFMonitor::PDFMonitor() :
     _folder( "figures/PDF/" ),
@@ -44,7 +45,7 @@ PDFMonitor::PDFMonitor( const string& folder, const string ext ) :
 
 PDFMonitor::~PDFMonitor() {
   // delete _interpolations
-  for_each( _interpolations.begin(), _interpolations.end(), bind2nd( mem_fun( &TGraph::Delete ), "" ) );
+  for_each( _interpolations.begin(), _interpolations.end(), checked_deleter<TGraph>() );
 }
 
 void PDFMonitor::monitor( PDF& pdf ) {

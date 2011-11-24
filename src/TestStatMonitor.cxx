@@ -121,10 +121,6 @@ void TestStatMonitor::finalize() {
 
 TestStatMonitor::~TestStatMonitor() {
 
-  _likelihoodVsScale->Delete();
-  _likelihoodRatioVsScale->Delete();
-  _minimizedAlpha->Delete();
-  _minimizedLaunda->Delete();
 }
 
 void TestStatMonitor::monitor( Likelihood_FCN& l ) {
