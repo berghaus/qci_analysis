@@ -52,7 +52,6 @@ void PDFMonitor::monitor( PDF& pdf ) {
 
   // make some histograms
   int nPad = 1;
-
   typedef map< double, TGraphErrors* > chiGraphMap_t;
   chiGraphMap_t graphs = pdf.eventCounts();
   foreach( chiGraphMap_t::value_type ec, graphs )
