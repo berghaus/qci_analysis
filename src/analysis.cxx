@@ -57,7 +57,7 @@ int main( int argc, char* argv[] ) {
   PDFMonitor pdfMon;
   pdf.accept( pdfMon );
 
-  int nPE = 1.e4;
+  int nPE = 100;
   vector< double > alphas = list_of( 0. )( pow( 1. / 8., 4 ) )( pow( 1. / 7., 4 ) )( pow( 1. / 6., 4 ) )(
       pow( 1. / 5., 4 ) )( pow( 1. / 4., 4 ) )( pow( 1. / 3., 4 ) )( pow( 1. / 1.5, 4 ) )( pow( 1. / 1., 4 ) )(
       pow( 1. / .75, 4 ) )( pow( 1. / .5, 4 ) );
