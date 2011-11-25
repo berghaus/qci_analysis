@@ -15,7 +15,7 @@ class TestStatMonitor {
 public:
 
   TestStatMonitor();
-  TestStatMonitor( const std::string&, const std::string& );
+  TestStatMonitor( const double&, const std::string&, const std::string& );
   virtual ~TestStatMonitor();
 
   virtual void monitor( Likelihood_FCN& );
@@ -26,6 +26,8 @@ public:
 private:
   void init();
 
+  double _alpha;
+  std::string _label;
   std::string _folder;
   std::string _ext;
 
