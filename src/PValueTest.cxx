@@ -10,6 +10,7 @@
 #include <TCanvas.h>
 #include <TFitterMinuit.h>
 #include <TH1.h>
+#include <TLine.h>
 
 #include "PDF.hpp"
 #include "Likelihood.hpp"
@@ -20,20 +21,17 @@ using boost::format;
 
 PValueTest::PValueTest( const double alpha, const vector< LikelihoodRatio* >& lambdas ) :
     _alpha( alpha ),
-    _lambdas( lambdas ) {
+    _lambdas( lambdas ),
+    _dataLLR( 0 ) {
   init();
 }
 
 void PValueTest::init() {
 
-  string hName = str( format( "Likelihood_FCN-alpha%2.1e" ) % _alpha );
-  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", 1050, -0.05, 1.0 );
-  string xTitle = str( format( "-2ln#lambda(%2.0f TeV )" ) % _alpha );
-  _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
-
   vector< double > par( 1, _alpha );
   _testStats.reserve( _lambdas.size() );
-  foreach( LikelihoodRatio* lambda, _lambdas ) {
+  foreach( LikelihoodRatio* lambda, _lambdas )
+  {
     LikelihoodRatio& l = *lambda;
     _testStats.push_back( l( par ) );
   }
@@ -42,7 +40,8 @@ void PValueTest::init() {
 }
 
 PValueTest::PValueTest() :
-    _alpha( 0 ) {
+    _alpha( 0 ),
+    _dataLLR( 0 ) {
 }
 
 PValueTest::~PValueTest() {
@@ -51,22 +50,37 @@ PValueTest::~PValueTest() {
 double PValueTest::operator()( LikelihoodRatio& lambda ) {
 
   vector< double > par( 1, _alpha );
-  double dataLL = lambda( par );
-  vector< double >::iterator itr = lower_bound( _testStats.begin(), _testStats.end(), dataLL );
+  _dataLLR = lambda( par );
+  vector< double >::iterator itr = lower_bound( _testStats.begin(), _testStats.end(), _dataLLR );
   int nOver = distance( itr, _testStats.end() );
+
+  finalize();
 
   return double( nOver ) / double( _testStats.size() );
 
 }
 
 void PValueTest::finalize() {
-  foreach( const double& x, _testStats ) {
+
+  double histMax = _testStats[_testStats.size() / 2] > _dataLLR ?
+      2 * _testStats[_testStats.size() / 2] :
+      2 * _dataLLR;
+  string hName = str( format( "Likelihood_FCN-alpha%2.1e" ) % _alpha );
+  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", 100, -0.05, histMax );
+  string xTitle = str( format( "-2ln#lambda(%2.0f TeV )" ) % _alpha );
+  _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
+
+  foreach( const double& x, _testStats )
     _minus2LnLikelihoodDistribution->Fill( x );
-  }
+  TLine* dataLine = new TLine( _dataLLR, _minus2LnLikelihoodDistribution->GetMinimum(), _dataLLR,
+                               _minus2LnLikelihoodDistribution->GetMaximum() );
+
+  dataLine->SetLineColor( kRed );
 
   TCanvas* pvc = new TCanvas( "PValueCanvas", "", 500, 500 );
   pvc->cd();
   _minus2LnLikelihoodDistribution->Draw();
+  dataLine->Draw();
   string cName = _minus2LnLikelihoodDistribution->GetName();
   pvc->Print( ( cName + ".png" ).c_str() );
 }

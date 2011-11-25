@@ -22,6 +22,7 @@ private:
   PValueTest();
   const double                  _alpha; // alpha used for PEs
   std::vector<LikelihoodRatio*> _lambdas;
+  double _dataLLR;
 
   TH1 * _minus2LnLikelihoodDistribution;
   std::vector<double> _testStats;
