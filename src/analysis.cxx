@@ -13,6 +13,7 @@
 
 #include <TApplication.h>
 #include <TCanvas.h>
+#include <TGraph.h>
 #include <TH1.h>
 #include <TProfile.h>
 #include <TH2.h>
@@ -57,36 +58,43 @@ int main( int argc, char* argv[] ) {
   PDFMonitor pdfMon;
   pdf.accept( pdfMon );
 
-  int nPE = 100;
-  vector< double > alphas = list_of( 0. )( pow( 1. / 8., 4 ) )( pow( 1. / 7., 4 ) )( pow( 1. / 6., 4 ) )(
-      pow( 1. / 5., 4 ) )( pow( 1. / 4., 4 ) )( pow( 1. / 3., 4 ) )( pow( 1. / 1.5, 4 ) )( pow( 1. / 1., 4 ) )(
-      pow( 1. / .75, 4 ) )( pow( 1. / .5, 4 ) );
   PseudoExperimentFactory peFactory( &pdf, dataHist );
-  typedef map< double, vector< PseudoExperiment* > > peMap_t;
-  peMap_t pes;
-  foreach( const double& alpha, alphas )
-    pes[alpha] = peFactory.build( alpha, nPE );
 
-  foreach( const peMap_t::value_type& x, pes )
-  {
-    const double alpha = x.first;
-    TestStatMonitor tm( alpha, "figures/Likelihood/", ".png" );
+  // TODO: give these as command line controls
+  int nPE = 1000;
+  double nBinsScale = 50;
+  double minScale   = 4.;
+  double maxScale   = 8.;
+  double deltaScale = ( maxScale - minScale ) / nBinsScale;
+  typedef map< double, vector< PseudoExperiment* > > peMap_t;
+  peMap_t peMap;
+  vector<PValueTest*> pValueTests;
+  vector<double> scales;
+  vector<double> observed;
+
+  for ( double scale = minScale; scale < maxScale; scale += deltaScale ) {
+    double alpha = pow( scale, -4 );
+    vector< PseudoExperiment* > pes = peFactory.build( alpha, nPE );
+    peMap[alpha] = pes;
+
     vector< LikelihoodRatio* > likelihoodRatios;
-    likelihoodRatios.reserve( x.second.size() );
-    foreach( PseudoExperiment* pe, x.second )
+    likelihoodRatios.reserve( pes.size() );
+    foreach( PseudoExperiment* pe, pes )
     {
       PDF * pePDF = new PDF( pdfFile, pe->Integral() );
       likelihoodRatios.push_back( new LikelihoodRatio( pe, pePDF, alpha ) );
     }
-    foreach( LikelihoodRatio* lambda, likelihoodRatios )
-    {
-      lambda->accept( tm );
-      lambda->denominator().accept( tm );
-    }
-    tm.finalize();
+    PValueTest * pValueTest = new PValueTest( alpha, likelihoodRatios );
+    PValueTest& pv0 = *pValueTest;
+    pValueTests.push_back( pValueTest );
+    LikelihoodRatio dataLikelihoodRatio( dataHist, new PDF( pdfFile, dataHist->Integral() ), alpha );
+    double pValue = pv0( dataLikelihoodRatio );
+    cout << " * pvalue( Lambda = " << scale << ") = " << pValue << endl;
+    scales.push_back( scale );
+    observed.push_back( pValue );
+    for_each( likelihoodRatios.begin(), likelihoodRatios.end(), boost::checked_deleter< LikelihoodRatio >() );
   }
 
-  double alpha = alphas.front();
 //  PseudoExperiment * pe = pes[alpha].front();
 //  PDF * pePDF = new PDF( pdfFile, pe->Integral() );
 //  TProfile * peMinus2LogL = MapMinus2LogLikelihood( pe, pePDF, alpha );
@@ -98,25 +106,16 @@ int main( int argc, char* argv[] ) {
 //  pec.cd( 2 );
 //  peMinus2LogLambda->Draw();
 //  pec.Print( "figures/peMinus2LogL.png" );
-
-  vector< LikelihoodRatio* > likelihoodRatios;
-  likelihoodRatios.reserve( nPE );
-  foreach( PseudoExperiment* pe, pes[alpha] )
-  {
-    PDF * pePDF = new PDF( pdfFile, pe->Integral() );
-    likelihoodRatios.push_back( new LikelihoodRatio( pe, pePDF, alpha ) );
-  }
-  PValueTest pv0( alpha, likelihoodRatios );
-  LikelihoodRatio dataLikelihoodRatio( dataHist, new PDF( pdfFile, dataHist->Integral() ), alpha );
-  double pValue = pv0( dataLikelihoodRatio );
-  cout << " * pvalue( Lambda = " << 1. / pow( alpha, 0.25 ) << ") = " << pValue << endl;
-  pv0.finalize();
+  TCanvas obsCanvas( "observedCanvas", "", 800, 800 );
+  obsCanvas.cd();
+  TGraph observedGraph( scales.size(), &scales[0], &observed[0] );
+  observedGraph.Draw("AL");
+  
 
   theApp.Run( kTRUE );
 
   pdfFile->Close();
   dataFile->Close();
-  //for_each( likelihoodRatios.begin(), likelihoodRatios.end(), boost::checked_deleter< LikelihoodRatio >() );
   return 0;
 
 }
