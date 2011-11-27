@@ -37,8 +37,6 @@ public:
   std::map< double, std::vector< double > > pdfFitParams() const;
   TF1* pdfFit( const std::string& ) const;
 
-  void useFit( const bool useFit = true );
-
 private:
   TFile* _file;
   TF1* _pdfFit;
@@ -46,7 +44,6 @@ private:
   double _nData;
   std::map<double,TGraphErrors*> _eventCounts;
   std::map<double,std::vector< double > > _pdfFitParams;
-  bool _useFit;
 
 };
 
