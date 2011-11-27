@@ -54,8 +54,6 @@ double PValueTest::operator()( LikelihoodRatio& lambda ) {
   vector< double >::iterator itr = lower_bound( _testStats.begin(), _testStats.end(), _dataLLR );
   int nOver = distance( itr, _testStats.end() );
 
-  finalize();
-
   return double( nOver ) / double( _testStats.size() );
 
 }
@@ -85,3 +83,6 @@ void PValueTest::finalize() {
   pvc->Print( ( cName + ".png" ).c_str() );
 }
 
+
+double PValueTest::alpha() const { return _alpha; }
+void PValueTest::alpha( const double& alpha ) { _alpha = alpha; }

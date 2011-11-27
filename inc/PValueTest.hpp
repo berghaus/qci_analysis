@@ -17,10 +17,12 @@ public:
   double operator() ( LikelihoodRatio& );
   void init();
   void finalize();
+  double alpha() const;
+  void alpha( const double& );
 
 private:
   PValueTest();
-  const double                  _alpha; // alpha used for PEs
+  double                        _alpha; // alpha used for PEs
   std::vector<LikelihoodRatio*> _lambdas;
   double _dataLLR;
 

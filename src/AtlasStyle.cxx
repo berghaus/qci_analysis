@@ -80,8 +80,8 @@ TStyle* AtlasStyle() {
 
   // do not display any of the standard histogram decorations
   atlasStyle->SetOptTitle( 0 );
-  atlasStyle->SetOptStat( "iouRMe" );
-  //atlasStyle->SetOptStat(0);
+  //atlasStyle->SetOptStat( "iouRMe" );
+  atlasStyle->SetOptStat(0);
   atlasStyle->SetOptFit( 1111 );
   //atlasStyle->SetOptFit(0);
 
