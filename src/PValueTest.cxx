@@ -64,6 +64,7 @@ void PValueTest::finalize() {
       2 * _testStats[_testStats.size() / 2] :
       2 * _dataLLR;
   if ( histMax < 1. ) histMax = 1.;
+
   string hName = str( format( "Likelihood_FCN-scale%2.2e" ) % pow( _alpha, -0.25 ) );
   _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", 100, -0.05, histMax );
   string xTitle = str( format( "-2ln#lambda( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
