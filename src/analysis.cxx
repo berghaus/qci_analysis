@@ -61,6 +61,8 @@ int main( int argc, char* argv[] ) {
   PDF pdf( pdfFile, dataHist->Integral() );
   pdf.useFit();
 
+  LikelihoodRatio dataLikelihoodRatio( dataHist, new PDF( pdfFile, dataHist->Integral() ), 0. );
+
   // Monitor data PDF
   PDFMonitor pdfMon;
   pdf.accept( pdfMon );
@@ -93,6 +95,15 @@ int main( int argc, char* argv[] ) {
     errorBandLRs.push_back( new LikelihoodRatio( pe, pePDF, 0. ) );
   }
 
+  PValueTest pValueTest( 0., errorBandLRs );
+  double pValue = pValueTest( dataLikelihoodRatio );
+  cout << " * pvalue( Lambda = " << 0. << ") = " << pValue << endl;  
+
+  pValueTest.finalize();
+
+  theApp.Run( kTRUE );
+  return 0;
+
   for ( double scale = minScale; scale < maxScale; scale += deltaScale ) {
     double alpha = pow( scale, -4 );
     vector< PseudoExperiment* > pes = peFactory.build( alpha, nPE );
@@ -108,7 +119,6 @@ int main( int argc, char* argv[] ) {
     PValueTest * pValueTest = new PValueTest( alpha, likelihoodRatios );
     PValueTest& pv = *pValueTest;
     pValueTests.push_back( pValueTest );
-    LikelihoodRatio dataLikelihoodRatio( dataHist, new PDF( pdfFile, dataHist->Integral() ), alpha );
     double pValue = pv( dataLikelihoodRatio );
     cout << " * pvalue( Lambda = " << scale << ") = " << pValue << endl;
 
