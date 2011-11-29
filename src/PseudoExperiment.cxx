@@ -1,5 +1,6 @@
 #include "PseudoExperiment.hpp"
 #include <algorithm>
+#include <cmath>
 #include <functional>
 #include <iostream>
 #include <string>
@@ -10,73 +11,139 @@
 #include <boost/checked_delete.hpp>
 
 #include <TCanvas.h>
+#include <TGraph.h>
 #include <TH2.h>
 
 using namespace std;
 using namespace boost;
 
-PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf, const PseudoExperiment* graft, unsigned int seed ) :
-    _pdf( pdf ),
-    _graft( graft ),
-    _random( seed ) {
+
+struct adder : public unary_function<double, void> {
+  adder() : sum(0) {}
+  double sum;
+  void operator()(double x) { sum += x; }
+};
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+Experiment::Experiment() {
 }
 
-PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf, const TH1* graft, unsigned int seed ) :
-    _pdf( pdf ),
-    _graft( static_cast< const PseudoExperiment* >( graft ) ),
-    _random( seed ) {
+
+Experiment::Experiment( const TH1& h ) {
+
+  _integral = h.Integral();
+  int nBins = h.GetNbinsX();
+  for( int bin = 1; bin <= nBins; ++bin ) {
+    _x.push_back( h.GetBinCenter( bin ) );
+    _y.push_back( h.GetBinContent( bin ) );
+  }
+
+}
+
+
+Experiment::Experiment( const vector<double>& x, const vector<double>& y ) :
+  _x( x ),
+  _y( y ) {
+  _integral = for_each( y.begin(), y.end(), adder() ).sum;
+}
+
+
+Experiment::~Experiment() {
+}
+
+string Experiment::name() const { return _name; }
+double Experiment::x( int& i ) const { return _x.at(i); }
+double Experiment::y( int& i ) const { return _y.at(i); }
+vector<double> Experiment::x() const { return _x; }
+vector<double> Experiment::y() const { return _y; }
+double Experiment::integral() const { return _integral; }
+
+void Experiment::name( const string& name ) { _name = name; }
+void Experiment::x( const std::vector<double>& x) {  _x = x; }
+void Experiment::y( const std::vector<double>& y) {
+  _y = y;
+  _integral = for_each( y.begin(), y.end(), adder() ).sum;
+}
+
+void Experiment::plot() {
+
+  TCanvas * dataC = new TCanvas( (_name+"Canvas").c_str(), "", 500, 500 );
+  dataC->cd();
+  TGraph * g = new TGraph( _x.size(), &_x[0], &_y[0] );
+  g->Draw("AP");
+  g->GetXaxis()->SetTitle( "#chi" );
+  g->GetYaxis()->SetTitle( _name.c_str() );
+
+}
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+PseudoExperiment::PseudoExperiment( const vector<double>& x, const vector<double>& y, const double& alpha ) :
+  Experiment( x, y ),
+  _alpha( alpha ) {
+  }
+
+double PseudoExperiment::alpha() const { return _alpha; }
+
+
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+
+
+PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf, const Experiment& graft, unsigned int seed ) :
+  _pdf( pdf ),
+  _graft( graft ),
+  _random( seed ) {
 }
 
 PseudoExperimentFactory::~PseudoExperimentFactory() {
-
-  // can't delete PEs since root does not like deleting TH1's
-//  typedef std::map< double, std::vector< PseudoExperiment* > > pes_t;
-//  foreach( pes_t::value_type& x, _generated )
-//    for_each( x.second.begin(), x.second.end(), checked_deleter< PseudoExperiment >() );
-
 }
 
-PseudoExperiment *
+PseudoExperiment
 PseudoExperimentFactory::build( const double& alpha ) {
 
-  if ( _nGenerated.find( alpha ) == _nGenerated.end() ) _nGenerated[alpha] = 1;
-  else ++_nGenerated[alpha];
+  ++_nGenerated[alpha];
 
-  string peName = str( format( "PE_alpha%1.0e_n%1.0f" ) % alpha % _nGenerated[alpha] );
-  PseudoExperiment* result = (PseudoExperiment*) _graft->Clone( peName.c_str() );
-  result->Reset( "ICES" );
+  string peName = str( format( "PE_alpha%2.1e_n%1.0f" ) % pow( alpha, -0.25 ) % _nGenerated[alpha] );
 
-  for( int bin = 1; bin <= _graft->GetNbinsX(); ++bin ) {
-    double chi = _graft->GetBinCenter( bin );
+  vector<double> content;
+  vector<double> chis;
+  for( int bin = 0; bin < _graft.x().size(); ++bin ) {
+    double chi = _graft.x( bin );
     double expectedN = ( *_pdf )( chi, alpha );
-    int n = _random.Poisson( expectedN );
-    result->SetBinContent( bin, n );
+    chis.push_back( chi );
+    content.push_back( _random.Poisson( expectedN ) );
   }
 
-  _generated[alpha].push_back( result );
+  PseudoExperiment result( chis, content, alpha );
+  result.name( peName );
+
+  // cout << "Integral( " << peName << " ) = " << result.integral() << '\n'; 
   return result;
+
 }
 
-vector< PseudoExperiment* > PseudoExperimentFactory::build( const double& alpha, const int& n ) {
 
-  vector< PseudoExperiment* > result( n );
+vector< PseudoExperiment > PseudoExperimentFactory::build( const double& alpha, const int& n ) {
 
-  if ( _generated.find( alpha ) == _generated.end() || _generated.find( alpha )->second.size() < n ) {
+  vector< PseudoExperiment > result;
+  result.reserve( n );
+  for( int i = 0; i < n; ++i ) result.push_back( build( alpha ) );
 
-    do {
-      build( alpha );
-    } while ( _generated.find( alpha )->second.size() < n );
-    copy( _generated.find( alpha )->second.begin(), _generated.find( alpha )->second.end(), result.begin() );
-
-  } else {
-
-    copy( _generated.find( alpha )->second.begin(), _generated.find( alpha )->second.begin() + n, result.begin() );
-
-  }
   return result;
+
 }
+
 
 PseudoExperimentFactory::PseudoExperimentFactory() :
-    _pdf( 0 ),
-    _graft( 0 ) {
+  _pdf( 0 ) {
 }

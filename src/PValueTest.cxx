@@ -63,6 +63,7 @@ void PValueTest::finalize() {
   double histMax = _testStats[_testStats.size() / 2] > _dataLLR ?
       2 * _testStats[_testStats.size() / 2] :
       2 * _dataLLR;
+  if ( histMax < 1. ) histMax = 1.;
   string hName = str( format( "Likelihood_FCN-scale%2.2e" ) % pow( _alpha, -0.25 ) );
   _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", 100, -0.05, histMax );
   string xTitle = str( format( "-2ln#lambda( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
@@ -74,13 +75,14 @@ void PValueTest::finalize() {
                                _minus2LnLikelihoodDistribution->GetMaximum() );
 
   dataLine->SetLineColor( kRed );
+  dataLine->SetLineWidth( 2 );
 
   TCanvas* pvc = new TCanvas( (hName+"Canvas").c_str() , "", 500, 500 );
   pvc->cd();
   _minus2LnLikelihoodDistribution->Draw();
   dataLine->Draw();
   string cName = _minus2LnLikelihoodDistribution->GetName();
-  pvc->Print( ( cName + ".png" ).c_str() );
+  pvc->Print( ( cName + ".pdf" ).c_str() );
 }
 
 

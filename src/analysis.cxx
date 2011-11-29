@@ -38,9 +38,9 @@ using namespace boost::math;
 
 template< class T >
 T quantile( const vector<T>&, const double& );
-TH1 * CopyRange( TH1*, int, int );
-TProfile * MapMinus2LogLikelihood( TH1*, PDF*, double );
-TProfile * MapMinus2LogLikelihoodRatio( TH1*, PDF*, double );
+// TH1 * CopyRange( TH1*, int, int );
+// TProfile * MapMinus2LogLikelihood( TH1*, PDF*, double );
+// TProfile * MapMinus2LogLikelihoodRatio( TH1*, PDF*, double );
 
 int main( int argc, char* argv[] ) {
 
@@ -54,27 +54,40 @@ int main( int argc, char* argv[] ) {
   TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/kFactor.root", "READ" );
   TFile * dataFile = TFile::Open( "~/docs/comp/analysis/data.root", "READ" );
   TH1 * dataHist = (TH1*) dataFile->Get( "Chi_2000-to-7000all" );
+  Experiment data( *dataHist );
+
+  data.plot();
+  cout << "integral(data) = " << data.integral() << endl;
 
   normal myGaus;
 
   // Set up PDF for data
-  PDF pdf( pdfFile, dataHist->Integral() );
-  pdf.useFit();
+  PDF * pdf = new PDF( pdfFile, data.integral() );
+  LikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
+
+  cout << " isMinimized = " <<  dataLikelihoodRatio.denominator().isMinimized() << '\n';
+  cout << " minimized alpha = " <<  dataLikelihoodRatio.denominator().pars().at( 0 ) << '\n';
+  cout << " minimized scale = " <<  pow( dataLikelihoodRatio.denominator().pars().at( 0 ), -0.25 ) << '\n';
+
+  TestStatMonitor tm( -1., "figures/", ".png" );
+  dataLikelihoodRatio.accept( tm );
+  dataLikelihoodRatio.denominator().accept( tm );
+  tm.finalize();
+  
 
   // Monitor data PDF
   PDFMonitor pdfMon;
-  pdf.accept( pdfMon );
+  pdf->accept( pdfMon );
 
-  PseudoExperimentFactory peFactory( &pdf, dataHist );
+  PseudoExperimentFactory peFactory( pdf, data );
 
   // TODO: give these as command line controls
-  int nPE = 10000;
+  int nPE = 1000;
   double nBinsScale = 50;
   double minScale   = 4.;
-  double maxScale   = 8.;
+  double maxScale   = 8.2;
   double deltaScale = ( maxScale - minScale ) / nBinsScale;
-  typedef map< double, vector< PseudoExperiment* > > peMap_t;
-  peMap_t peMap;
+  typedef map< double, vector< PseudoExperiment > > peMap_t;
   vector<PValueTest*> pValueTests;
   vector<double> scales;
   vector<double> observed;
@@ -85,32 +98,40 @@ int main( int argc, char* argv[] ) {
   vector<double> e84;
   vector<double> ex;
 
-  vector< PseudoExperiment* > errorBandPEs = peFactory.build( 0., nPE );
+  vector< PseudoExperiment > errorBandPEs = peFactory.build( 0., nPE );
   vector< LikelihoodRatio* > errorBandLRs;
   errorBandLRs.reserve( errorBandLRs.size() );
-  foreach( PseudoExperiment* pe, errorBandPEs ) {
-    PDF * pePDF = new PDF( pdfFile, pe->Integral() );
-    errorBandLRs.push_back( new LikelihoodRatio( pe, pePDF, 0. ) );
+  foreach( PseudoExperiment pe, errorBandPEs ) {
+    PDF * pePDF = new PDF( pdfFile, pe.integral() );
+    errorBandLRs.push_back( new LikelihoodRatio( &pe, pePDF, 0. ) );
   }
 
+  PValueTest pv0( 0., errorBandLRs );
+  double pValue = pv0( dataLikelihoodRatio );
+  cout << " * pvalue( Lambda = " << 0. << ") = " << pValue << endl;
+
+  pv0.finalize();
+
+  int scaleBin = 0;
   for ( double scale = minScale; scale < maxScale; scale += deltaScale ) {
     double alpha = pow( scale, -4 );
-    vector< PseudoExperiment* > pes = peFactory.build( alpha, nPE );
-    peMap[alpha] = pes;
+    vector< PseudoExperiment > pes = peFactory.build( alpha, nPE );
 
     vector< LikelihoodRatio* > likelihoodRatios;
     likelihoodRatios.reserve( pes.size() );
-    foreach( PseudoExperiment* pe, pes )
+    foreach( PseudoExperiment pe, pes )
     {
-      PDF * pePDF = new PDF( pdfFile, pe->Integral() );
-      likelihoodRatios.push_back( new LikelihoodRatio( pe, pePDF, alpha ) );
+      PDF * pePDF = new PDF( pdfFile, pe.integral() );
+      likelihoodRatios.push_back( new LikelihoodRatio( &pe, pePDF, alpha ) );
     }
-    PValueTest * pValueTest = new PValueTest( alpha, likelihoodRatios );
-    PValueTest& pv = *pValueTest;
-    pValueTests.push_back( pValueTest );
-    LikelihoodRatio dataLikelihoodRatio( dataHist, new PDF( pdfFile, dataHist->Integral() ), alpha );
+    //PValueTest * pValueTest = new PValueTest( alpha, likelihoodRatios );
+    PValueTest pv( alpha, likelihoodRatios );// = *pValueTest;
+    // pValueTests.push_back( pValueTest );
+    vector<double> par(1,alpha);
+
     double pValue = pv( dataLikelihoodRatio );
-    cout << " * pvalue( Lambda = " << scale << ") = " << pValue << endl;
+    if ( ! (scaleBin % 10) ) pv.finalize();
+    ++scaleBin;
 
     vector< double > ebPValues; ebPValues.reserve( nPE );
     foreach( LikelihoodRatio* l, errorBandLRs ) ebPValues.push_back( pv( *l ) );
@@ -121,6 +142,7 @@ int main( int argc, char* argv[] ) {
     double exp = quantile( ebPValues, cdf( myGaus, 0. ) );
     double sigmaP1 = quantile( ebPValues, cdf( myGaus, 1. ) );
     double sigmaP2 = quantile( ebPValues, cdf( myGaus, 2. ) );
+
 
     scales.push_back( scale );
     observed.push_back( pValue );
@@ -165,11 +187,25 @@ int main( int argc, char* argv[] ) {
   //  peMinus2LogL->Draw();
   //  pec.cd( 2 );
   //  peMinus2LogLambda->Draw();
-  //  pec.Print( "figures/peMinus2LogL.png" );
+  //  pec.Print( "figures/peMinus2LogL.pdf" );
 
   TCanvas obsCanvas( "observedCanvas", "", 800, 800 );
   obsCanvas.cd();
-  exclusion.Draw("a");
+  TH2D dummy("dummy","",100,2.,8.,100,0.,1.);
+  dummy.SetXTitle( "#Lambda [TeV]" );
+  dummy.SetYTitle( "CL_{s+b}" );
+  dummy.Draw();
+  exclusion.Draw();
+  dummy.Draw("ASAME");
+
+  TCanvas obsCanvas2( "observedCanvas2", "", 800, 800 );
+  obsCanvas2.cd();
+  TH2D dummy2("dummy2","",100,2.,8,100,0.04,0.1);
+  dummy2.SetXTitle( "#Lambda [TeV]" );
+  dummy2.SetYTitle( "CL_{s+b}" );
+  dummy2.Draw();
+  exclusion.Draw();
+  dummy2.Draw("ASAME");
   
 
   theApp.Run( kTRUE );
@@ -180,102 +216,102 @@ int main( int argc, char* argv[] ) {
 
 }
 
-TH1 * CopyRange( TH1* h, int min, int max ) {
-  vector< double > lowEdges;
-  vector< double > content;
-  vector< double > errors;
+// TH1 * CopyRange( TH1* h, int min, int max ) {
+//   vector< double > lowEdges;
+//   vector< double > content;
+//   vector< double > errors;
 
-  for( int i = min; i <= max; ++i ) {
-    lowEdges.push_back( h->GetBinLowEdge( i ) );
-    content.push_back( h->GetBinContent( i ) );
-    errors.push_back( h->GetBinError( i ) );
-  }
+//   for( int i = min; i <= max; ++i ) {
+//     lowEdges.push_back( h->GetBinLowEdge( i ) );
+//     content.push_back( h->GetBinContent( i ) );
+//     errors.push_back( h->GetBinError( i ) );
+//   }
 
-  if ( max != h->GetNbinsX() ) lowEdges.push_back( h->GetBinLowEdge( max + 1 ) );
-  TH1* result = new TH1D( h->GetName(), "", lowEdges.size() - 1, &lowEdges[0] );
+//   if ( max != h->GetNbinsX() ) lowEdges.push_back( h->GetBinLowEdge( max + 1 ) );
+//   TH1* result = new TH1D( h->GetName(), "", lowEdges.size() - 1, &lowEdges[0] );
 
-  for( int i = 0; i <= content.size(); ++i ) {
-    result->SetBinContent( i + 1, content[i] );
-    result->SetBinError( i + 1, errors[i] );
-  }
+//   for( int i = 0; i <= content.size(); ++i ) {
+//     result->SetBinContent( i + 1, content[i] );
+//     result->SetBinError( i + 1, errors[i] );
+//   }
 
-  return result;
+//   return result;
 
-}
+// }
 
-TProfile * MapMinus2LogLikelihood( TH1* exp, PDF* pdf, double alpha ) {
+// TProfile * MapMinus2LogLikelihood( TH1* exp, PDF* pdf, double alpha ) {
 
-  Likelihood_FCN l( exp, pdf );
+//   Likelihood_FCN l( exp, pdf );
 
-  double offset = 0.1;
-  double min = alpha / 16 + offset;
-  double max = alpha * 16 + offset;
-  double nBins = 1000;
-  vector< double > alphaBins;
-  alphaBins.reserve( nBins );
-  for( int iBin = 0; iBin <= nBins; ++iBin ) {
-    double binEdge = pow( max, double( iBin ) / double( nBins ) )
-                     * pow( min, double( nBins - iBin ) / double( nBins ) );
-    alphaBins.push_back( binEdge );
-  }
+//   double offset = 0.1;
+//   double min = alpha / 16 + offset;
+//   double max = alpha * 16 + offset;
+//   double nBins = 1000;
+//   vector< double > alphaBins;
+//   alphaBins.reserve( nBins );
+//   for( int iBin = 0; iBin <= nBins; ++iBin ) {
+//     double binEdge = pow( max, double( iBin ) / double( nBins ) )
+//                      * pow( min, double( nBins - iBin ) / double( nBins ) );
+//     alphaBins.push_back( binEdge );
+//   }
 
-  string name = exp->GetName();
-  TProfile* result = new TProfile( ( name + "_Minus2LogL" ).c_str(), "", alphaBins.size() - 1, &alphaBins[0], -10.,
-                                   250. );
-  result->SetXTitle( "#alpha + 0.1 [TeV^{-4}]" );
-  result->SetYTitle( ( " L(  " + name + " | #alpha )" ).c_str() );
+//   string name = exp->GetName();
+//   TProfile* result = new TProfile( ( name + "_Minus2LogL" ).c_str(), "", alphaBins.size() - 1, &alphaBins[0], -10.,
+//                                    250. );
+//   result->SetXTitle( "#alpha + 0.1 [TeV^{-4}]" );
+//   result->SetYTitle( ( " L(  " + name + " | #alpha )" ).c_str() );
 
-  for( int i = 0; i < alphaBins.size() - 1; ++i ) {
-    double a = alphaBins[i];
-    double xMax = alphaBins[i + 1];
-    double delta = ( xMax - a ) / 5.;
-    while ( a < xMax ) {
-      vector< double > vec( 1, a - offset );
-      result->Fill( a, l( vec ) );
-      a += delta;
-    }
-  }
+//   for( int i = 0; i < alphaBins.size() - 1; ++i ) {
+//     double a = alphaBins[i];
+//     double xMax = alphaBins[i + 1];
+//     double delta = ( xMax - a ) / 5.;
+//     while ( a < xMax ) {
+//       vector< double > vec( 1, a - offset );
+//       result->Fill( a, l( vec ) );
+//       a += delta;
+//     }
+//   }
 
-  return result;
+//   return result;
 
-}
+// }
 
-TProfile * MapMinus2LogLikelihoodRatio( TH1* exp, PDF* pdf, double alpha ) {
+// TProfile * MapMinus2LogLikelihoodRatio( TH1* exp, PDF* pdf, double alpha ) {
 
-  LikelihoodRatio l( exp, pdf, alpha );
+//   LikelihoodRatio l( exp, pdf, alpha );
 
-  double offset = 0.1;
-  double min = alpha / 16 + offset;
-  double max = alpha * 16 + offset;
-  double nBins = 1000;
-  vector< double > alphaBins;
-  alphaBins.reserve( nBins );
-  for( int iBin = 0; iBin <= nBins; ++iBin ) {
-    double binEdge = pow( max, double( iBin ) / double( nBins ) )
-                     * pow( min, double( nBins - iBin ) / double( nBins ) );
-    alphaBins.push_back( binEdge );
-  }
+//   double offset = 0.1;
+//   double min = alpha / 16 + offset;
+//   double max = alpha * 16 + offset;
+//   double nBins = 1000;
+//   vector< double > alphaBins;
+//   alphaBins.reserve( nBins );
+//   for( int iBin = 0; iBin <= nBins; ++iBin ) {
+//     double binEdge = pow( max, double( iBin ) / double( nBins ) )
+//                      * pow( min, double( nBins - iBin ) / double( nBins ) );
+//     alphaBins.push_back( binEdge );
+//   }
 
-  string name = exp->GetName();
-  TProfile* result = new TProfile( ( name + "_Minus2LogLRatio" ).c_str(), "", alphaBins.size() - 1, &alphaBins[0], -10.,
-                                   250. );
-  result->SetXTitle( "#alpha + 0.1 [TeV^{-4}]" );
-  result->SetYTitle( ( name + " #lambda( #alpha )" ).c_str() );
+//   string name = exp->GetName();
+//   TProfile* result = new TProfile( ( name + "_Minus2LogLRatio" ).c_str(), "", alphaBins.size() - 1, &alphaBins[0], -10.,
+//                                    250. );
+//   result->SetXTitle( "#alpha + 0.1 [TeV^{-4}]" );
+//   result->SetYTitle( ( name + " #lambda( #alpha )" ).c_str() );
 
-  for( int i = 0; i < alphaBins.size() - 1; ++i ) {
-    double a = alphaBins[i];
-    double xMax = alphaBins[i + 1];
-    double delta = ( xMax - a ) / 5.;
-    while ( a < xMax ) {
-      vector< double > vec( 1, a - offset );
-      result->Fill( a, l( vec ) );
-      a += delta;
-    }
-  }
+//   for( int i = 0; i < alphaBins.size() - 1; ++i ) {
+//     double a = alphaBins[i];
+//     double xMax = alphaBins[i + 1];
+//     double delta = ( xMax - a ) / 5.;
+//     while ( a < xMax ) {
+//       vector< double > vec( 1, a - offset );
+//       result->Fill( a, l( vec ) );
+//       a += delta;
+//     }
+//   }
 
-  return result;
+//   return result;
 
-}
+// }
 
 
 template< class T >

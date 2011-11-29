@@ -23,7 +23,7 @@ using namespace boost;
 
 PDFMonitor::PDFMonitor() :
     _folder( "figures/PDF/" ),
-    _ext( ".png" ),
+    _ext( ".pdf" ),
     _pdfCanvas( "PDFMonCanvas", "", 800, 600 ),
     _interpolCanvas( "InterpolCanvas", "", 800, 600 ),
     _fitResultCanvas( "FitResultCanvas", "", 800, 600 ) {

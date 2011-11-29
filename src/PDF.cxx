@@ -54,6 +54,7 @@ PDF::PDF( const PDF& orig ) {
 }
 
 PDF::~PDF() {
+  cout << "deleteing a PDF\n";
   _pdfFit->Delete();
 }
 
@@ -74,10 +75,6 @@ void PDF::init() {
       double chi = lexical_cast< double >( name.substr( 7 ) );
       TGraphErrors * graph = (TGraphErrors*) obj;
       _eventCounts[chi] = graph;
-      /*for( int i = 0; i < graph->GetN(); ++i ) {
-       //cout << "(n, alpha, n(alpha) ) = ( " << i << ", " << graph->GetX()[i] << ", " << graph->GetY()[i] << " )\n";
-       if ( graph->GetX()[i] == 0. ) _pdfFit->FixParameter( 0, graph->GetY()[i] );
-       }*/
       graph->Fit( _pdfFit, "Q" );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 0 ) );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 1 ) );
@@ -86,6 +83,7 @@ void PDF::init() {
   }
 
 }
+
 
 double PDF::operator()( const double& chi, const int& data, const vector< double >& par ) const {
 

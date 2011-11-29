@@ -10,6 +10,7 @@
 #include <Minuit2/CombinedMinimizer.h>
 #include <Minuit2/MnStrategy.h>
 
+#include "PseudoExperiment.hpp"
 #include "PDF.hpp"
 
 using namespace std;
@@ -18,14 +19,14 @@ using namespace ROOT::Minuit2;
 Likelihood_FCN::Likelihood_FCN() :
     _data( 0 ) {
 
-  _pars.Add( "alpha", 0., 1.e-4, 0., 16. );
+  _pars.Add( "alpha", 0., 1.e-3, 0., 16. );
 }
 
-Likelihood_FCN::Likelihood_FCN( const TH1* data, const PDF* pdf, const double alpha ) :
+Likelihood_FCN::Likelihood_FCN( const Experiment* data, const PDF* pdf, const double alpha ) :
     _data( data ),
     _pdf( pdf ) {
 
-  _pars.Add( "alpha", alpha, 1.e-4, 0., 16. );
+  _pars.Add( "alpha", alpha, 1.e-3, 0., 16. );
 
 }
 
@@ -39,12 +40,13 @@ double Likelihood_FCN::operator()() const {
 }
 
 double Likelihood_FCN::operator()( const std::vector< double >& par ) const {
+
   const PDF& pdf = *_pdf;
 
   double result = 0.;
-  for( int bin = 1; bin <= _data->GetNbinsX(); ++bin ) {
-    double x = _data->GetBinCenter( bin );
-    int n = _data->GetBinContent( bin );
+  for( int bin = 0; bin < _data->x().size(); ++bin ) {
+    double x = _data->x( bin );
+    int n = _data->y( bin );
     double logProb = pdf( x, n, par );
     result += -2 * logProb;
   }
@@ -56,7 +58,7 @@ double Likelihood_FCN::Up() const {
   return 1.;
 }
 
-void Likelihood_FCN::data( const TH1* data ) {
+void Likelihood_FCN::data( const Experiment* data ) {
   _data = data;
   _isMinimized = false;
 }
@@ -66,7 +68,7 @@ void Likelihood_FCN::pdf( const PDF* pdf ) {
   _isMinimized = false;
 }
 
-const TH1* Likelihood_FCN::data() const {
+const Experiment* Likelihood_FCN::data() const {
   return _data;
 }
 const PDF* Likelihood_FCN::pdf() const {
@@ -85,6 +87,7 @@ double Likelihood_FCN::Minimize( MnUserParameters& pars ) {
   CombinedMinimizer combMin;
   MnStrategy strat( 2 );
   FunctionMinimum minResults( combMin.Minimize( *this, pars, strat, 10000, 0.1 ) );
+
 
   _pars = pars = minResults.UserParameters();
   _isMinimized = minResults.IsValid();
@@ -109,8 +112,8 @@ LikelihoodRatio::LikelihoodRatio() :
     _data( 0 ) {
 }
 
-LikelihoodRatio::LikelihoodRatio( const TH1* data, const PDF* pdf, const double& scale ) :
-    _data( (TH1*) data->Clone( "data" ) ),
+LikelihoodRatio::LikelihoodRatio( const Experiment* data, const PDF* pdf, const double& scale ) :
+  _data( data ),
     _pdf( pdf ),
     _numerator( data, pdf, scale ),
     _denominator( data, pdf, scale ) {
@@ -120,8 +123,8 @@ LikelihoodRatio::LikelihoodRatio( const TH1* data, const PDF* pdf, const double&
 }
 
 LikelihoodRatio::~LikelihoodRatio() {
+  cout << "deleting a likelihoodratio\n";
   delete _pdf;
-  //_data->Delete();
 }
 
 void LikelihoodRatio::init() {
@@ -140,8 +143,8 @@ double LikelihoodRatio::Up() const {
   return 1.;
 }
 
-void LikelihoodRatio::data( const TH1* data ) {
-  _data = (TH1*) data->Clone( "data" );
+void LikelihoodRatio::data( const Experiment* data ) {
+  _data = data;
   _numerator.data( data );
   _denominator.data( data );
   init();
@@ -154,7 +157,7 @@ void LikelihoodRatio::pdf( const PDF* pdf ) {
   init();
 }
 
-TH1* LikelihoodRatio::data() const {
+const Experiment* LikelihoodRatio::data() const {
   return _data;
 }
 

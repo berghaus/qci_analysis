@@ -10,6 +10,7 @@
 
 #include "PDF.hpp"
 #include "TestStatMonitor.hpp"
+#include "PseudoExperiment.hpp"
 
 class TH1;
 class TFitterMinuit;
@@ -21,7 +22,7 @@ public:
   Likelihood_FCN();
 
   // does not assume ownership of TH1 or PDF
-  Likelihood_FCN( const TH1*, const PDF*, const double alpha = 0. );
+  Likelihood_FCN( const Experiment*, const PDF*, const double alpha = 0. );
   virtual ~Likelihood_FCN();
 
   double operator()() const;
@@ -29,10 +30,10 @@ public:
 
   double Up() const;
 
-  void data( const TH1* );
+  void data( const Experiment* );
   void pdf( const PDF* );
 
-  const TH1* data() const;
+  const Experiment* data() const;
   const PDF* pdf() const;
   bool isMinimized() const;
 
@@ -45,7 +46,7 @@ public:
 
 private:
 
-  const TH1* _data;
+  const Experiment* _data;
   const PDF* _pdf;
 
   bool _isMinimized;
@@ -61,17 +62,17 @@ public:
   LikelihoodRatio();
 
   // assume ownership of TH1 but not the PDF
-  LikelihoodRatio( const TH1* data, const PDF* pdf, const double& alpha = 0. );
+  LikelihoodRatio( const Experiment* data, const PDF* pdf, const double& alpha = 0. );
   virtual ~LikelihoodRatio();
 
   double operator()( const std::vector< double >& );
 
   double Up() const;
 
-  void data( const TH1* );
+  void data( const Experiment* );
   void pdf( const PDF* );
 
-  TH1* data() const;
+  const Experiment* data() const;
   const PDF* pdf() const;
   Likelihood_FCN numerator() const;   // fit over nuisance parameters
   Likelihood_FCN denominator() const; // global fit
@@ -82,7 +83,7 @@ private:
 
   void init();
 
-  TH1* _data;
+  const Experiment* _data;
   const PDF* _pdf;
   Likelihood_FCN _numerator;   // fit over nuisance parameters
   Likelihood_FCN _denominator; // global fit

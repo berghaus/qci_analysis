@@ -26,23 +26,23 @@ TestStatMonitor::TestStatMonitor() :
     _folder( "figures/" ),
     _ext( ".pdf" ),
     _randomCompScale( 0.5, 20. ),
-    _randomAlpha( 1., exp( 16. ) ) {
+    _randomAlpha( log(0.001), log(16.) ) {
   init();
 }
 
 TestStatMonitor::TestStatMonitor( const double& alpha, const string& folder, const string& ext ) :
     _alpha( alpha ),
-    _label( str( format( "scale%2.1f" ) % pow( alpha, -0.25 ) ) ),
     _folder( folder ),
     _ext( ext ),
     _randomCompScale( 5., 20. ),
-    _randomAlpha( 1., exp( 16. ) ) {
+    _randomAlpha( log(0.001), log(16.) ) {
+  _label = _alpha < 0. ? "data" : ( str( format( "scale%2.1f" ) % pow( alpha, -0.25 ) ) );
   init();
 }
 
 void TestStatMonitor::init() {
 
-  if ( _alpha == 0. ) {
+  if ( _alpha <= 0. ) {
     _minScale = 5.;
     _maxScale = 20.;
     _nBinsScale = 150;
@@ -55,7 +55,7 @@ void TestStatMonitor::init() {
 
   double min = 0.1;
   double max = pow( 1. / .5, 4 ) + min;
-  double nBins = 1000;
+  double nBins = 2000;
   vector< double > alphaBins;
   alphaBins.reserve( nBins );
   for( int iBin = 0; iBin <= nBins; ++iBin ) {
@@ -84,13 +84,11 @@ void TestStatMonitor::init() {
   _likelihoodRatioVsAlpha->SetXTitle( "#alpha = #Lambda^{-4} [TeV^{-4}]" );
   _likelihoodRatioVsAlpha->SetYTitle( "-2*ln( #lambda(#alpha) )" );
 
-  _minimizedAlpha = new TH1D( ( _label + "MinimizedAlpha" ).c_str(), "minimizedAlpha", alphaBins.size() - 1,
-                              &alphaBins[0] );
+  _minimizedAlpha = new TH1D( ( _label + "MinimizedAlpha" ).c_str(), "minimizedAlpha", 1000., 0., -1. );
   _minimizedAlpha->SetXTitle( "#alpha = #Lambda^{-4} [TeV^{-4}]" );
   _minimizedAlpha->SetYTitle( "Number of PEs" );
 
-  _minimizedLaunda = new TH1D( ( _label + "MinimizedLaunda" ).c_str(), "minimizedLaunda", _nBinsScale, _minScale,
-                               _maxScale );
+  _minimizedLaunda = new TH1D( ( _label + "MinimizedLaunda" ).c_str(), "minimizedLaunda", 1000., 0., -1. );
   _minimizedLaunda->SetXTitle( "#Lambda [TeV]" );
   _minimizedLaunda->SetYTitle( "Number of PEs" );
 
@@ -142,9 +140,9 @@ TestStatMonitor::~TestStatMonitor() {
 
 void TestStatMonitor::monitor( Likelihood_FCN& l ) {
 
-  for( int i = 0; i < 100; ++i ) {
+  for( int i = 0; i < 1000; ++i ) {
     double scale = _randomCompScale();
-    double alpha = log( _randomAlpha() );
+    double alpha = exp(_randomAlpha())-0.001;
     _likelihoodVsScale->Fill( scale, l( vector< double >( 1, 1. / pow( scale, 4 ) ) ) );
     _likelihoodVsAlpha->Fill( alpha, l( vector< double >( 1, alpha ) ) );
   }
@@ -158,9 +156,9 @@ void TestStatMonitor::monitor( Likelihood_FCN& l ) {
 
 void TestStatMonitor::monitor( LikelihoodRatio& launda ) {
 
-  for( int i = 0; i < 100; ++i ) {
+  for( int i = 0; i < 1000; ++i ) {
     double scale = _randomCompScale();
-    double alpha = log( _randomAlpha() );
+    double alpha = exp(_randomAlpha())-0.001;
     _likelihoodRatioVsScale->Fill( scale, launda( vector< double >( 1, 1. / pow( scale, 4 ) ) ) );
     _likelihoodRatioVsAlpha->Fill( alpha, launda( vector< double >( 1, alpha ) ) );
   }
