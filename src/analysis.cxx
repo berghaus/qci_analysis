@@ -73,9 +73,6 @@ int main( int argc, char* argv[] ) {
   dataLikelihoodRatio.accept( tm );
   dataLikelihoodRatio.denominator().accept( tm );
   tm.finalize();
-  
-
-  LikelihoodRatio dataLikelihoodRatio( dataHist, new PDF( pdfFile, dataHist->Integral() ), 0. );
 
   // Monitor data PDF
   PDFMonitor pdfMon;
@@ -114,6 +111,7 @@ int main( int argc, char* argv[] ) {
 
   pValueTest.finalize();
 
+  int scaleBin = 0;
   for ( double scale = minScale; scale < maxScale; scale += deltaScale ) {
     double alpha = pow( scale, -4 );
     vector< PseudoExperiment > pes = peFactory.build( alpha, nPE );
