@@ -28,11 +28,16 @@ struct adder : public unary_function<double, void> {
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-Experiment::Experiment() {
+Experiment::Experiment() :
+  _integral( 0 ),
+  _canvas( 0 ),
+  _graph( 0 ) {
 }
 
 
-Experiment::Experiment( const TH1& h ) {
+Experiment::Experiment( const TH1& h ):
+  _canvas( 0 ),
+  _graph( 0 ) {
 
   _integral = h.Integral();
   int nBins = h.GetNbinsX();
@@ -46,12 +51,18 @@ Experiment::Experiment( const TH1& h ) {
 
 Experiment::Experiment( const vector<double>& x, const vector<double>& y ) :
   _x( x ),
-  _y( y ) {
+  _y( y ),
+  _canvas( 0 ),
+  _graph( 0 )  {
   _integral = for_each( y.begin(), y.end(), adder() ).sum;
 }
 
 
 Experiment::~Experiment() {
+
+  delete _canvas;
+  delete _graph;
+
 }
 
 string Experiment::name() const { return _name; }
@@ -70,12 +81,12 @@ void Experiment::y( const std::vector<double>& y) {
 
 void Experiment::plot() {
 
-  TCanvas * dataC = new TCanvas( (_name+"Canvas").c_str(), "", 500, 500 );
-  dataC->cd();
-  TGraph * g = new TGraph( _x.size(), &_x[0], &_y[0] );
-  g->Draw("AP");
-  g->GetXaxis()->SetTitle( "#chi" );
-  g->GetYaxis()->SetTitle( _name.c_str() );
+  _canvas = new TCanvas( (_name+"Canvas").c_str(), "", 500, 500 );
+  _canvas->cd();
+  _graph = new TGraph( _x.size(), &_x[0], &_y[0] );
+  _graph->Draw("AP");
+  _graph->GetXaxis()->SetTitle( "#chi" );
+  _graph->GetYaxis()->SetTitle( _name.c_str() );
 
 }
 

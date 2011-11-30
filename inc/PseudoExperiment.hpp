@@ -8,6 +8,9 @@
 
 #include "PDF.hpp"
 
+class TCanvas;
+class TGraph;
+
 class Experiment {
 
 public:
@@ -35,6 +38,8 @@ private:
   std::vector<double> _x;
   std::vector<double> _y;
   double _integral;
+  TCanvas *_canvas;
+  TGraph *_graph;
 
 };
 
