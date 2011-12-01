@@ -107,6 +107,12 @@ void Experiment::y( const std::vector< double >& y ) {
 }
 
 void Experiment::plot() {
+
+  if ( _canvas || _graph ) {
+    cout << "You already plotted this experiment ( " + _name + " ) silly!" << endl;
+    return;
+  }
+
   string name;
   if ( _name.empty() ) name = RandomString(); // random string
   else name = _name;
@@ -118,7 +124,6 @@ void Experiment::plot() {
   _graph->GetYaxis()->SetTitle( _name.c_str() );
 
 }
-
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
