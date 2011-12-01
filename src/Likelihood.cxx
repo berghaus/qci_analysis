@@ -88,7 +88,6 @@ double Likelihood_FCN::Minimize( MnUserParameters& pars ) {
   MnStrategy strat( 2 );
   FunctionMinimum minResults( combMin.Minimize( *this, pars, strat, 10000, 0.1 ) );
 
-
   _pars = pars = minResults.UserParameters();
   _isMinimized = minResults.IsValid();
   if ( !_isMinimized ) cout << "invalid fit!\n";
@@ -113,7 +112,7 @@ LikelihoodRatio::LikelihoodRatio() :
 }
 
 LikelihoodRatio::LikelihoodRatio( const Experiment* data, const PDF* pdf, const double& scale ) :
-  _data( data ),
+    _data( data ),
     _pdf( pdf ),
     _numerator( data, pdf, scale ),
     _denominator( data, pdf, scale ) {
@@ -123,7 +122,6 @@ LikelihoodRatio::LikelihoodRatio( const Experiment* data, const PDF* pdf, const 
 }
 
 LikelihoodRatio::~LikelihoodRatio() {
-  cout << "deleting a likelihoodratio\n";
   delete _pdf;
 }
 
