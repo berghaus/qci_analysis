@@ -47,6 +47,7 @@ private:
 class PseudoExperiment : public Experiment {
 
 public:
+  PseudoExperiment();
   PseudoExperiment( const std::vector<double>&, const std::vector<double>&, const double& );
   double alpha() const;
 
@@ -62,13 +63,13 @@ private:
 class PseudoExperimentFactory {
 
 public:
+  PseudoExperimentFactory();
   PseudoExperimentFactory( const PDF* pdf, const Experiment& graft, unsigned int seed = 65539 );
   virtual ~PseudoExperimentFactory();
   std::vector<PseudoExperiment> build( const double& alpha, const int& n );
 
 private:
 
-  PseudoExperimentFactory();
   const PDF *      _pdf;
   const Experiment _graft;
 
