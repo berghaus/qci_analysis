@@ -81,8 +81,8 @@ int main( int argc, char* argv[] ) {
   PseudoExperimentFactory peFactory( pdf, data );
 
   // TODO: give these as command line controls
-  int nPE = 1000;
-  double nBinsScale = 50;
+  int nPE = 100;
+  double nBinsScale = 42;
   double minScale   = 4.;
   double maxScale   = 8.2;
   double deltaScale = ( maxScale - minScale ) / nBinsScale;
@@ -101,7 +101,7 @@ int main( int argc, char* argv[] ) {
   vector< LikelihoodRatio* > errorBandLRs;
   errorBandLRs.reserve( errorBandLRs.size() );
   foreach( PseudoExperiment pe, errorBandPEs ) {
-    PDF * pePDF = new PDF( pdfFile, pe.integral() );
+    PDF * pePDF = new PDF( pdf->pdfFitParams(), pe.integral() );
     errorBandLRs.push_back( new LikelihoodRatio( &pe, pePDF, 0. ) );
   }
 
@@ -120,7 +120,7 @@ int main( int argc, char* argv[] ) {
     likelihoodRatios.reserve( pes.size() );
     foreach( PseudoExperiment pe, pes )
     {
-      PDF * pePDF = new PDF( pdfFile, pe.integral() );
+      PDF * pePDF = new PDF( pdf->pdfFitParams(), pe.integral() );
       likelihoodRatios.push_back( new LikelihoodRatio( &pe, pePDF, alpha ) );
     }
     //PValueTest * pValueTest = new PValueTest( alpha, likelihoodRatios );
@@ -151,8 +151,11 @@ int main( int argc, char* argv[] ) {
     e16.push_back( fabs( exp - sigmaN1 ) );
     e84.push_back( fabs( exp - sigmaP1 ) );
     ex.push_back( 0. );
+    // clean up likelihoods for this alpha
     for_each( likelihoodRatios.begin(), likelihoodRatios.end(), boost::checked_deleter< LikelihoodRatio >() );
   }
+  // clean up error band Likelihoods
+  for_each( errorBandLRs.begin(), errorBandLRs.end(), boost::checked_deleter< LikelihoodRatio >() );
 
   TGraph observedGraph( scales.size(), &scales[0], &observed[0] );
   observedGraph.SetLineWidth( 2 );
