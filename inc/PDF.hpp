@@ -16,11 +16,16 @@ public:
   // default constructor - should not be used
   PDF();
 
-  // recommended constructor:
+  // main constructor - should only called ony when needed TGraph::Fit leaks memory:
   // 1st parameter: file organised containing one graph per data bin with the predicted
   //                number of events as a function of the scale parameter
   // 2nd parameter: number of events in data to scale the MC prediction to
   PDF( TFile*, const double );
+
+  // recommended constructor:
+  // 1st parameter: fit parameters
+  // 2nd parameter: number of events in data to scale the MC prediction to
+  PDF( const std::map< double, std::vector< double > >&, double );
 
   // copy constructor - since there are some dynamic member
   PDF( const PDF& );
@@ -30,10 +35,10 @@ public:
   // (2nd argument) using the provided x (1st parameter) and parameters (3rd)
   // to look up the number of events epxected by the PDF.  Interpolates for
   // smoothness
-  double operator() ( const double&, const int&, const std::vector<double>& ) const;
+  double operator()( const double&, const int&, const std::vector< double >& ) const;
 
   // expectated number of events at x, y
-  double operator() ( const double&, const double& ) const;
+  double operator()( const double&, const double& ) const;
 
   void init();
 
@@ -46,14 +51,11 @@ public:
   TF1* pdfFit( const std::string& ) const;
 
 private:
-  TFile* _file;
   TF1* _pdfFit;
-  TF1* _normalizedPdfFit;
   double _nData;
-  std::map<double,TGraphErrors*> _eventCounts;
-  std::map<double,std::vector< double > > _pdfFitParams;
+  std::map< double, TGraphErrors* > _eventCounts;
+  std::map< double, std::vector< double > > _pdfFitParams;
 
 };
-
 
 #endif // PDF_HPP
