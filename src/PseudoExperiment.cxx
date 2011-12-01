@@ -49,6 +49,7 @@ Experiment::Experiment() :
 }
 
 Experiment::Experiment( const TH1& h ) :
+    _name( h.GetName() ),
     _canvas( 0 ),
     _graph( 0 ) {
 
