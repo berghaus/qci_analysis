@@ -19,7 +19,7 @@
 using namespace std;
 using boost::format;
 
-PValueTest::PValueTest( const double alpha, const vector< LikelihoodRatio* >& lambdas ) :
+PValueTest::PValueTest( const double alpha, const vector< Neg2LogLikelihoodRatio* >& lambdas ) :
     _alpha( alpha ),
     _lambdas( lambdas ),
     _dataLLR( 0 ) {
@@ -30,9 +30,9 @@ void PValueTest::init() {
 
   vector< double > par( 1, _alpha );
   _testStats.reserve( _lambdas.size() );
-  foreach( LikelihoodRatio* lambda, _lambdas )
+  foreach( Neg2LogLikelihoodRatio* lambda, _lambdas )
   {
-    LikelihoodRatio& l = *lambda;
+    Neg2LogLikelihoodRatio& l = *lambda;
     _testStats.push_back( l( par ) );
   }
   sort( _testStats.begin(), _testStats.end() );
@@ -47,7 +47,7 @@ PValueTest::PValueTest() :
 PValueTest::~PValueTest() {
 }
 
-double PValueTest::operator()( LikelihoodRatio& lambda ) {
+double PValueTest::operator()( Neg2LogLikelihoodRatio& lambda ) {
 
   vector< double > par( 1, _alpha );
   _dataLLR = lambda( par );
@@ -78,14 +78,17 @@ void PValueTest::finalize() {
   dataLine->SetLineColor( kRed );
   dataLine->SetLineWidth( 2 );
 
-  TCanvas* pvc = new TCanvas( (hName+"Canvas").c_str() , "", 500, 500 );
+  TCanvas* pvc = new TCanvas( ( hName + "Canvas" ).c_str(), "", 500, 500 );
   pvc->cd();
   _minus2LnLikelihoodDistribution->Draw();
   dataLine->Draw();
   string cName = _minus2LnLikelihoodDistribution->GetName();
-  pvc->Print( ( cName + ".pdf" ).c_str() );
+  pvc->Print( ( "figures/Likelihood/" + cName + ".pdf" ).c_str() );
 }
 
-
-double PValueTest::alpha() const { return _alpha; }
-void PValueTest::alpha( const double& alpha ) { _alpha = alpha; }
+double PValueTest::alpha() const {
+  return _alpha;
+}
+void PValueTest::alpha( const double& alpha ) {
+  _alpha = alpha;
+}

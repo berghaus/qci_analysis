@@ -1,5 +1,6 @@
 #ifndef PSEUDO_EXPERIMENT_HPP
 #define PSEUDO_EXPERIMENT_HPP
+#include <ostream>
 #include <map>
 #include <vector>
 
@@ -10,6 +11,8 @@
 
 class TCanvas;
 class TGraph;
+
+
 
 class Experiment {
 
@@ -31,15 +34,20 @@ public:
   void x( const std::vector<double>& );
   void y( const std::vector<double>& );
 
-  void plot();
+  virtual void plot() const;
+
+  friend std::ostream& operator<< ( std::ostream&, const Experiment& );
+
+protected:
+  virtual void print( std::ostream& ) const;
 
 private:
   std::string _name;
   std::vector<double> _x;
   std::vector<double> _y;
   double _integral;
-  TCanvas *_canvas;
-  TGraph *_graph;
+  mutable TCanvas *_canvas;
+  mutable TGraph *_graph;
 
 };
 
@@ -51,10 +59,12 @@ public:
   PseudoExperiment( const std::vector<double>&, const std::vector<double>&, const double& );
   double alpha() const;
 
+  friend std::ostream& operator<< ( std::ostream&, const PseudoExperiment& );
+
+protected:
+  virtual void print( std::ostream& ) const;
+
 private:
-  std::vector<double> _x;
-  std::vector<double> _y;
-  double _integral;
   double _alpha;
 
 };

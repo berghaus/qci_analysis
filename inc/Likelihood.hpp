@@ -15,15 +15,16 @@
 class TH1;
 class TFitterMinuit;
 class PDF;
+class TestStatMonitor;
 
-class Likelihood_FCN: public ROOT::Minuit2::FCNBase {
+class Neg2LogLikelihood_FCN: public ROOT::Minuit2::FCNBase {
 
 public:
-  Likelihood_FCN();
+  Neg2LogLikelihood_FCN();
 
   // does not assume ownership of TH1 or PDF
-  Likelihood_FCN( const Experiment*, const PDF*, const double alpha = 0. );
-  virtual ~Likelihood_FCN();
+  Neg2LogLikelihood_FCN( const Experiment*, const PDF*, const double alpha = 0. );
+  virtual ~Neg2LogLikelihood_FCN();
 
   double operator()() const;
   double operator()( const std::vector< double >& ) const;
@@ -40,7 +41,8 @@ public:
   double Minimize();
   double Minimize( ROOT::Minuit2::MnUserParameters& );
 
-  std::vector< double > pars();
+  std::vector< double > pars() const;
+  void pars( const std::vector< double >& );
 
   void accept( TestStatMonitor& );
 
@@ -55,15 +57,15 @@ private:
 
 };
 
-class LikelihoodRatio {
+class Neg2LogLikelihoodRatio {
 
 public:
 
-  LikelihoodRatio();
+  Neg2LogLikelihoodRatio();
 
   // assume ownership of TH1 but not the PDF
-  LikelihoodRatio( const Experiment* data, const PDF* pdf, const double& alpha = 0. );
-  virtual ~LikelihoodRatio();
+  Neg2LogLikelihoodRatio( const Experiment* data, const PDF* pdf, const double& alpha = 0. );
+  virtual ~Neg2LogLikelihoodRatio();
 
   double operator()( const std::vector< double >& );
 
@@ -74,8 +76,8 @@ public:
 
   const Experiment* data() const;
   const PDF* pdf() const;
-  Likelihood_FCN numerator() const;   // fit over nuisance parameters
-  Likelihood_FCN denominator() const; // global fit
+  Neg2LogLikelihood_FCN numerator() const;   // fit over nuisance parameters
+  Neg2LogLikelihood_FCN denominator() const; // global fit
 
   void accept( TestStatMonitor& );
 
@@ -85,8 +87,9 @@ private:
 
   const Experiment* _data;
   const PDF* _pdf;
-  Likelihood_FCN _numerator;   // fit over nuisance parameters
-  Likelihood_FCN _denominator; // global fit
+  Neg2LogLikelihood_FCN _numerator;   // fit over nuisance parameters
+  Neg2LogLikelihood_FCN _denominator; // global fit
+  TestStatMonitor * _inCaseShitMonitor; // monitor likelihood denominator fails fit
 
 };
 

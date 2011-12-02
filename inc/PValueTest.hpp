@@ -11,10 +11,10 @@ class PDF;
 class PValueTest {
 
 public:
-  PValueTest( const double, const std::vector<LikelihoodRatio*>& );
+  PValueTest( const double, const std::vector<Neg2LogLikelihoodRatio*>& );
   virtual ~PValueTest();
 
-  double operator() ( LikelihoodRatio& );
+  double operator() ( Neg2LogLikelihoodRatio& );
   void init();
   void finalize();
   double alpha() const;
@@ -23,7 +23,7 @@ public:
 private:
   PValueTest();
   double                        _alpha; // alpha used for PEs
-  std::vector<LikelihoodRatio*> _lambdas;
+  std::vector<Neg2LogLikelihoodRatio*> _lambdas;
   double _dataLLR;
 
   TH1 * _minus2LnLikelihoodDistribution;

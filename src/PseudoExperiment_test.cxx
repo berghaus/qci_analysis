@@ -2,7 +2,9 @@
 #define BOOST_TEST_MODULE PseudoExperimentTest
 #include <boost/test/unit_test.hpp>
 #include <vector>
+#include <TFile.h>
 #include <TH1.h>
+#include "PDF.hpp"
 
 BOOST_AUTO_TEST_CASE( constructors_test ) {
   Experiment exp0;
@@ -26,7 +28,7 @@ BOOST_AUTO_TEST_CASE( constructors_test ) {
     histogram.Fill( x[i], 1. );
   Experiment exp2( histogram );
   BOOST_CHECK_EQUAL( exp2.integral(), double( histogram.Integral() ) );
-  BOOST_CHECK_EQUAL( exp2.name(), std::string("") );
+  BOOST_CHECK_EQUAL( exp2.name(), std::string(histogram.GetName()) );
   BOOST_CHECK_EQUAL( exp2.x().size(), histogram.GetNbinsX() );
   BOOST_CHECK_EQUAL( exp2.y().size(), histogram.GetNbinsX() );
 
@@ -44,6 +46,18 @@ BOOST_AUTO_TEST_CASE( constructors_test ) {
   BOOST_CHECK_EQUAL( pe1.x().size(), x.size() );
   BOOST_CHECK_EQUAL( pe1.y().size(), y.size() );
   BOOST_CHECK_EQUAL( pe1.alpha(), a );
+
+  TFile * dataF = TFile::Open( "~/docs/comp/analysis/data.root", "READ" );
+  TH1 * dataHist = (TH1*) dataF->Get( "Chi_2000-to-7000all" );
+  Experiment atlas( *dataHist );
+  TFile * input = TFile::Open( "~/docs/comp/analysis/vanilla.root", "READ" );
+  PDF pdf( input, atlas.integral() );
+  // int pefSeed = 1;
+  // int nPE = 10;
+  // PseudoExperimentFactory pef0( &pdf, atlas , pefSeed );
+
+  input->Close();
+  dataF->Close();
 
 }
 

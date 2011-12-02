@@ -65,24 +65,24 @@ void TestStatMonitor::init() {
   }
 
   _likelihoodVsScale = new TH2D( ( _label + "Likelihood" ).c_str(), "likelihood", _nBinsScale, _minScale, _maxScale,
-                                 1000, -5., 200. );
+                                 1000, -10., 200. );
   _likelihoodVsScale->SetXTitle( "#Lambda [TeV]" );
-  _likelihoodVsScale->SetYTitle( "-2*ln( L(data|#Lambda) )" );
+  _likelihoodVsScale->SetYTitle( ("-2*ln( L("+_label+"|#Lambda) )").c_str() );
 
   _likelihoodRatioVsScale = new TH2D( ( _label + "LikelihoodRatio" ).c_str(), "likelihoodRatio", _nBinsScale, _minScale,
-                                      _maxScale, 1000, -5., 200. );
+                                      _maxScale, 1000, -10., 200. );
   _likelihoodRatioVsScale->SetXTitle( "#Lambda [TeV]" );
-  _likelihoodRatioVsScale->SetYTitle( "-2*ln( #lambda(#Lambda) )" );
+  _likelihoodRatioVsScale->SetYTitle( str( format("-2*ln( #lambda(#Lambda = %2.1f ) )") % pow( _alpha, -0.25 ) ).c_str() );
 
   _likelihoodVsAlpha = new TH2D( ( _label + "LikelihoodVsAlpha" ).c_str(), "likelihood", alphaBins.size() - 1,
-                                 &alphaBins[0], 1000, -5., 200. );
+                                 &alphaBins[0], 1000, -10., 200. );
   _likelihoodVsAlpha->SetXTitle( "#alpha = #Lambda^{-4} [TeV^{-4}]" );
-  _likelihoodVsAlpha->SetYTitle( "-2*ln( L(data|#alpha) )" );
+  _likelihoodVsAlpha->SetYTitle( ("-2*ln( L("+_label+"|#alpha) )").c_str() );
 
   _likelihoodRatioVsAlpha = new TH2D( ( _label + "LikelihoodRatioVsAlpha" ).c_str(), "likelihood", alphaBins.size() - 1,
-                                      &alphaBins[0], 1000, -5., 200. );
+                                      &alphaBins[0], 1000, -10., 200. );
   _likelihoodRatioVsAlpha->SetXTitle( "#alpha = #Lambda^{-4} [TeV^{-4}]" );
-  _likelihoodRatioVsAlpha->SetYTitle( "-2*ln( #lambda(#alpha) )" );
+  _likelihoodRatioVsAlpha->SetYTitle( str( format("-2*ln( #lambda(#Lambda = %2.1f ) )") % pow( _alpha, -0.25 ) ).c_str() );
 
   _minimizedAlpha = new TH1D( ( _label + "MinimizedAlpha" ).c_str(), "minimizedAlpha", 1000., 0., -1. );
   _minimizedAlpha->SetXTitle( "#alpha = #Lambda^{-4} [TeV^{-4}]" );
@@ -138,7 +138,7 @@ TestStatMonitor::~TestStatMonitor() {
 
 }
 
-void TestStatMonitor::monitor( Likelihood_FCN& l ) {
+void TestStatMonitor::monitor( Neg2LogLikelihood_FCN& l ) {
 
   for( int i = 0; i < 1000; ++i ) {
     double scale = _randomCompScale();
@@ -154,7 +154,7 @@ void TestStatMonitor::monitor( Likelihood_FCN& l ) {
 
 }
 
-void TestStatMonitor::monitor( LikelihoodRatio& launda ) {
+void TestStatMonitor::monitor( Neg2LogLikelihoodRatio& launda ) {
 
   for( int i = 0; i < 1000; ++i ) {
     double scale = _randomCompScale();

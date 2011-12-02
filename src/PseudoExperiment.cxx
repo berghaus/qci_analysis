@@ -1,5 +1,6 @@
 #include "PseudoExperiment.hpp"
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <functional>
 #include <iostream>
@@ -71,6 +72,7 @@ Experiment::Experiment( const vector< double >& x, const vector< double >& y ) :
 }
 
 Experiment::~Experiment() {
+  if ( _canvas ) _canvas->Print( ("./figures/PseudoExperiments/"+_name+".png").c_str() );
 
   delete _canvas;
   delete _graph;
@@ -107,7 +109,7 @@ void Experiment::y( const std::vector< double >& y ) {
   _integral = for_each( y.begin(), y.end(), adder() ).sum;
 }
 
-void Experiment::plot() {
+void Experiment::plot() const {
 
   if ( _canvas || _graph ) {
     cout << "You already plotted this experiment ( " + _name + " ) silly!" << endl;
@@ -123,6 +125,23 @@ void Experiment::plot() {
   _graph->Draw( "AP" );
   _graph->GetXaxis()->SetTitle( "#chi" );
   _graph->GetYaxis()->SetTitle( _name.c_str() );
+
+}
+
+void Experiment::print( ostream& out ) const {
+
+  out << "Experiment " << _name << '\n';
+    assert( _x.size() == _y.size() );
+    for ( int i = 0;  i < _x.size(); ++i ) {
+      out << "   chi = " << _x.at(i) << ",   n = " << _y.at(i) << '\n';
+    }
+    out << " sum = " << _integral << '\n';
+
+}
+ostream& operator<< ( ostream& out, const Experiment& e ) {
+
+  e.print( out );
+  return out;
 
 }
 
@@ -142,6 +161,26 @@ PseudoExperiment::PseudoExperiment( const vector< double >& x, const vector< dou
 double PseudoExperiment::alpha() const {
   return _alpha;
 }
+
+void PseudoExperiment::print( ostream& out ) const {
+
+  out << "Experiment " << name() << '\n';
+    assert( x().size() == y().size() );
+    for ( int i = 0;  i < x().size(); ++i ) {
+      out << "   chi = " << x(i) << ",   n = " << y(i) << '\n';
+    }
+    out << " sum =   " << integral() << '\n';
+    out << " alpha = " << _alpha << '\n';
+
+}
+
+ostream& operator<< ( ostream& out, const PseudoExperiment& e ) {
+
+  e.print( out );
+  return out;
+
+}
+
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -179,7 +218,6 @@ PseudoExperiment PseudoExperimentFactory::build( const double& alpha ) {
   PseudoExperiment result( chis, content, alpha );
   result.name( peName );
 
-  // cout << "Integral( " << peName << " ) = " << result.integral() << '\n'; 
   return result;
 
 }

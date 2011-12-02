@@ -7,8 +7,8 @@
 
 class TH1;
 class TH2;
-class Likelihood_FCN;
-class LikelihoodRatio;
+class Neg2LogLikelihood_FCN;
+class Neg2LogLikelihoodRatio;
 
 class TestStatMonitor {
 
@@ -18,8 +18,8 @@ public:
   TestStatMonitor( const double&, const std::string&, const std::string& );
   virtual ~TestStatMonitor();
 
-  virtual void monitor( Likelihood_FCN& );
-  virtual void monitor( LikelihoodRatio& );
+  virtual void monitor( Neg2LogLikelihood_FCN& );
+  virtual void monitor( Neg2LogLikelihoodRatio& );
 
   virtual void finalize();
 
