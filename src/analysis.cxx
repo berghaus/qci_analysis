@@ -43,8 +43,8 @@ T quantile( const vector< T >&, const double& );
 int main( int argc, char* argv[] ) {
 
   // TODO: give these as command line controls
-  int nPE = 1000;
-  double nBinsScale = 210;
+  int nPE = 100;
+  double nBinsScale = 21;
   double minScale = 4.;
   double maxScale = 8.2;
   double deltaScale = ( maxScale - minScale ) / nBinsScale;
