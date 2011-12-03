@@ -92,7 +92,8 @@ int main( int argc, char* argv[] ) {
     PseudoExperimentFactory peFactory( pdf, data );
 
     typedef map< double, vector< PseudoExperiment > > peMap_t;
-    vector< PValueTest* > pValueTests;
+
+    // TODO: Encapsulate these in a class
     vector< double > scales;
     vector< double > observed;
     vector< double > expected;
