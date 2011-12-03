@@ -72,10 +72,9 @@ Experiment::Experiment( const vector< double >& x, const vector< double >& y ) :
 }
 
 Experiment::~Experiment() {
-  if ( _canvas ) _canvas->Print( ("./figures/PseudoExperiments/"+_name+".png").c_str() );
 
-  delete _canvas;
-  delete _graph;
+  //delete _canvas;
+  //delete _graph;
 
 }
 
