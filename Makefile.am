@@ -9,7 +9,8 @@ bin_PROGRAMS = analysis testPE
 
 # --- build my programs ---
 analysis_SOURCES = src/analysis.cxx src/PDF.cxx src/Likelihood.cxx src/PValueTest.cxx src/PseudoExperiment.cxx \
-	src/AtlasStyle.cxx src/TestStatMonitor.cxx src/PDFMonitor.cxx src/ControlFrame.cxx src/ControlFrameDict.cxx
+	src/AtlasStyle.cxx src/TestStatMonitor.cxx src/PDFMonitor.cxx src/ControlFrame.cxx src/ControlFrameDict.cxx \
+	src/CertaintyLevel.cxx
 analysis_LDADD   = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 
 testPE_SOURCES = src/PseudoExperiment_test.cxx src/PseudoExperiment.cxx src/PDF.cxx

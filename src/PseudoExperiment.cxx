@@ -72,10 +72,8 @@ Experiment::Experiment( const vector< double >& x, const vector< double >& y ) :
 }
 
 Experiment::~Experiment() {
-
   //delete _canvas;
   //delete _graph;
-
 }
 
 string Experiment::name() const {
