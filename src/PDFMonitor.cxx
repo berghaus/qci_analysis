@@ -111,7 +111,7 @@ void PDFMonitor::monitor( PDF& pdf ) {
     index.reserve( n );
     offset.reserve( n );
     for( int i = 0; i < n; ++i ) {
-      index.push_back( i );
+      index.push_back( n-i ); // remeber reverse ordering for alpha
       double graphY = yArr[i];
       double funcY = func->Eval( xArr[i] );
       offset.push_back( ( graphY - funcY ) / eyArr[i] );
