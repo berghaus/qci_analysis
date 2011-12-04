@@ -47,6 +47,7 @@ int main( int argc, char* argv[] ) {
     scales.push_back( vector< double >( 1, scale ) );
 
   CertaintyLevel CL_sb("CL_{s+b}", nBinsScale, minScale, maxScale );
+  CertaintyLevel CL_s("CL_{s}", nBinsScale, minScale, maxScale );
 
   // for GUI;
   TApplication theApp( "Analysis", &argc, argv );
@@ -61,7 +62,6 @@ int main( int argc, char* argv[] ) {
   Experiment data( *dataHist );
 
   data.plot();
-  cout << "integral(data) = " << data.integral() << endl;
 
   // Set up PDF for data
 
@@ -97,10 +97,19 @@ int main( int argc, char* argv[] ) {
 
     PValueTest pValueTest( 0., errorBandLRs );
     double pValue = pValueTest( dataLikelihoodRatio );
-    cout << " * pvalue( Lambda = " << 0. << ") = " << pValue << endl;
 
     pValueTest.finalize();
 
+    
+    vector< PseudoExperiment > bgPEs = peFactory.build( 0., nPE );
+    vector< Neg2LogLikelihoodRatio* > bgLikelihoodRatios;
+    bgLikelihoodRatios.reserve( bgPEs.size() );
+    foreach( const PseudoExperiment& pe, bgPEs )
+    {
+      PDF * pePDF = new PDF( pdf->pdfFitParams(), pe.integral() );
+      bgLikelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
+    }    
+    
     int scaleBin = 0;
     for( double scale = minScale; scaleBin < nBinsScale; scale += deltaScale ) {
       double alpha = pow( scale, -4 );
@@ -114,23 +123,41 @@ int main( int argc, char* argv[] ) {
         likelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, alpha ) );
       }
 
-      PValueTest pv( alpha, likelihoodRatios ); // = *pValueTest;
+      // -------
+      // CL_s+b
+      PValueTest signalPlusBackgroundPValue( alpha, likelihoodRatios ); // = *pValueTest;
       vector< double > par( 1, alpha );
+      double clsb_observed = signalPlusBackgroundPValue( dataLikelihoodRatio );
 
-      double observed = pv( dataLikelihoodRatio );
+      vector< double > clsb_expected;
+      clsb_expected.reserve( nPE );
+      foreach( Neg2LogLikelihoodRatio* l, errorBandLRs )
+        clsb_expected.push_back( signalPlusBackgroundPValue( *l ) );
+      sort( clsb_expected.begin(), clsb_expected.end() );
+
+      CL_sb.add( scale, clsb_observed, clsb_expected );
+
+
+      // -----------
+      // CL_s
+      PValueTest backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
+      double cls_observed = signalPlusBackgroundPValue( dataLikelihoodRatio ) / backgroundPValue( dataLikelihoodRatio );
+
+      vector< double > cls_expected;
+      cls_expected.reserve( nPE );
+      foreach( Neg2LogLikelihoodRatio* l, errorBandLRs )
+        cls_expected.push_back( signalPlusBackgroundPValue( *l ) / backgroundPValue( *l ) );
+      sort( cls_expected.begin(), cls_expected.end() );
+
+      CL_s.add( scale, cls_observed, cls_expected );
+
+      // ----------
+      // monitoring
       if ( !( scaleBin % 10 ) ) {
-        pv.finalize();
+        signalPlusBackgroundPValue.finalize();
+        backgroundPValue.finalize();
       }
       ++scaleBin;
-
-      vector< double > expected;
-      expected.reserve( nPE );
-      foreach( Neg2LogLikelihoodRatio* l, errorBandLRs )
-        expected.push_back( pv( *l ) );
-      sort( expected.begin(), expected.end() );
-
-      CL_sb.add( scale, observed, expected );
-
 
       // clean up likelihoods for this alpha
       for_each( likelihoodRatios.begin(), likelihoodRatios.end(), boost::checked_deleter< Neg2LogLikelihoodRatio >() );
@@ -138,9 +165,15 @@ int main( int argc, char* argv[] ) {
     }
     // clean up error band Likelihoods
     for_each( errorBandLRs.begin(), errorBandLRs.end(), boost::checked_deleter< Neg2LogLikelihoodRatio >() );
+    for_each( bgLikelihoodRatios.begin(), bgLikelihoodRatios.end(), boost::checked_deleter< Neg2LogLikelihoodRatio >() );
 
     CL_sb.plot();
+    CL_s.plot();
+
+
+    cout << " * pvalue( Lambda = " << 0. << ") = " << pValue << endl;
     cout << CL_sb << endl;
+    cout << CL_s << endl;
 
     theApp.Run( kTRUE );
 
