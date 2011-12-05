@@ -4,25 +4,25 @@
 #include <TGraph.h>
 #include <TGraphAsymmErrors.h>
 #include <TH2.h>
+#include <TLegend.h>
+#include <TLine.h>
 #include <TMultiGraph.h>
-
 
 using namespace std;
 using namespace boost::math;
 
 CertaintyLevel::CertaintyLevel() :
-  _nBins( 1 ),
-  _min( 2. ),
-  _max( 8. ) {
+    _nBins( 1 ),
+    _min( 2. ),
+    _max( 8. ) {
 }
 
-
-  // constructor specifying name (CLs, CLs+b, etc) and number of values to expect
-CertaintyLevel::CertaintyLevel( const string& name, const vector<double>::size_type& size ) :
-  _nBins( size ),
-  _min( 2. ),
-  _max( 8. ),
-  _name( name ) {
+// constructor specifying name (CLs, CLs+b, etc) and number of values to expect
+CertaintyLevel::CertaintyLevel( const string& name, const vector< double >::size_type& size ) :
+    _nBins( size ),
+    _min( 2. ),
+    _max( 8. ),
+    _name( name ) {
   _scales.reserve( size );
   _obs.reserve( size );
   _exp.reserve( size );
@@ -33,12 +33,12 @@ CertaintyLevel::CertaintyLevel( const string& name, const vector<double>::size_t
   _ex.reserve( size );
 }
 
-
-CertaintyLevel::CertaintyLevel( const string& name, const vector<double>::size_type& size, const double& min, const double& max ) :
-  _nBins( size ),
-  _min( min ),
-  _max( max ),
-  _name( name) {
+CertaintyLevel::CertaintyLevel( const string& name, const vector< double >::size_type& size, const double& min,
+                                const double& max ) :
+    _nBins( size ),
+    _min( min ),
+    _max( max ),
+    _name( name ) {
   _scales.reserve( size );
   _obs.reserve( size );
   _exp.reserve( size );
@@ -49,8 +49,7 @@ CertaintyLevel::CertaintyLevel( const string& name, const vector<double>::size_t
   _ex.reserve( size );
 }
 
-
-void CertaintyLevel::add( const double& scale, const double& obs, const vector<double>& exps ) {
+void CertaintyLevel::add( const double& scale, const double& obs, const vector< double >& exps ) {
 
   double sigmaN2 = quantile( exps, cdf( _myGaus, -2. ) );
   double sigmaN1 = quantile( exps, cdf( _myGaus, -1. ) );
@@ -65,10 +64,9 @@ void CertaintyLevel::add( const double& scale, const double& obs, const vector<d
   _e98.push_back( fabs( exp - sigmaP2 ) );
   _e16.push_back( fabs( exp - sigmaN1 ) );
   _e84.push_back( fabs( exp - sigmaP1 ) );
-  _ex.push_back( 0.5*(_max-_min)/double(_nBins) );
+  _ex.push_back( 0.5 * ( _max - _min ) / double( _nBins ) );
 
 }
-
 
 void CertaintyLevel::plot() {
 
@@ -84,13 +82,19 @@ void CertaintyLevel::plot() {
   observedGraph->SetLineWidth( 2 );
   observedGraph->SetLineColor( kRed );
 
-  TGraphAsymmErrors * expected1Sigma = new TGraphAsymmErrors( _nBins, &_scales[0], &_exp[0], &_ex[0], &_ex[0], &_e16[0], &_e84[0] );
+  TGraph * expectedGraph = new TGraph( _nBins, &_scales[0], &_exp[0] );
+  expectedGraph->SetLineWidth( 2 );
+  expectedGraph->SetLineStyle( 2 );
+
+  TGraphAsymmErrors * expected1Sigma = new TGraphAsymmErrors( _nBins, &_scales[0], &_exp[0], &_ex[0], &_ex[0], &_e16[0],
+                                                              &_e84[0] );
   expected1Sigma->SetFillStyle( 1001 );
   expected1Sigma->SetFillColor( kGreen );
-  expected1Sigma->SetLineStyle( 2 );
+  expected1Sigma->SetLineColor( kGreen );
   expected1Sigma->SetLineWidth( 2 );
 
-  TGraphAsymmErrors * expected2Sigma = new TGraphAsymmErrors( _nBins, &_scales[0], &_exp[0], &_ex[0], &_ex[0], &_e02[0], &_e98[0] );
+  TGraphAsymmErrors * expected2Sigma = new TGraphAsymmErrors( _nBins, &_scales[0], &_exp[0], &_ex[0], &_ex[0], &_e02[0],
+                                                              &_e98[0] );
   expected2Sigma->SetFillStyle( 1001 );
   expected2Sigma->SetFillColor( kYellow );
   expected2Sigma->SetLineColor( kYellow );
@@ -99,31 +103,47 @@ void CertaintyLevel::plot() {
   TMultiGraph * exclusion = new TMultiGraph;
   exclusion->Add( expected2Sigma, "3" );
   exclusion->Add( expected1Sigma, "3" );
-  exclusion->Add( expected1Sigma, "LX" );
+  exclusion->Add( expectedGraph, "L" );
   exclusion->Add( observedGraph, "L" );
+  TLegend * legend = new TLegend( 0.17, 0.4, 0.5, 0.9 );
+  legend->SetFillStyle( 0 );
+  legend->SetBorderSize( 0 );
+  legend->AddEntry( observedGraph, "observed", "L" );
+  legend->AddEntry( expectedGraph, "expected", "L" );
+  legend->AddEntry( expected1Sigma, "expected #pm 1#sigma", "F" );
+  legend->AddEntry( expected2Sigma, "expected #pm 2#sigma", "F" );
 
-  TCanvas * fullCanvas = new TCanvas( (_name+"_full").c_str(), "", 800, 800 );
+  TLine * line = new TLine( _min, 0.05, _max, 0.05 );
+  line->SetLineWidth( 2 );
+  line->SetLineStyle( 3 );
+
+  TCanvas * fullCanvas = new TCanvas( ( _name + "_full" ).c_str(), "", 800, 800 );
   fullCanvas->cd();
-  TH2D * fullHist = new TH2D( (_name+"fullHist").c_str(), "", _nBins, _min, _max, 100, 0., 1. );
+  fullCanvas->SetTicks( 0, 0 );
+  TH2D * fullHist = new TH2D( ( _name + "fullHist" ).c_str(), "", _nBins, _min, _max, 100, 0., 1. );
   fullHist->SetXTitle( "#Lambda [TeV]" );
   fullHist->SetYTitle( _name.c_str() );
   fullHist->Draw();
   exclusion->Draw();
   fullHist->Draw( "ASAME" );
+  legend->Draw();
+  line->Draw();
+  fullCanvas->Print( ("./figures/limits/"+_name+"-full.pdf").c_str() );
 
-  TCanvas * zoomCanvas = new TCanvas( (_name+"_zoom").c_str(), "", 800, 800 );
+  TCanvas * zoomCanvas = new TCanvas( ( _name + "_zoom" ).c_str(), "", 800, 800 );
   zoomCanvas->cd();
-  TH2D * zoomHist = new TH2D( (_name+"zoomHist").c_str(), "", _nBins, _min, _max, 100, 0.04, 0.1 );
+  zoomCanvas->SetTicks( 0, 0 );
+  TH2D * zoomHist = new TH2D( ( _name + "zoomHist" ).c_str(), "", _nBins, _min, _max, 100, 0.04, 0.1 );
   zoomHist->SetXTitle( "#Lambda [TeV]" );
   zoomHist->SetYTitle( _name.c_str() );
   zoomHist->Draw();
   exclusion->Draw();
   zoomHist->Draw( "ASAME" );
+  legend->Draw();
+  line->Draw();
+  zoomCanvas->Print( ("./figures/limits/"+_name+"-zoom.pdf").c_str() );
 
 }
-
-
-
 
 ostream& operator<<( ostream& out, const CertaintyLevel& cl ) {
 
@@ -133,7 +153,6 @@ ostream& operator<<( ostream& out, const CertaintyLevel& cl ) {
   return out;
 
 }
-
 
 double CertaintyLevel::observed() const {
 
@@ -145,27 +164,27 @@ double CertaintyLevel::expected() const {
   return findX( 0.05, _scales, _exp );
 }
 
-double findX( const double& yVal, const vector<double>& x, const vector<double>& y ) {
+double findX( const double& yVal, const vector< double >& x, const vector< double >& y ) {
 
   assert( x.size() == y.size() );
   double xHi = 0.;
   double xLo = 0.;
   double yHi = 0.;
   double yLo = 0.;
-  
-  for ( int i = 0; i < x.size(); ++i ) {
-    if ( y.at(i) > yVal ) {
-      xHi = x.at(i);
-      xLo = x.at(i-1);
-      yHi = y.at(i);
-      yLo = y.at(i-1);
+
+  for( int i = 0; i < x.size(); ++i ) {
+    if ( y.at( i ) > yVal ) {
+      xHi = x.at( i );
+      xLo = x.at( i - 1 );
+      yHi = y.at( i );
+      yLo = y.at( i - 1 );
       break;
     }
   }
 
   // equation of a line ... solve for y
-  double m = (yHi - yLo) / (xHi - xLo);
+  double m = ( yHi - yLo ) / ( xHi - xLo );
 
-  return (yVal - yLo) / m + xLo;
+  return ( yVal - yLo ) / m + xLo;
 
 }

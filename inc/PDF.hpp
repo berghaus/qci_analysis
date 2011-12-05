@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-class TFile;
+class TDirectoryFile;
 class TF1;
 class TGraphErrors;
 class PDFMonitor;
@@ -20,7 +20,7 @@ public:
   // 1st parameter: file organised containing one graph per data bin with the predicted
   //                number of events as a function of the scale parameter
   // 2nd parameter: number of events in data to scale the MC prediction to
-  PDF( TFile*, const double );
+  PDF( TDirectoryFile*, const double );
 
   // recommended constructor:
   // 1st parameter: fit parameters

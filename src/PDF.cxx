@@ -8,7 +8,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <TClass.h>
-#include <TDirectory.h>
+#include <TDirectoryFile.h>
 #include <TFile.h>
 #include <TKey.h>
 #include <TList.h>
@@ -32,14 +32,13 @@ PDF::PDF() :
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ) {
 }
 
-PDF::PDF( TFile* file, const double nData ) :
+PDF::PDF( TDirectoryFile* dir, const double nData ) :
     _nData( nData ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ) {
 
-  if ( !file ) throw domain_error(
+  if ( !dir ) throw domain_error(
       lexical_cast< string >( __FILE__ ) + " " + lexical_cast< string >( __LINE__ ) + ": No input file for PDF" );
 
-  TDirectory * dir = (TDirectory*) file->Get( "2000-mjj-7000GeV" );
   TList * list = dir->GetListOfKeys();
   TIter nextkey( list );
   TKey * key = 0;
