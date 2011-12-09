@@ -45,8 +45,8 @@ template< class T > bool compByName( const T* x, const T* y ) {
 int main( int argc, char* argv[] ) {
 
   // TODO: give these as command line controls
-  int nPE = 2000;
-  double nBinsScale = 61;
+  int nPE = 10000;
+  double nBinsScale = 122;
   double minScale = 2.;
   double maxScale = 8. + 0.1;
   double deltaScale = ( maxScale - minScale ) / nBinsScale;

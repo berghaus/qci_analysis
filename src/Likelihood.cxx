@@ -154,14 +154,14 @@ double Neg2LogLikelihoodRatio::operator()( const std::vector< double >& par ) {
 
   // would nomlize denominator over nuisance parameters .. but none for now
   if ( !_denominator.isMinimized() ) _denominator.Minimize();
-  if ( !_denominator.isMinimized() || _numerator( par ) - _denominator() < -0.001 ) {
+  if ( !_denominator.isMinimized() || _numerator( par ) - _denominator() < 0. ) {
 
     // try to re-minimize to new value
     _denominator.pars( par );
     _denominator.Minimize();
 
     // problem?
-    if ( !_denominator.isMinimized() || _numerator( par ) - _denominator() < -0.001 ) {
+    if ( _numerator( par ) - _denominator() < -0.01 ) {
       // map out the likelihood
       _inCaseShitMonitor = new TestStatMonitor( par.at( 0 ), "figures/", ".png" );
       _numerator.accept( *_inCaseShitMonitor );
