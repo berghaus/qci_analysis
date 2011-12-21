@@ -26,7 +26,8 @@ PDFMonitor::PDFMonitor() :
     _ext( ".pdf" ),
     _pdfCanvas( "PDFMonCanvas", "", 800, 600 ),
     _interpolCanvas( "InterpolCanvas", "", 800, 600 ),
-    _fitResultCanvas( "FitResultCanvas", "", 800, 600 ) {
+    _fitResultCanvas( "FitResultCanvas", "", 800, 600 ),
+    _parameterCanvas( "ParameterCanvas", "", 500, 500 ) {
   _pdfCanvas.Divide( 4, 3 );
   _interpolCanvas.Divide( 4, 3 );
   _fitResultCanvas.Divide( 4, 3 );
@@ -37,7 +38,8 @@ PDFMonitor::PDFMonitor( const string& folder, const string ext ) :
     _ext( ext ),
     _pdfCanvas( "PDFMonCanvas", "", 800, 600 ),
     _interpolCanvas( "InterpolCanvas", "", 800, 600 ),
-    _fitResultCanvas( "FitResultCanvas", "", 800, 600 ) {
+    _fitResultCanvas( "FitResultCanvas", "", 800, 600 ),
+    _parameterCanvas( "ParameterCanvas", "", 500, 500 ) {
   _pdfCanvas.Divide( 4, 3 );
   _interpolCanvas.Divide( 4, 3 );
   _fitResultCanvas.Divide( 4, 3 );
@@ -45,7 +47,8 @@ PDFMonitor::PDFMonitor( const string& folder, const string ext ) :
 
 PDFMonitor::~PDFMonitor() {
   // delete _interpolations
-  for_each( _interpolations.begin(), _interpolations.end(), checked_deleter<TGraph>() );
+  for_each( _interpolations.begin(), _interpolations.end(), checked_deleter< TGraph >() );
+  for_each( _fitResults.begin(), _fitResults.end(), checked_deleter< TGraph >() );
 }
 
 void PDFMonitor::monitor( PDF& pdf ) {
@@ -111,7 +114,7 @@ void PDFMonitor::monitor( PDF& pdf ) {
     index.reserve( n );
     offset.reserve( n );
     for( int i = 0; i < n; ++i ) {
-      index.push_back( n-i ); // remeber reverse ordering for alpha
+      index.push_back( n - i ); // remeber reverse ordering for alpha
       double graphY = yArr[i];
       double funcY = func->Eval( xArr[i] );
       offset.push_back( ( graphY - funcY ) / eyArr[i] );
@@ -126,11 +129,53 @@ void PDFMonitor::monitor( PDF& pdf ) {
     ++nPad;
   }
 
-  std::vector< TGraph* > _fitResults;
+  typedef map< double, vector< double > > ParMap_t;
+  ParMap_t params = pdf.pdfFitParams();
+  vector< double > chis;
+  vector< double > qcdPars;
+  vector< double > qciPars;
+  vector< double > interferencePars;
+  foreach( ParMap_t::value_type& x, params )
+  {
+    chis.push_back( x.first );
+    // see notes pg 126 for explanation
+    double a0 = x.second[0];
+    double a1 = x.second[1] / pow( 3., 2 );
+    double a2 = x.second[2] / pow( 3., 4 );
+    double chiSum = pdf.sumOverChi( pow( 3., -4 ) );
+    double e2 = ( -( a1 - chiSum ) - sqrt( pow( a1 - chiSum, 2 ) - 4 * a0 * a2 ) ) / ( 2 * a2 );
+    qcdPars.push_back( a0 / e2 );
+    qciPars.push_back( a1 );
+    interferencePars.push_back( a2 * e2 );
+    cout << "PDFMon chi = " << chis.back() << '\n' << "       qcd = " << qcdPars.back() << '\n' << "       qci = "
+         << qciPars.back() << '\n' << "       int = " << interferencePars.back() << '\n';
+  }
+  _parameterCanvas.cd();
+  TGraph * qcd = new TGraph( chis.size(), &chis[0], &qcdPars[0] );
+  qcd->SetLineColor( kBlack );
+  qcd->SetLineWidth( 2 );
+  qcd->SetName( "QCD" );
+  _parameters.push_back( qcd );
+  TGraph * qci = new TGraph( chis.size(), &chis[0], &qciPars[0] );
+  qci->SetLineColor( kBlue );
+  qci->SetLineWidth( 2 );
+  qci->SetName( "CI" );
+  _parameters.push_back( qci );
+  TGraph * interference = new TGraph( chis.size(), &chis[0], &interferencePars[0] );
+  interference->SetLineColor( kRed );
+  interference->SetLineWidth( 2 );
+  interference->SetName( "Interference" );
+  _parameters.push_back( interference );
+  TH2D* dummy = new TH2D( "paramMonDummy", "", 11, 0.9, 26, 100, -0.5, 1.5 );
+  dummy->Draw();
+  qcd->Draw( "LSAME" );
+  qci->Draw( "LSAME" );
+  interference->Draw( "LSAME" );
 
   _pdfCanvas.Print( ( _folder + "PDFs" + _ext ).c_str() );
   _interpolCanvas.Print( ( _folder + "Interpolation" + _ext ).c_str() );
   _fitResultCanvas.Print( ( _folder + "FitResults" + _ext ).c_str() );
+  _parameterCanvas.Print( ( _folder + "Parameters" + _ext ).c_str() );
 
 }
 

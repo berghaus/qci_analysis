@@ -49,6 +49,7 @@ public:
   std::map< double, TGraphErrors* > eventCounts() const;
   std::map< double, std::vector< double > > pdfFitParams() const;
   TF1* pdfFit( const std::string& ) const;
+  double sumOverChi( const double& ) const;
 
 private:
   TF1* _pdfFit;

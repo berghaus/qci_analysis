@@ -120,14 +120,8 @@ double PDF::interpolate( const double& chi, const double& alpha ) const {
 
   typedef map< double, vector< double > > chiFitParams_t;
   // sum over all chi bins
-  double sumOverChi = 0.;
-  foreach( chiFitParams_t::value_type ec, _pdfFitParams )
-  {
-    _pdfFit->SetParameter( 0, ec.second[0] );
-    _pdfFit->SetParameter( 1, ec.second[1] );
-    _pdfFit->SetParameter( 2, ec.second[2] );
-    sumOverChi += _pdfFit->Eval( alpha );
-  }
+  double chiSum = sumOverChi( alpha );
+
   // find chi value of interest
   double lastDistance = DBL_MAX;
   foreach( chiFitParams_t::value_type ec, _pdfFitParams )
@@ -139,7 +133,7 @@ double PDF::interpolate( const double& chi, const double& alpha ) const {
     _pdfFit->SetParameter( 1, ec.second[1] );
     _pdfFit->SetParameter( 2, ec.second[2] );
   }
-  return _nData * _pdfFit->Eval( alpha ) / sumOverChi;
+  return _nData * _pdfFit->Eval( alpha ) / chiSum;
 
 }
 
@@ -158,3 +152,17 @@ map< double, vector< double > > PDF::pdfFitParams() const {
 TF1* PDF::pdfFit( const std::string& name ) const {
   return (TF1*) _pdfFit->Clone( name.c_str() );
 }
+
+double PDF::sumOverChi( const double& alpha ) const {
+  typedef map< double, vector< double > > chiFitParams_t;
+  double result = 0.;
+  foreach( const chiFitParams_t::value_type ec, _pdfFitParams )
+  {
+    _pdfFit->SetParameter( 0, ec.second[0] );
+    _pdfFit->SetParameter( 1, ec.second[1] );
+    _pdfFit->SetParameter( 2, ec.second[2] );
+    result += _pdfFit->Eval( alpha );
+  }
+  return result;
+}
+
