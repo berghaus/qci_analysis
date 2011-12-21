@@ -32,7 +32,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = analysis$(EXEEXT) testPE$(EXEEXT)
+bin_PROGRAMS = analysis$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/../depcomp \
 	$(srcdir)/../install-sh $(srcdir)/../missing \
@@ -60,10 +60,6 @@ am_analysis_OBJECTS = src/analysis.$(OBJEXT) src/PDF.$(OBJEXT) \
 	src/CertaintyLevel.$(OBJEXT)
 analysis_OBJECTS = $(am_analysis_OBJECTS)
 analysis_DEPENDENCIES =
-am_testPE_OBJECTS = src/PseudoExperiment_test.$(OBJEXT) \
-	src/PseudoExperiment.$(OBJEXT) src/PDF.$(OBJEXT)
-testPE_OBJECTS = $(am_testPE_OBJECTS)
-testPE_DEPENDENCIES =
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
@@ -73,8 +69,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(analysis_SOURCES) $(testPE_SOURCES)
-DIST_SOURCES = $(analysis_SOURCES) $(testPE_SOURCES)
+SOURCES = $(analysis_SOURCES)
+DIST_SOURCES = $(analysis_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -181,8 +177,6 @@ analysis_SOURCES = src/analysis.cxx src/PDF.cxx src/Likelihood.cxx src/PValueTes
 	src/CertaintyLevel.cxx
 
 analysis_LDADD = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
-testPE_SOURCES = src/PseudoExperiment_test.cxx src/PseudoExperiment.cxx src/PDF.cxx
-testPE_LDADD = -lboost_test_exec_monitor -lboost_unit_test_framework -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -306,11 +300,6 @@ src/CertaintyLevel.$(OBJEXT): src/$(am__dirstamp) \
 analysis$(EXEEXT): $(analysis_OBJECTS) $(analysis_DEPENDENCIES) 
 	@rm -f analysis$(EXEEXT)
 	$(CXXLINK) $(analysis_OBJECTS) $(analysis_LDADD) $(LIBS)
-src/PseudoExperiment_test.$(OBJEXT): src/$(am__dirstamp) \
-	src/$(DEPDIR)/$(am__dirstamp)
-testPE$(EXEEXT): $(testPE_OBJECTS) $(testPE_DEPENDENCIES) 
-	@rm -f testPE$(EXEEXT)
-	$(CXXLINK) $(testPE_OBJECTS) $(testPE_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -323,7 +312,6 @@ mostlyclean-compile:
 	-rm -f src/PDFMonitor.$(OBJEXT)
 	-rm -f src/PValueTest.$(OBJEXT)
 	-rm -f src/PseudoExperiment.$(OBJEXT)
-	-rm -f src/PseudoExperiment_test.$(OBJEXT)
 	-rm -f src/TestStatMonitor.$(OBJEXT)
 	-rm -f src/analysis.$(OBJEXT)
 
@@ -339,7 +327,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/PDFMonitor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/PValueTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/PseudoExperiment.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/PseudoExperiment_test.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/TestStatMonitor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/analysis.Po@am__quote@
 
@@ -682,6 +669,9 @@ uninstall-am: uninstall-binPROGRAMS
 	mostlyclean-generic pdf pdf-am ps ps-am tags uninstall \
 	uninstall-am uninstall-binPROGRAMS
 
+
+#testPE_SOURCES = src/PseudoExperiment_test.cxx src/PseudoExperiment.cxx src/PDF.cxx
+#testPE_LDADD   = -lboost_test_exec_monitor -lboost_unit_test_framework -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
