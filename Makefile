@@ -34,11 +34,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = analysis$(EXEEXT)
 subdir = .
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/../depcomp \
-	$(srcdir)/../install-sh $(srcdir)/../missing \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/config.h.in $(top_srcdir)/configure AUTHORS COPYING \
-	ChangeLog INSTALL NEWS
+DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
+	depcomp install-sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -61,7 +60,7 @@ am_analysis_OBJECTS = src/analysis.$(OBJEXT) src/PDF.$(OBJEXT) \
 analysis_OBJECTS = $(am_analysis_OBJECTS)
 analysis_DEPENDENCIES =
 DEFAULT_INCLUDES = -I.
-depcomp = $(SHELL) $(top_srcdir)/../depcomp
+depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
@@ -84,11 +83,11 @@ DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /hepuser/frank/docs/comp/missing --run aclocal-1.11
-AMTAR = ${SHELL} /hepuser/frank/docs/comp/missing --run tar
-AUTOCONF = ${SHELL} /hepuser/frank/docs/comp/missing --run autoconf
-AUTOHEADER = ${SHELL} /hepuser/frank/docs/comp/missing --run autoheader
-AUTOMAKE = ${SHELL} /hepuser/frank/docs/comp/missing --run automake-1.11
+ACLOCAL = ${SHELL} /hepuser/frank/docs/qciAnalysis/missing --run aclocal-1.11
+AMTAR = ${SHELL} /hepuser/frank/docs/qciAnalysis/missing --run tar
+AUTOCONF = ${SHELL} /hepuser/frank/docs/qciAnalysis/missing --run autoconf
+AUTOHEADER = ${SHELL} /hepuser/frank/docs/qciAnalysis/missing --run autoheader
+AUTOMAKE = ${SHELL} /hepuser/frank/docs/qciAnalysis/missing --run automake-1.11
 AWK = gawk
 CPPFLAGS = 
 CXX = g++
@@ -110,7 +109,7 @@ LDFLAGS =
 LIBOBJS = 
 LIBS = 
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /hepuser/frank/docs/comp/missing --run makeinfo
+MAKEINFO = ${SHELL} /hepuser/frank/docs/qciAnalysis/missing --run makeinfo
 MKDIR_P = /bin/mkdir -p
 OBJEXT = o
 PACKAGE = analysis
@@ -125,10 +124,10 @@ SET_MAKE =
 SHELL = /bin/bash
 STRIP = 
 VERSION = 0.1
-abs_builddir = /hepuser/frank/docs/comp/analysis
-abs_srcdir = /hepuser/frank/docs/comp/analysis
-abs_top_builddir = /hepuser/frank/docs/comp/analysis
-abs_top_srcdir = /hepuser/frank/docs/comp/analysis
+abs_builddir = /hepuser/frank/docs/qciAnalysis
+abs_srcdir = /hepuser/frank/docs/qciAnalysis
+abs_top_builddir = /hepuser/frank/docs/qciAnalysis
+abs_top_srcdir = /hepuser/frank/docs/qciAnalysis
 ac_ct_CXX = g++
 am__include = include
 am__leading_dot = .
@@ -147,7 +146,7 @@ host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /hepuser/frank/docs/comp/install-sh
+install_sh = ${SHELL} /hepuser/frank/docs/qciAnalysis/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
