@@ -45,12 +45,15 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_analysis_OBJECTS = analysis.$(OBJEXT) PDF.$(OBJEXT) \
-	Likelihood.$(OBJEXT) PValueTest.$(OBJEXT) \
-	PseudoExperiment.$(OBJEXT) AtlasStyle.$(OBJEXT) \
-	TestStatMonitor.$(OBJEXT) PDFMonitor.$(OBJEXT) \
-	ControlFrame.$(OBJEXT) ControlFrameDict.$(OBJEXT) \
-	CertaintyLevel.$(OBJEXT)
+am_analysis_OBJECTS = analysis-analysis.$(OBJEXT) \
+	analysis-PDF.$(OBJEXT) analysis-Likelihood.$(OBJEXT) \
+	analysis-PValueTest.$(OBJEXT) \
+	analysis-PseudoExperiment.$(OBJEXT) \
+	analysis-AtlasStyle.$(OBJEXT) \
+	analysis-TestStatMonitor.$(OBJEXT) \
+	analysis-PDFMonitor.$(OBJEXT) analysis-ControlFrame.$(OBJEXT) \
+	analysis-ControlFrameDict.$(OBJEXT) \
+	analysis-CertaintyLevel.$(OBJEXT)
 analysis_OBJECTS = $(am_analysis_OBJECTS)
 analysis_DEPENDENCIES =
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
@@ -167,6 +170,7 @@ analysis_SOURCES = analysis.cxx PDF.cxx Likelihood.cxx PValueTest.cxx PseudoExpe
 	AtlasStyle.cxx TestStatMonitor.cxx PDFMonitor.cxx ControlFrame.cxx ControlFrameDict.cxx \
 	CertaintyLevel.cxx
 
+analysis_CPPFLAGS = `root-config --cflags` -I ../inc -pthread -fopenmp
 analysis_LDADD = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 all: all-am
 
@@ -249,17 +253,17 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/AtlasStyle.Po
-include ./$(DEPDIR)/CertaintyLevel.Po
-include ./$(DEPDIR)/ControlFrame.Po
-include ./$(DEPDIR)/ControlFrameDict.Po
-include ./$(DEPDIR)/Likelihood.Po
-include ./$(DEPDIR)/PDF.Po
-include ./$(DEPDIR)/PDFMonitor.Po
-include ./$(DEPDIR)/PValueTest.Po
-include ./$(DEPDIR)/PseudoExperiment.Po
-include ./$(DEPDIR)/TestStatMonitor.Po
-include ./$(DEPDIR)/analysis.Po
+include ./$(DEPDIR)/analysis-AtlasStyle.Po
+include ./$(DEPDIR)/analysis-CertaintyLevel.Po
+include ./$(DEPDIR)/analysis-ControlFrame.Po
+include ./$(DEPDIR)/analysis-ControlFrameDict.Po
+include ./$(DEPDIR)/analysis-Likelihood.Po
+include ./$(DEPDIR)/analysis-PDF.Po
+include ./$(DEPDIR)/analysis-PDFMonitor.Po
+include ./$(DEPDIR)/analysis-PValueTest.Po
+include ./$(DEPDIR)/analysis-PseudoExperiment.Po
+include ./$(DEPDIR)/analysis-TestStatMonitor.Po
+include ./$(DEPDIR)/analysis-analysis.Po
 
 .cxx.o:
 	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -276,6 +280,160 @@ include ./$(DEPDIR)/analysis.Po
 #	source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+analysis-analysis.o: analysis.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-analysis.o -MD -MP -MF $(DEPDIR)/analysis-analysis.Tpo -c -o analysis-analysis.o `test -f 'analysis.cxx' || echo '$(srcdir)/'`analysis.cxx
+	$(am__mv) $(DEPDIR)/analysis-analysis.Tpo $(DEPDIR)/analysis-analysis.Po
+#	source='analysis.cxx' object='analysis-analysis.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-analysis.o `test -f 'analysis.cxx' || echo '$(srcdir)/'`analysis.cxx
+
+analysis-analysis.obj: analysis.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-analysis.obj -MD -MP -MF $(DEPDIR)/analysis-analysis.Tpo -c -o analysis-analysis.obj `if test -f 'analysis.cxx'; then $(CYGPATH_W) 'analysis.cxx'; else $(CYGPATH_W) '$(srcdir)/analysis.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-analysis.Tpo $(DEPDIR)/analysis-analysis.Po
+#	source='analysis.cxx' object='analysis-analysis.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-analysis.obj `if test -f 'analysis.cxx'; then $(CYGPATH_W) 'analysis.cxx'; else $(CYGPATH_W) '$(srcdir)/analysis.cxx'; fi`
+
+analysis-PDF.o: PDF.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-PDF.o -MD -MP -MF $(DEPDIR)/analysis-PDF.Tpo -c -o analysis-PDF.o `test -f 'PDF.cxx' || echo '$(srcdir)/'`PDF.cxx
+	$(am__mv) $(DEPDIR)/analysis-PDF.Tpo $(DEPDIR)/analysis-PDF.Po
+#	source='PDF.cxx' object='analysis-PDF.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-PDF.o `test -f 'PDF.cxx' || echo '$(srcdir)/'`PDF.cxx
+
+analysis-PDF.obj: PDF.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-PDF.obj -MD -MP -MF $(DEPDIR)/analysis-PDF.Tpo -c -o analysis-PDF.obj `if test -f 'PDF.cxx'; then $(CYGPATH_W) 'PDF.cxx'; else $(CYGPATH_W) '$(srcdir)/PDF.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-PDF.Tpo $(DEPDIR)/analysis-PDF.Po
+#	source='PDF.cxx' object='analysis-PDF.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-PDF.obj `if test -f 'PDF.cxx'; then $(CYGPATH_W) 'PDF.cxx'; else $(CYGPATH_W) '$(srcdir)/PDF.cxx'; fi`
+
+analysis-Likelihood.o: Likelihood.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-Likelihood.o -MD -MP -MF $(DEPDIR)/analysis-Likelihood.Tpo -c -o analysis-Likelihood.o `test -f 'Likelihood.cxx' || echo '$(srcdir)/'`Likelihood.cxx
+	$(am__mv) $(DEPDIR)/analysis-Likelihood.Tpo $(DEPDIR)/analysis-Likelihood.Po
+#	source='Likelihood.cxx' object='analysis-Likelihood.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-Likelihood.o `test -f 'Likelihood.cxx' || echo '$(srcdir)/'`Likelihood.cxx
+
+analysis-Likelihood.obj: Likelihood.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-Likelihood.obj -MD -MP -MF $(DEPDIR)/analysis-Likelihood.Tpo -c -o analysis-Likelihood.obj `if test -f 'Likelihood.cxx'; then $(CYGPATH_W) 'Likelihood.cxx'; else $(CYGPATH_W) '$(srcdir)/Likelihood.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-Likelihood.Tpo $(DEPDIR)/analysis-Likelihood.Po
+#	source='Likelihood.cxx' object='analysis-Likelihood.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-Likelihood.obj `if test -f 'Likelihood.cxx'; then $(CYGPATH_W) 'Likelihood.cxx'; else $(CYGPATH_W) '$(srcdir)/Likelihood.cxx'; fi`
+
+analysis-PValueTest.o: PValueTest.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-PValueTest.o -MD -MP -MF $(DEPDIR)/analysis-PValueTest.Tpo -c -o analysis-PValueTest.o `test -f 'PValueTest.cxx' || echo '$(srcdir)/'`PValueTest.cxx
+	$(am__mv) $(DEPDIR)/analysis-PValueTest.Tpo $(DEPDIR)/analysis-PValueTest.Po
+#	source='PValueTest.cxx' object='analysis-PValueTest.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-PValueTest.o `test -f 'PValueTest.cxx' || echo '$(srcdir)/'`PValueTest.cxx
+
+analysis-PValueTest.obj: PValueTest.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-PValueTest.obj -MD -MP -MF $(DEPDIR)/analysis-PValueTest.Tpo -c -o analysis-PValueTest.obj `if test -f 'PValueTest.cxx'; then $(CYGPATH_W) 'PValueTest.cxx'; else $(CYGPATH_W) '$(srcdir)/PValueTest.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-PValueTest.Tpo $(DEPDIR)/analysis-PValueTest.Po
+#	source='PValueTest.cxx' object='analysis-PValueTest.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-PValueTest.obj `if test -f 'PValueTest.cxx'; then $(CYGPATH_W) 'PValueTest.cxx'; else $(CYGPATH_W) '$(srcdir)/PValueTest.cxx'; fi`
+
+analysis-PseudoExperiment.o: PseudoExperiment.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-PseudoExperiment.o -MD -MP -MF $(DEPDIR)/analysis-PseudoExperiment.Tpo -c -o analysis-PseudoExperiment.o `test -f 'PseudoExperiment.cxx' || echo '$(srcdir)/'`PseudoExperiment.cxx
+	$(am__mv) $(DEPDIR)/analysis-PseudoExperiment.Tpo $(DEPDIR)/analysis-PseudoExperiment.Po
+#	source='PseudoExperiment.cxx' object='analysis-PseudoExperiment.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-PseudoExperiment.o `test -f 'PseudoExperiment.cxx' || echo '$(srcdir)/'`PseudoExperiment.cxx
+
+analysis-PseudoExperiment.obj: PseudoExperiment.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-PseudoExperiment.obj -MD -MP -MF $(DEPDIR)/analysis-PseudoExperiment.Tpo -c -o analysis-PseudoExperiment.obj `if test -f 'PseudoExperiment.cxx'; then $(CYGPATH_W) 'PseudoExperiment.cxx'; else $(CYGPATH_W) '$(srcdir)/PseudoExperiment.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-PseudoExperiment.Tpo $(DEPDIR)/analysis-PseudoExperiment.Po
+#	source='PseudoExperiment.cxx' object='analysis-PseudoExperiment.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-PseudoExperiment.obj `if test -f 'PseudoExperiment.cxx'; then $(CYGPATH_W) 'PseudoExperiment.cxx'; else $(CYGPATH_W) '$(srcdir)/PseudoExperiment.cxx'; fi`
+
+analysis-AtlasStyle.o: AtlasStyle.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-AtlasStyle.o -MD -MP -MF $(DEPDIR)/analysis-AtlasStyle.Tpo -c -o analysis-AtlasStyle.o `test -f 'AtlasStyle.cxx' || echo '$(srcdir)/'`AtlasStyle.cxx
+	$(am__mv) $(DEPDIR)/analysis-AtlasStyle.Tpo $(DEPDIR)/analysis-AtlasStyle.Po
+#	source='AtlasStyle.cxx' object='analysis-AtlasStyle.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-AtlasStyle.o `test -f 'AtlasStyle.cxx' || echo '$(srcdir)/'`AtlasStyle.cxx
+
+analysis-AtlasStyle.obj: AtlasStyle.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-AtlasStyle.obj -MD -MP -MF $(DEPDIR)/analysis-AtlasStyle.Tpo -c -o analysis-AtlasStyle.obj `if test -f 'AtlasStyle.cxx'; then $(CYGPATH_W) 'AtlasStyle.cxx'; else $(CYGPATH_W) '$(srcdir)/AtlasStyle.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-AtlasStyle.Tpo $(DEPDIR)/analysis-AtlasStyle.Po
+#	source='AtlasStyle.cxx' object='analysis-AtlasStyle.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-AtlasStyle.obj `if test -f 'AtlasStyle.cxx'; then $(CYGPATH_W) 'AtlasStyle.cxx'; else $(CYGPATH_W) '$(srcdir)/AtlasStyle.cxx'; fi`
+
+analysis-TestStatMonitor.o: TestStatMonitor.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-TestStatMonitor.o -MD -MP -MF $(DEPDIR)/analysis-TestStatMonitor.Tpo -c -o analysis-TestStatMonitor.o `test -f 'TestStatMonitor.cxx' || echo '$(srcdir)/'`TestStatMonitor.cxx
+	$(am__mv) $(DEPDIR)/analysis-TestStatMonitor.Tpo $(DEPDIR)/analysis-TestStatMonitor.Po
+#	source='TestStatMonitor.cxx' object='analysis-TestStatMonitor.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-TestStatMonitor.o `test -f 'TestStatMonitor.cxx' || echo '$(srcdir)/'`TestStatMonitor.cxx
+
+analysis-TestStatMonitor.obj: TestStatMonitor.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-TestStatMonitor.obj -MD -MP -MF $(DEPDIR)/analysis-TestStatMonitor.Tpo -c -o analysis-TestStatMonitor.obj `if test -f 'TestStatMonitor.cxx'; then $(CYGPATH_W) 'TestStatMonitor.cxx'; else $(CYGPATH_W) '$(srcdir)/TestStatMonitor.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-TestStatMonitor.Tpo $(DEPDIR)/analysis-TestStatMonitor.Po
+#	source='TestStatMonitor.cxx' object='analysis-TestStatMonitor.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-TestStatMonitor.obj `if test -f 'TestStatMonitor.cxx'; then $(CYGPATH_W) 'TestStatMonitor.cxx'; else $(CYGPATH_W) '$(srcdir)/TestStatMonitor.cxx'; fi`
+
+analysis-PDFMonitor.o: PDFMonitor.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-PDFMonitor.o -MD -MP -MF $(DEPDIR)/analysis-PDFMonitor.Tpo -c -o analysis-PDFMonitor.o `test -f 'PDFMonitor.cxx' || echo '$(srcdir)/'`PDFMonitor.cxx
+	$(am__mv) $(DEPDIR)/analysis-PDFMonitor.Tpo $(DEPDIR)/analysis-PDFMonitor.Po
+#	source='PDFMonitor.cxx' object='analysis-PDFMonitor.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-PDFMonitor.o `test -f 'PDFMonitor.cxx' || echo '$(srcdir)/'`PDFMonitor.cxx
+
+analysis-PDFMonitor.obj: PDFMonitor.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-PDFMonitor.obj -MD -MP -MF $(DEPDIR)/analysis-PDFMonitor.Tpo -c -o analysis-PDFMonitor.obj `if test -f 'PDFMonitor.cxx'; then $(CYGPATH_W) 'PDFMonitor.cxx'; else $(CYGPATH_W) '$(srcdir)/PDFMonitor.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-PDFMonitor.Tpo $(DEPDIR)/analysis-PDFMonitor.Po
+#	source='PDFMonitor.cxx' object='analysis-PDFMonitor.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-PDFMonitor.obj `if test -f 'PDFMonitor.cxx'; then $(CYGPATH_W) 'PDFMonitor.cxx'; else $(CYGPATH_W) '$(srcdir)/PDFMonitor.cxx'; fi`
+
+analysis-ControlFrame.o: ControlFrame.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-ControlFrame.o -MD -MP -MF $(DEPDIR)/analysis-ControlFrame.Tpo -c -o analysis-ControlFrame.o `test -f 'ControlFrame.cxx' || echo '$(srcdir)/'`ControlFrame.cxx
+	$(am__mv) $(DEPDIR)/analysis-ControlFrame.Tpo $(DEPDIR)/analysis-ControlFrame.Po
+#	source='ControlFrame.cxx' object='analysis-ControlFrame.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-ControlFrame.o `test -f 'ControlFrame.cxx' || echo '$(srcdir)/'`ControlFrame.cxx
+
+analysis-ControlFrame.obj: ControlFrame.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-ControlFrame.obj -MD -MP -MF $(DEPDIR)/analysis-ControlFrame.Tpo -c -o analysis-ControlFrame.obj `if test -f 'ControlFrame.cxx'; then $(CYGPATH_W) 'ControlFrame.cxx'; else $(CYGPATH_W) '$(srcdir)/ControlFrame.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-ControlFrame.Tpo $(DEPDIR)/analysis-ControlFrame.Po
+#	source='ControlFrame.cxx' object='analysis-ControlFrame.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-ControlFrame.obj `if test -f 'ControlFrame.cxx'; then $(CYGPATH_W) 'ControlFrame.cxx'; else $(CYGPATH_W) '$(srcdir)/ControlFrame.cxx'; fi`
+
+analysis-ControlFrameDict.o: ControlFrameDict.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-ControlFrameDict.o -MD -MP -MF $(DEPDIR)/analysis-ControlFrameDict.Tpo -c -o analysis-ControlFrameDict.o `test -f 'ControlFrameDict.cxx' || echo '$(srcdir)/'`ControlFrameDict.cxx
+	$(am__mv) $(DEPDIR)/analysis-ControlFrameDict.Tpo $(DEPDIR)/analysis-ControlFrameDict.Po
+#	source='ControlFrameDict.cxx' object='analysis-ControlFrameDict.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-ControlFrameDict.o `test -f 'ControlFrameDict.cxx' || echo '$(srcdir)/'`ControlFrameDict.cxx
+
+analysis-ControlFrameDict.obj: ControlFrameDict.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-ControlFrameDict.obj -MD -MP -MF $(DEPDIR)/analysis-ControlFrameDict.Tpo -c -o analysis-ControlFrameDict.obj `if test -f 'ControlFrameDict.cxx'; then $(CYGPATH_W) 'ControlFrameDict.cxx'; else $(CYGPATH_W) '$(srcdir)/ControlFrameDict.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-ControlFrameDict.Tpo $(DEPDIR)/analysis-ControlFrameDict.Po
+#	source='ControlFrameDict.cxx' object='analysis-ControlFrameDict.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-ControlFrameDict.obj `if test -f 'ControlFrameDict.cxx'; then $(CYGPATH_W) 'ControlFrameDict.cxx'; else $(CYGPATH_W) '$(srcdir)/ControlFrameDict.cxx'; fi`
+
+analysis-CertaintyLevel.o: CertaintyLevel.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-CertaintyLevel.o -MD -MP -MF $(DEPDIR)/analysis-CertaintyLevel.Tpo -c -o analysis-CertaintyLevel.o `test -f 'CertaintyLevel.cxx' || echo '$(srcdir)/'`CertaintyLevel.cxx
+	$(am__mv) $(DEPDIR)/analysis-CertaintyLevel.Tpo $(DEPDIR)/analysis-CertaintyLevel.Po
+#	source='CertaintyLevel.cxx' object='analysis-CertaintyLevel.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-CertaintyLevel.o `test -f 'CertaintyLevel.cxx' || echo '$(srcdir)/'`CertaintyLevel.cxx
+
+analysis-CertaintyLevel.obj: CertaintyLevel.cxx
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT analysis-CertaintyLevel.obj -MD -MP -MF $(DEPDIR)/analysis-CertaintyLevel.Tpo -c -o analysis-CertaintyLevel.obj `if test -f 'CertaintyLevel.cxx'; then $(CYGPATH_W) 'CertaintyLevel.cxx'; else $(CYGPATH_W) '$(srcdir)/CertaintyLevel.cxx'; fi`
+	$(am__mv) $(DEPDIR)/analysis-CertaintyLevel.Tpo $(DEPDIR)/analysis-CertaintyLevel.Po
+#	source='CertaintyLevel.cxx' object='analysis-CertaintyLevel.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(analysis_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o analysis-CertaintyLevel.obj `if test -f 'CertaintyLevel.cxx'; then $(CYGPATH_W) 'CertaintyLevel.cxx'; else $(CYGPATH_W) '$(srcdir)/CertaintyLevel.cxx'; fi`
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \

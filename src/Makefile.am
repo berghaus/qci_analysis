@@ -12,6 +12,7 @@ analysisdir=../bin
 analysis_SOURCES = analysis.cxx PDF.cxx Likelihood.cxx PValueTest.cxx PseudoExperiment.cxx \
 	AtlasStyle.cxx TestStatMonitor.cxx PDFMonitor.cxx ControlFrame.cxx ControlFrameDict.cxx \
 	CertaintyLevel.cxx
+analysis_CPPFLAGS = `root-config --cflags` -I ../inc -pthread -fopenmp
 analysis_LDADD   = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 
 #testPE_SOURCES = PseudoExperiment_test.cxx PseudoExperiment.cxx PDF.cxx
