@@ -1,5 +1,6 @@
 #include "PValueTest.hpp"
 #include <algorithm>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -64,11 +65,11 @@ void PValueTest::finalize() {
       2 * _testStats[_testStats.size() / 2] :
       2 * _dataLLR;
   if ( histMax < 1. ) histMax = 1.;
-  int nBins = _testStats.size()/100;
-  double off = 1.5 * histMax / double(nBins);
+  int nBins = _testStats.size() / 100;
+  double off = 1.5 * histMax / double( nBins );
 
   string hName = str( format( "Likelihood_FCN-scale%2.2e" ) % pow( _alpha, -0.25 ) );
-  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", nBins, -off, histMax-off );
+  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", nBins, -off, histMax - off );
   string xTitle = str( format( "-2ln#lambda( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
 
@@ -93,4 +94,32 @@ double PValueTest::alpha() const {
 }
 void PValueTest::alpha( const double& alpha ) {
   _alpha = alpha;
+}
+
+ostream& operator<<( ostream& out, const PValueTest& test ) {
+
+  out << test.alpha() << " ";
+  vector<double>::const_iterator itr = test._testStats.begin();
+  vector<double>::const_iterator end = test._testStats.end();
+  for ( ; itr != end; ++itr ) {
+    out << *itr << " ";
+  }
+  out << endl;
+
+  return out;
+}
+
+istream& operator>>( istream& in, PValueTest& test ) {
+  string buffer;
+  stringstream bufferStream( buffer );
+  double x;
+
+  getline( in, buffer );
+  bufferStream >> x;
+  test.alpha( x );
+  while ( bufferStream >> x ) {
+    test._testStats.push_back( x );
+  }
+
+  return in;
 }
