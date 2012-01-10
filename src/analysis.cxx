@@ -11,6 +11,18 @@
 #define foreach BOOST_FOREACH
 #include <boost/checked_delete.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/program_options/cmdline.hpp>
+#include <boost/program_options/config.hpp>
+#include <boost/program_options/environment_iterator.hpp>
+#include <boost/program_options/eof_iterator.hpp>
+#include <boost/program_options/errors.hpp>
+#include <boost/program_options/option.hpp>
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/positional_options.hpp>
+#include <boost/program_options/value_semantic.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/program_options/version.hpp>
 
 #include <TApplication.h>
 #include <TCanvas.h>
@@ -33,8 +45,11 @@
 #include "PDFMonitor.hpp"
 #include "TestStatMonitor.hpp"
 
+#define ERROR_NO_SCALE_VALUE 1
+
 using namespace std;
 using namespace boost::assign;
+namespace po = boost::program_options;
 
 vector< TDirectoryFile* > GetDirs( const TFile* );
 vector< TH1* > GetHists( const TFile* );
@@ -44,25 +59,58 @@ template< class T > bool compByName( const T* x, const T* y ) {
 
 int main( int argc, char* argv[] ) {
 
-  // TODO: give these as command line controls
-  int nPE = 100;
-  double nBinsScale = 12;
-  double minScale = 2.;
-  double maxScale = 8. + 0.1;
-  double deltaScale = ( maxScale - minScale ) / nBinsScale;
-  vector< vector< double > > scales;
-  for( double scale = minScale; scale < maxScale; scale += deltaScale )
-    scales.push_back( vector< double >( 1, scale ) );
+  // process cmd opts
+  // Declare the supported options.
+  po::options_description desc( "Allowed options" );
+  desc.add_options()( "help,h", "print this help message" )( "nPE,n", po::value< int >(),
+                                                             "number of pseudo-experiments to run on each alpha" )(
+      "scales,s", po::value< vector< double > >()->multitoken(),
+      "list of contact interaction scale values to run on (in TeV)" );
+  po::variables_map vm;
+  po::store( po::parse_command_line( argc, argv, desc ), vm );
+  po::notify( vm );
 
-  CertaintyLevel CL_sb( "CL_{s+b}", nBinsScale, minScale, maxScale - 0.1 );
-  CertaintyLevel CL_s( "CL_{s}", nBinsScale, minScale, maxScale - 0.1 );
+  if ( vm.count( "help" ) ) {
+    cout << desc << "\n";
+    return 1;
+  }
+
+  int nPE = 1000;
+  if ( vm.count( "nPE" ) ) {
+    cout << "Running " << vm["nPE"].as< int >() << " pseudo-experiments for each alpha.\n";
+    nPE = vm["nPE"].as< int >();
+  } else {
+    cout << "Defaulting to using " << nPE << " pseudo-experiments for each alpha.\n";
+  }
+
+  // TODO: give these as command line controls
+  double nBinsScale = 0.;
+  double minScale = 0.;
+  double maxScale = 0.;
+  vector< double > scales;
+  if ( vm.count( "scales" ) ) {
+    scales = vm["scales"].as< vector< double > >();
+    sort( scales.begin(), scales.end() );
+    minScale = scales.front();
+    maxScale = scales.back();
+    nBinsScale = scales.size();
+    cout << "Running over " << scales.size() << " scale values:\n";
+    foreach( double scale, scales )
+      cout << "   - " << scale << '\n';
+  } else {
+    cout << "No scale to run on given ... aborting." << endl;
+    return ERROR_NO_SCALE_VALUE;
+  }
+
+  CertaintyLevel CL_sb( "CL_{s+b}", nBinsScale, minScale, maxScale );
+  CertaintyLevel CL_s( "CL_{s}", nBinsScale, minScale, maxScale );
 
   // for GUI;
-  TApplication theApp( "Analysis", &argc, argv );
-  SetAtlasStyle();
-  TGClient windowClient;
-  const TGWindow * rootWindow = windowClient.GetRoot();
-  ControlFrame * control = new ControlFrame( rootWindow, 350, 80 );
+//  TApplication theApp( "Analysis", &argc, argv );
+//  SetAtlasStyle();
+//  TGClient windowClient;
+//  const TGWindow * rootWindow = windowClient.GetRoot();
+//  ControlFrame * control = new ControlFrame( rootWindow, 350, 80 );
 
   // read in our files
   TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/kFactor.root", "READ" );
@@ -83,8 +131,8 @@ int main( int argc, char* argv[] ) {
     PDF * pdf = new PDF( pdfDir, data.integral() );
     Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
 
-    foreach( const vector< double >& scale, scales )
-      dataLikelihoodRatio( scale );
+    foreach( const double& scale, scales )
+      dataLikelihoodRatio( vector< double >( 1, scale ) );
 
     TestStatMonitor tm( -1., "figures/", ".png" );
     for( int i = 0; i < 10; ++i ) {
@@ -123,7 +171,8 @@ int main( int argc, char* argv[] ) {
     }
 
     int scaleBin = 0;
-    for( double scale = minScale; scaleBin < nBinsScale; scale += deltaScale ) {
+    foreach( double scale, scales )
+    {
       double alpha = pow( scale, -4 );
       vector< PseudoExperiment > pes = peFactory.build( alpha, nPE );
 
@@ -186,14 +235,14 @@ int main( int argc, char* argv[] ) {
     cout << CL_sb << endl;
     cout << CL_s << endl;
 
-    theApp.Run( kTRUE );
+//    theApp.Run( kTRUE );
 
   } catch ( exception& e ) {
     // print exception to console
     cout << "caught exception:\n" << e.what() << endl;
 
     // give some time to look at problems
-    theApp.Run( kTRUE );
+//    theApp.Run( kTRUE );
 
   }
 

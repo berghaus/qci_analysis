@@ -171,7 +171,7 @@ analysis_SOURCES = analysis.cxx PDF.cxx Likelihood.cxx PValueTest.cxx PseudoExpe
 	CertaintyLevel.cxx
 
 analysis_CPPFLAGS = `root-config --cflags` -I ../inc -pthread -fopenmp
-analysis_LDADD = -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
+analysis_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 all: all-am
 
 .SUFFIXES:
