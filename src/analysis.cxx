@@ -65,11 +65,12 @@ int main( int argc, char* argv[] ) {
   // process cmd opts
   // Declare the supported options.
   po::options_description desc( "Allowed options" );
-  desc.add_options()( "help,h", "print this help message" )( "nPE,n", po::value< int >(),
-                                                             "number of pseudo-experiments to run on each alpha" )(
-      "scales,s", po::value< vector< double > >()->multitoken(),
-      "list of contact interaction scale values to run on (in TeV)" )( "jobID,j", po::value< int >(),
-                                                                       "PBS job ID for output naming" );
+  desc.add_options()( "help,h", "print this help message" )
+      ( "nPE,n", po::value< int >(), "number of pseudo-experiments to run on each alpha" )
+      ( "scales,s", po::value< vector< double > >()->multitoken(), "list of contact interaction scale values to run on (in TeV)" )
+      ( "jobID,j", po::value< int >(), "PBS job ID for output naming" )
+      ( "outDir,o", po::value< string >(), "output directory for likelihood disctributions" );
+
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
   po::notify( vm );
@@ -111,6 +112,12 @@ int main( int argc, char* argv[] ) {
     int j = vm["jobID"].as< int >();
     cout << "PBS job ID: " << j << "\n";
     jobID = lexical_cast< string >( j );
+  }
+
+  string outDir;
+  if ( vm.count( "outDir" ) ) {
+    outDir = vm["outDir"].as< string >();
+    cout << "directing output to: " << outDir << "\n";
   }
 
   CertaintyLevel CL_sb( "CL_{s+b}", nBinsScale, minScale, maxScale );
@@ -183,8 +190,8 @@ int main( int argc, char* argv[] ) {
 
     // -- file to ouput PValue test into
     ofstream signalOutFile, bkgrndOutFile;
-    signalOutFile.open( ("signalOutput-" + jobID + ".bin").c_str(), ios::binary );
-    bkgrndOutFile.open( ("bkgrndOutput-" + jobID + ".bin").c_str(), ios::binary );
+    signalOutFile.open( ( outDir + "/signalOutput-" + jobID + ".bin" ).c_str(), ios::binary );
+    bkgrndOutFile.open( ( outDir + "/bkgrndOutput-" + jobID + ".bin" ).c_str(), ios::binary );
     int scaleBin = 0;
     foreach( double scale, scales )
     {
