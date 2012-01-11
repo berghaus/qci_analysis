@@ -12,6 +12,7 @@ class PDF;
 class PValueTest {
 
 public:
+  PValueTest();
   PValueTest( const double, const std::vector< Neg2LogLikelihoodRatio* >& );
   virtual ~PValueTest();
 
@@ -25,7 +26,10 @@ public:
   friend std::istream& operator>>( std::istream&, PValueTest& );
 
 private:
-  PValueTest();
+
+  void clear(); //<- purge all information in PValueTest
+
+
   double _alpha; // alpha used for PEs
   std::vector< Neg2LogLikelihoodRatio* > _lambdas;
   double _dataLLR;

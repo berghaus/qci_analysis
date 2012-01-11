@@ -56,7 +56,9 @@ am_analysis_OBJECTS = analysis-analysis.$(OBJEXT) \
 	analysis-CertaintyLevel.$(OBJEXT)
 analysis_OBJECTS = $(am_analysis_OBJECTS)
 analysis_DEPENDENCIES =
-am_postProcess_OBJECTS = postProcess.$(OBJEXT)
+am_postProcess_OBJECTS = postProcess.$(OBJEXT) PDF.$(OBJEXT) \
+	TestStatMonitor.$(OBJEXT) Likelihood.$(OBJEXT) \
+	PseudoExperiment.$(OBJEXT) PValueTest.$(OBJEXT)
 postProcess_OBJECTS = $(am_postProcess_OBJECTS)
 postProcess_DEPENDENCIES =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -179,8 +181,8 @@ analysis_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lT
 
 # post-processing/merging program
 postProcessdir = ../bin
-postProcess_SOURCES = postProcess.cxx
-postProcess_LDADD = -lboost_program_options
+postProcess_SOURCES = postProcess.cxx PDF.cxx TestStatMonitor.cxx Likelihood.cxx PseudoExperiment.cxx PValueTest.cxx
+postProcess_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 all: all-am
 
 .SUFFIXES:
@@ -265,6 +267,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Likelihood.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PDF.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PValueTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PseudoExperiment.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/TestStatMonitor.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/analysis-AtlasStyle.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/analysis-CertaintyLevel.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/analysis-ControlFrame.Po@am__quote@

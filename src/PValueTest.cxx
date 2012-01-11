@@ -96,6 +96,17 @@ void PValueTest::alpha( const double& alpha ) {
   _alpha = alpha;
 }
 
+void PValueTest::clear(  ) {
+
+  _alpha = -1.;
+  _lambdas.clear();
+  _dataLLR = 0.;
+
+  delete _minus2LnLikelihoodDistribution;
+  _testStats.clear();
+
+}
+
 ostream& operator<<( ostream& out, const PValueTest& test ) {
 
   out << test.alpha() << " ";
@@ -104,17 +115,20 @@ ostream& operator<<( ostream& out, const PValueTest& test ) {
   for ( ; itr != end; ++itr ) {
     out << *itr << " ";
   }
-  out << endl;
 
   return out;
 }
 
 istream& operator>>( istream& in, PValueTest& test ) {
+
+  test.clear();
+
   string buffer;
-  stringstream bufferStream( buffer );
   double x;
 
   getline( in, buffer );
+  if ( !in ) return in;
+  stringstream bufferStream( buffer );
   bufferStream >> x;
   test.alpha( x );
   while ( bufferStream >> x ) {

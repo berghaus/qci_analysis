@@ -220,12 +220,12 @@ int main( int argc, char* argv[] ) {
 
       CL_sb.add( scale, clsb_observed, clsb_expected );
 
-      signalOutFile << signalPlusBackgroundPValue;
+      signalOutFile << signalPlusBackgroundPValue << endl;
 
       // -----------
       // CL_s
       PValueTest backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
-      bkgrndOutFile << backgroundPValue;
+      bkgrndOutFile << backgroundPValue << endl;
       double cls_observed = signalPlusBackgroundPValue( dataLikelihoodRatio ) / backgroundPValue( dataLikelihoodRatio );
 
       vector< double > cls_expected;

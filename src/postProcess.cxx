@@ -4,7 +4,9 @@
  *  Created on: 2012-01-11
  *      Author: frank
  */
+#include <fstream>
 #include <string>
+#include <vector>
 
 #include <boost/foreach.hpp>
 #include <boost/program_options/cmdline.hpp>
@@ -20,11 +22,16 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/version.hpp>
 
+#include "PValueTest.hpp"
+
+
 #define foreach BOOST_FOREACH
 #define ERROR_NO_SIGNAL_INPUT 1
 
 using namespace std;
 namespace po = boost::program_options;
+
+void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest >& );
 
 int main( int argc, char* argv[] ) {
 
@@ -55,6 +62,8 @@ int main( int argc, char* argv[] ) {
     cout << "no signal input given. Aborting.\n";
     return ERROR_NO_SIGNAL_INPUT;
   }
+  vector< PValueTest > sigLLDistributions;
+  ReadPValueTestsFromFile( sigFileNames, sigLLDistributions );
 
   vector< string > bkgFileNames;
   bool doCLs = true;
@@ -67,13 +76,29 @@ int main( int argc, char* argv[] ) {
     cout << "no background input given. disabeling CL_s computation.\n";
     doCLs = false;
   }
+  vector< PValueTest > bkgLLDistributions;
+  ReadPValueTestsFromFile( bkgFileNames, bkgLLDistributions );
 
   string folder = "./";
   if ( vm.count( "outDir" ) ) {
-    folder = vm["outDir"].as<string>();
+    folder = vm["outDir"].as< string >();
   }
   cout << "directing figures to: " << folder << "\n";
 
   return 0;
 }
 
+
+void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest >& pvs ) {
+
+  foreach( const string& fn, names )
+  {
+    ifstream file;
+    file.open( fn.c_str(), ios::binary );
+    PValueTest buffer;
+    while ( file >> buffer )
+      pvs.push_back( buffer );
+    file.close();
+  }
+
+}

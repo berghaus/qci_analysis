@@ -18,8 +18,8 @@ analysis_LDADD   = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -
 
 # post-processing/merging program
 postProcessdir = ../bin
-postProcess_SOURCES = postProcess.cxx
-postProcess_LDADD = -lboost_program_options
+postProcess_SOURCES = postProcess.cxx PDF.cxx TestStatMonitor.cxx Likelihood.cxx PseudoExperiment.cxx PValueTest.cxx
+postProcess_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 
 #testPE_SOURCES = PseudoExperiment_test.cxx PseudoExperiment.cxx PDF.cxx
 #testPE_LDADD   = -lboost_test_exec_monitor -lboost_unit_test_framework -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
