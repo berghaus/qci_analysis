@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -170,6 +171,10 @@ int main( int argc, char* argv[] ) {
       bgLikelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
     }
 
+    // -- file to ouput PValue test into
+    ofstream signalOutFile, bkgrndOutFile;
+    signalOutFile.open( "signalOutput.dat", ios::binary );
+    bkgrndOutFile.open( "bkgrndOutput.dat", ios::binary );
     int scaleBin = 0;
     foreach( double scale, scales )
     {
@@ -198,9 +203,12 @@ int main( int argc, char* argv[] ) {
 
       CL_sb.add( scale, clsb_observed, clsb_expected );
 
+      signalOutFile << signalPlusBackgroundPValue;
+
       // -----------
       // CL_s
       PValueTest backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
+      bkgrndOutFile << backgroundPValue;
       double cls_observed = signalPlusBackgroundPValue( dataLikelihoodRatio ) / backgroundPValue( dataLikelihoodRatio );
 
       vector< double > cls_expected;
@@ -236,6 +244,8 @@ int main( int argc, char* argv[] ) {
     cout << CL_s << endl;
 
 //    theApp.Run( kTRUE );
+    signalOutFile.close();
+    bkgrndOutFile.close();
 
   } catch ( exception& e ) {
     // print exception to console
