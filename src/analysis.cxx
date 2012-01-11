@@ -12,6 +12,7 @@
 #define foreach BOOST_FOREACH
 #include <boost/checked_delete.hpp>
 #include <boost/assign/list_of.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/config.hpp>
 #include <boost/program_options/environment_iterator.hpp>
@@ -48,6 +49,7 @@
 
 #define ERROR_NO_SCALE_VALUE 1
 
+using boost::lexical_cast;
 using namespace std;
 using namespace boost::assign;
 namespace po = boost::program_options;
@@ -66,7 +68,8 @@ int main( int argc, char* argv[] ) {
   desc.add_options()( "help,h", "print this help message" )( "nPE,n", po::value< int >(),
                                                              "number of pseudo-experiments to run on each alpha" )(
       "scales,s", po::value< vector< double > >()->multitoken(),
-      "list of contact interaction scale values to run on (in TeV)" );
+      "list of contact interaction scale values to run on (in TeV)" )( "jobID,j", po::value< int >(),
+                                                                       "PBS job ID for output naming" );
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
   po::notify( vm );
@@ -101,6 +104,13 @@ int main( int argc, char* argv[] ) {
   } else {
     cout << "No scale to run on given ... aborting." << endl;
     return ERROR_NO_SCALE_VALUE;
+  }
+
+  string jobID = "";
+  if ( vm.count( "jobID" ) ) {
+    int j = vm["jobID"].as< int >();
+    cout << "PBS job ID: " << j << "\n";
+    jobID = lexical_cast< string >( j );
   }
 
   CertaintyLevel CL_sb( "CL_{s+b}", nBinsScale, minScale, maxScale );
@@ -173,8 +183,8 @@ int main( int argc, char* argv[] ) {
 
     // -- file to ouput PValue test into
     ofstream signalOutFile, bkgrndOutFile;
-    signalOutFile.open( "signalOutput.dat", ios::binary );
-    bkgrndOutFile.open( "bkgrndOutput.dat", ios::binary );
+    signalOutFile.open( ("signalOutput-" + jobID + ".bin").c_str(), ios::binary );
+    bkgrndOutFile.open( ("bkgrndOutput-" + jobID + ".bin").c_str(), ios::binary );
     int scaleBin = 0;
     foreach( double scale, scales )
     {
