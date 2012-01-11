@@ -32,7 +32,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = analysis$(EXEEXT)
+bin_PROGRAMS = analysis$(EXEEXT) postProcess$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -56,6 +56,9 @@ am_analysis_OBJECTS = analysis-analysis.$(OBJEXT) \
 	analysis-CertaintyLevel.$(OBJEXT)
 analysis_OBJECTS = $(am_analysis_OBJECTS)
 analysis_DEPENDENCIES =
+am_postProcess_OBJECTS = postProcess.$(OBJEXT)
+postProcess_OBJECTS = $(am_postProcess_OBJECTS)
+postProcess_DEPENDENCIES =
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -65,8 +68,8 @@ CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 CXXLD = $(CXX)
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
 	-o $@
-SOURCES = $(analysis_SOURCES)
-DIST_SOURCES = $(analysis_SOURCES)
+SOURCES = $(analysis_SOURCES) $(postProcess_SOURCES)
+DIST_SOURCES = $(analysis_SOURCES) $(postProcess_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -165,6 +168,7 @@ AM_LDFLAGS = `root-config --libs`
 AUTOMAKE_OPTIONS = subdir-objects
 
 # --- build my programs ---
+# parallel analysis program
 analysisdir = ../bin
 analysis_SOURCES = analysis.cxx PDF.cxx Likelihood.cxx PValueTest.cxx PseudoExperiment.cxx \
 	AtlasStyle.cxx TestStatMonitor.cxx PDFMonitor.cxx ControlFrame.cxx ControlFrameDict.cxx \
@@ -172,6 +176,11 @@ analysis_SOURCES = analysis.cxx PDF.cxx Likelihood.cxx PValueTest.cxx PseudoExpe
 
 analysis_CPPFLAGS = `root-config --cflags` -I ../inc -pthread -fopenmp
 analysis_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
+
+# post-processing/merging program
+postProcessdir = ../bin
+postProcess_SOURCES = postProcess.cxx
+postProcess_LDADD = -lboost_program_options
 all: all-am
 
 .SUFFIXES:
@@ -246,6 +255,9 @@ clean-binPROGRAMS:
 analysis$(EXEEXT): $(analysis_OBJECTS) $(analysis_DEPENDENCIES) 
 	@rm -f analysis$(EXEEXT)
 	$(CXXLINK) $(analysis_OBJECTS) $(analysis_LDADD) $(LIBS)
+postProcess$(EXEEXT): $(postProcess_OBJECTS) $(postProcess_DEPENDENCIES) 
+	@rm -f postProcess$(EXEEXT)
+	$(CXXLINK) $(postProcess_OBJECTS) $(postProcess_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -264,6 +276,7 @@ include ./$(DEPDIR)/analysis-PValueTest.Po
 include ./$(DEPDIR)/analysis-PseudoExperiment.Po
 include ./$(DEPDIR)/analysis-TestStatMonitor.Po
 include ./$(DEPDIR)/analysis-analysis.Po
+include ./$(DEPDIR)/postProcess.Po
 
 .cxx.o:
 	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
