@@ -22,16 +22,20 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/version.hpp>
 
+#include "PostProcessCL.hpp"
 #include "PValueTest.hpp"
 
 
 #define foreach BOOST_FOREACH
 #define ERROR_NO_SIGNAL_INPUT 1
+#define ERROR_SIGNAL_BACKGROUND_MISMATCH 2
 
 using namespace std;
 namespace po = boost::program_options;
 
 void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest >& );
+void ComputeCLsb( const vector< PValueTest >& );
+void ComputeCLs( const vector< PValueTest >&, const vector< PValueTest >& );
 
 int main( int argc, char* argv[] ) {
 
@@ -85,6 +89,17 @@ int main( int argc, char* argv[] ) {
   }
   cout << "directing figures to: " << folder << "\n";
 
+  if ( doCLs && sigLLDistributions.size() != bkgLLDistributions.size() ) {
+    cerr <<  "number of singal and background likelihood distributions does not match!\n";
+    return ERROR_SIGNAL_BACKGROUND_MISMATCH;
+  }
+
+  if ( doCLs ) {
+    PostProcessCL pp( sigLLDistributions, bkgLLDistributions );
+  } else {
+    PostProcessCL pp( sigLLDistributions );
+  }
+
   return 0;
 }
 
@@ -100,5 +115,17 @@ void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest 
       pvs.push_back( buffer );
     file.close();
   }
+
+}
+
+
+void ComputeCLsb( const vector< PValueTest >& LL ) {
+
+  double clsb_observed = 0.; // likelihood ration from data
+  vector< double > clsb_expected;
+}
+
+
+void ComputeCLs( const vector< PValueTest >& sigLL, const vector< PValueTest >& bkgLL ) {
 
 }
