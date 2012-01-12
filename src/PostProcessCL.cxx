@@ -89,6 +89,16 @@ void PostProcessCL::proc() {
 
     if ( _doCLs ) {
 
+      double cls_observed = (*sigItr)( *_dataLLR ) / (*bkgItr)( *_dataLLR );
+
+      vector< double > cls_expected;
+      cls_expected.reserve( _errorLLRs.size() );
+      foreach( Neg2LogLikelihoodRatio* l, _errorLLRs )
+        cls_expected.push_back( (*sigItr)( *l ) / (*bkgItr)( *l ) );
+      sort( cls_expected.begin(), cls_expected.end() );
+
+      _CLs->add( scale, cls_observed, cls_expected );
+
     }
 
     ++sigItr;
