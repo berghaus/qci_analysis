@@ -27,6 +27,25 @@ PValueTest::PValueTest( const double alpha, const vector< Neg2LogLikelihoodRatio
   init();
 }
 
+PValueTest::PValueTest( const double& alpha, const int& nPE, PseudoExperimentFactory& peFactory ) :
+    _alpha( alpha ),
+    _dataLLR( 0 ) {
+  init( nPE, peFactory );
+}
+
+void PValueTest::init( const int& nPE, PseudoExperimentFactory& peFactory ) {
+
+  vector< double > par( 1, _alpha );
+  for ( int i = 0; i< nPE; ++i ){
+    PseudoExperiment pe = peFactory.build( _alpha );
+    PDF * pePDF = new PDF( peFactory.pdf()->pdfFitParams(), pe.integral() );
+    Neg2LogLikelihoodRatio n2llr( &pe, pePDF, _alpha );
+    _testStats.push_back( n2llr( par ) );
+  }
+
+}
+
+
 void PValueTest::init() {
 
   vector< double > par( 1, _alpha );
@@ -51,7 +70,15 @@ PValueTest::~PValueTest() {
 double PValueTest::operator()( Neg2LogLikelihoodRatio& lambda ) {
 
   vector< double > par( 1, _alpha );
-  _dataLLR = lambda( par );
+
+  return (*this)( lambda( par ) );
+
+
+}
+
+double PValueTest::operator()( const double& llr ) {
+
+  _dataLLR = llr;
   vector< double >::iterator itr = lower_bound( _testStats.begin(), _testStats.end(), _dataLLR );
   int nOver = distance( itr, _testStats.end() );
 

@@ -14,10 +14,11 @@ class PValueTest {
 public:
   PValueTest();
   PValueTest( const double, const std::vector< Neg2LogLikelihoodRatio* >& );
+  PValueTest( const double&, const int&, PseudoExperimentFactory& );
   virtual ~PValueTest();
 
   double operator()( Neg2LogLikelihoodRatio& );
-  void init();
+  double operator()( const double& );
   void finalize();
   double alpha() const;
   void alpha( const double& );
@@ -27,6 +28,8 @@ public:
 
 private:
 
+  void init();
+  void init( const int&, PseudoExperimentFactory& ); //<- construct likelihood distribution from PEs
   void clear(); //<- purge all information in PValueTest
 
 

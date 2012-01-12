@@ -217,17 +217,10 @@ int main( int argc, char* argv[] ) {
       double alpha = pow( scale, -4 );
       vector< PseudoExperiment > pes = peFactory.build( alpha, nPE );
 
-      vector< Neg2LogLikelihoodRatio* > likelihoodRatios;
-      likelihoodRatios.reserve( pes.size() );
-      foreach( const PseudoExperiment& pe, pes )
-      {
-        PDF * pePDF = new PDF( pdf->pdfFitParams(), pe.integral() );
-        likelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, alpha ) );
-      }
-
       // -------
       // CL_s+b
-      PValueTest signalPlusBackgroundPValue( alpha, likelihoodRatios ); // = *pValueTest;
+      PValueTest signalPlusBackgroundPValue( alpha, nPE, peFactory );
+      signalOutFile << signalPlusBackgroundPValue << endl;
       vector< double > par( 1, alpha );
       double clsb_observed = signalPlusBackgroundPValue( dataLikelihoodRatio );
 
@@ -239,7 +232,6 @@ int main( int argc, char* argv[] ) {
 
       CL_sb.add( scale, clsb_observed, clsb_expected );
 
-      signalOutFile << signalPlusBackgroundPValue << endl;
 
       // -----------
       // CL_s
@@ -262,9 +254,6 @@ int main( int argc, char* argv[] ) {
         backgroundPValue.finalize();
       }
       ++scaleBin;
-
-      // clean up likelihoods for this alpha
-      for_each( likelihoodRatios.begin(), likelihoodRatios.end(), boost::checked_deleter< Neg2LogLikelihoodRatio >() );
 
     }
     // clean up error band Likelihoods
