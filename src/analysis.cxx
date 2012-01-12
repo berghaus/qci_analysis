@@ -48,6 +48,8 @@
 #include "TestStatMonitor.hpp"
 
 #define ERROR_NO_SCALE_VALUE 1
+#define ERROR_NO_PDF 3
+#define ERROR_NO_DATA 4
 
 using boost::lexical_cast;
 using namespace std;
@@ -69,7 +71,9 @@ int main( int argc, char* argv[] ) {
       ( "nPE,n", po::value< int >(), "number of pseudo-experiments to run on each alpha" )
       ( "scales,s", po::value< vector< double > >()->multitoken(), "list of contact interaction scale values to run on (in TeV)" )
       ( "jobID,j", po::value< int >(), "PBS job ID for output naming" )
-      ( "outDir,o", po::value< string >(), "output directory for likelihood disctributions" );
+      ( "outDir,o", po::value< string >(), "output directory for likelihood disctributions" )
+      ( "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )
+      ( "data,d", po::value< string >(), "ROOT file containing data event distribution" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -88,7 +92,6 @@ int main( int argc, char* argv[] ) {
     cout << "Defaulting to using " << nPE << " pseudo-experiments for each alpha.\n";
   }
 
-  // TODO: give these as command line controls
   double nBinsScale = 0.;
   double minScale = 0.;
   double maxScale = 0.;
@@ -120,6 +123,22 @@ int main( int argc, char* argv[] ) {
     cout << "directing output to: " << outDir << "\n";
   }
 
+  string pdfFileName;
+  if ( vm.count( "pdf" ) ) {
+    pdfFileName = vm["pdf"].as< string >();
+  } else {
+    cout << "No predicted event distributions supplied. Aborting.\n";
+    return ERROR_NO_PDF;
+  }
+
+  string dataFileName;
+  if ( vm.count( "data" ) ) {
+    dataFileName = vm["data"].as< string >();
+  } else {
+    cout << "No data event distribution supplied. Aborting.\n";
+    return ERROR_NO_DATA;
+  }
+
   CertaintyLevel CL_sb( "CL_{s+b}", nBinsScale, minScale, maxScale );
   CertaintyLevel CL_s( "CL_{s}", nBinsScale, minScale, maxScale );
 
@@ -131,11 +150,11 @@ int main( int argc, char* argv[] ) {
 //  ControlFrame * control = new ControlFrame( rootWindow, 350, 80 );
 
   // read in our files
-  TFile * pdfFile = TFile::Open( "~/docs/comp/analysis/kFactor.root", "READ" );
+  TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
   vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
   TDirectoryFile* pdfDir = pdfDirs.back();
 
-  TFile * dataFile = TFile::Open( "~/docs/comp/analysis/data.root", "READ" );
+  TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
   vector< TH1* > dataHists = GetHists( dataFile );
   TH1 * dataHist = dataHists.back();
   Experiment data( *dataHist );

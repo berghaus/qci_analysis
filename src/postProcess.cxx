@@ -29,6 +29,8 @@
 #define foreach BOOST_FOREACH
 #define ERROR_NO_SIGNAL_INPUT 1
 #define ERROR_SIGNAL_BACKGROUND_MISMATCH 2
+#define ERROR_NO_PDF 3
+#define ERROR_NO_DATA 4
 
 using namespace std;
 namespace po = boost::program_options;
@@ -45,7 +47,9 @@ int main( int argc, char* argv[] ) {
   desc.add_options()( "help,h", "print this help message" )
       ( "sigInputFiles,s", po::value< vector< string > >()->multitoken(), "list of input files containing signal likelihood distributions" )
       ( "bkgInputFiles,b", po::value< vector< string > >()->multitoken(), "list of input files containing background likelihood distributions" )
-      ( "outDir,o", po::value< string >(), "output directory for plots" );
+      ( "outDir,o", po::value< string >(), "output directory for plots" )
+      ( "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )
+      ( "data,d", po::value< string >(), "ROOT file containing data event distribution" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -88,6 +92,22 @@ int main( int argc, char* argv[] ) {
     folder = vm["outDir"].as< string >();
   }
   cout << "directing figures to: " << folder << "\n";
+
+  string pdfFileName;
+  if ( vm.count( "pdf" ) ) {
+    pdfFileName = vm["pdf"].as< string >();
+  } else {
+    cout << "No predicted event distributions supplied. Aborting.\n";
+    return ERROR_NO_PDF;
+  }
+
+  string dataFileName;
+  if ( vm.count( "data" ) ) {
+    dataFileName = vm["data"].as< string >();
+  } else {
+    cout << "No data event distribution supplied. Aborting.\n";
+    return ERROR_NO_DATA;
+  }
 
   if ( doCLs && sigLLDistributions.size() != bkgLLDistributions.size() ) {
     cerr <<  "number of singal and background likelihood distributions does not match!\n";
