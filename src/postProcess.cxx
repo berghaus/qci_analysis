@@ -22,6 +22,12 @@
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/version.hpp>
 
+#include <TClass.h>
+#include <TCollection.h>
+#include <TDirectoryFile.h>
+#include <TFile.h>
+#include <TKey.h>
+
 #include "PostProcessCL.hpp"
 #include "PValueTest.hpp"
 
@@ -38,6 +44,12 @@ namespace po = boost::program_options;
 void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest >& );
 void ComputeCLsb( const vector< PValueTest >& );
 void ComputeCLs( const vector< PValueTest >&, const vector< PValueTest >& );
+vector< TDirectoryFile* > GetDirs( const TFile* );
+vector< TH1* > GetHists( const TFile* );
+template< class T > bool compByName( const T* x, const T* y ) {
+  return string( x->GetName() ) < string( y->GetName() );
+}
+
 
 int main( int argc, char* argv[] ) {
 
@@ -45,11 +57,12 @@ int main( int argc, char* argv[] ) {
   // Declare the supported options.
   po::options_description desc( "Allowed options" );
   desc.add_options()( "help,h", "print this help message" )
-      ( "sigInputFiles,s", po::value< vector< string > >()->multitoken(), "list of input files containing signal likelihood distributions" )
-      ( "bkgInputFiles,b", po::value< vector< string > >()->multitoken(), "list of input files containing background likelihood distributions" )
-      ( "outDir,o", po::value< string >(), "output directory for plots" )
-      ( "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )
-      ( "data,d", po::value< string >(), "ROOT file containing data event distribution" );
+    ( "nPE,n", po::value< int >(), "number of pseudo-experiments to run on each alpha" )
+    ( "sigInputFiles,s", po::value< vector< string > >()->multitoken(), "list of input files containing signal likelihood distributions" )
+    ( "bkgInputFiles,b", po::value< vector< string > >()->multitoken(), "list of input files containing background likelihood distributions" )
+    ( "outDir,o", po::value< string >(), "output directory for plots" )
+    ( "data,d", po::value< string >(), "ROOT file containing data event distribution" )
+    ( "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -58,6 +71,14 @@ int main( int argc, char* argv[] ) {
   if ( vm.count( "help" ) ) {
     cout << desc << "\n";
     return 1;
+  }
+
+  int nPE = 1000;
+  if ( vm.count( "nPE" ) ) {
+    cout << "Running " << vm["nPE"].as< int >() << " pseudo-experiments for each alpha.\n";
+    nPE = vm["nPE"].as< int >();
+  } else {
+    cout << "Defaulting to using " << nPE << " pseudo-experiments for each alpha.\n";
   }
 
   vector< string > sigFileNames;
@@ -93,13 +114,6 @@ int main( int argc, char* argv[] ) {
   }
   cout << "directing figures to: " << folder << "\n";
 
-  string pdfFileName;
-  if ( vm.count( "pdf" ) ) {
-    pdfFileName = vm["pdf"].as< string >();
-  } else {
-    cout << "No predicted event distributions supplied. Aborting.\n";
-    return ERROR_NO_PDF;
-  }
 
   string dataFileName;
   if ( vm.count( "data" ) ) {
@@ -108,16 +122,47 @@ int main( int argc, char* argv[] ) {
     cout << "No data event distribution supplied. Aborting.\n";
     return ERROR_NO_DATA;
   }
+  // read in data
+  TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
+  vector< TH1* > dataHists = GetHists( dataFile );
+  TH1 * dataHist = dataHists.back();
+  Experiment data( *dataHist );
+
+  string pdfFileName;
+  if ( vm.count( "pdf" ) ) {
+    pdfFileName = vm["pdf"].as< string >();
+  } else {
+    cout << "No predicted event distributions supplied. Aborting.\n";
+    return ERROR_NO_PDF;
+  }
+  // read in PDF
+  TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
+  vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
+  TDirectoryFile* pdfDir = pdfDirs.back();
+  PDF * pdf = new PDF( pdfDir, data.integral() );
 
   if ( doCLs && sigLLDistributions.size() != bkgLLDistributions.size() ) {
     cerr <<  "number of singal and background likelihood distributions does not match!\n";
     return ERROR_SIGNAL_BACKGROUND_MISMATCH;
   }
 
+
+  Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
+  PseudoExperimentFactory peFactory( pdf, data );
+
+  vector< PseudoExperiment > errorBandPEs = peFactory.build( 0., nPE );
+  vector< Neg2LogLikelihoodRatio* > errorBandLRs;
+  errorBandLRs.reserve( errorBandPEs.size() );
+  foreach( const PseudoExperiment& pe, errorBandPEs )
+  {
+    PDF * pePDF = new PDF( pdf->pdfFitParams(), pe.integral() );
+    errorBandLRs.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
+  }
+
   if ( doCLs ) {
-    PostProcessCL pp( sigLLDistributions, bkgLLDistributions );
+    PostProcessCL pp( sigLLDistributions, bkgLLDistributions, errorBandLRs );
   } else {
-    PostProcessCL pp( sigLLDistributions );
+    PostProcessCL pp( sigLLDistributions, errorBandLRs );
   }
 
   return 0;
@@ -147,5 +192,57 @@ void ComputeCLsb( const vector< PValueTest >& LL ) {
 
 
 void ComputeCLs( const vector< PValueTest >& sigLL, const vector< PValueTest >& bkgLL ) {
+
+}
+
+vector< TDirectoryFile* > GetDirs( const TFile* file ) {
+
+  vector< TDirectoryFile* > result;
+
+  TIter nextKey( file->GetListOfKeys() );
+  TKey * key = (TKey*) nextKey();
+
+  do {
+
+    if ( !key ) break;
+
+    string name = key->GetName();
+    if ( name.find( "0" ) == 0 ) continue;
+    TObject * obj = key->ReadObj();
+
+    if ( obj && obj->IsA()->InheritsFrom( "TDirectory" ) ) {
+      cout << "found: " << name << endl;
+      result.push_back( (TDirectoryFile*) obj );
+    }
+
+  } while ( key = (TKey*) nextKey() );
+
+  return result;
+
+}
+
+vector< TH1* > GetHists( const TFile* file ) {
+
+  vector< TH1* > result;
+
+  TIter nextKey( file->GetListOfKeys() );
+  TKey * key = (TKey*) nextKey();
+
+  do {
+
+    if ( !key ) break;
+
+    string name = key->GetName();
+    if ( name.find( "Chi_" ) != 0 ) continue;
+    TObject * obj = key->ReadObj();
+
+    if ( obj && obj->IsA()->InheritsFrom( "TH1" ) ) {
+      cout << "found: " << name << endl;
+      result.push_back( (TH1*) obj );
+    }
+
+  } while ( key = (TKey*) nextKey() );
+
+  return result;
 
 }

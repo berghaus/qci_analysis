@@ -12,12 +12,17 @@
 
 #include "PValueTest.hpp"
 
+class Neg2LogLikelihoodRatio;
+
 class PostProcessCL {
 
 public:
   PostProcessCL();
-  PostProcessCL( const std::vector< PValueTest >& );
-  PostProcessCL( const std::vector< PValueTest >&, const std::vector< PValueTest >& );
+  // Constructor for CLs+b limit only.  Does not rake ownership of likelihood ratios supplied
+  PostProcessCL( const std::vector< PValueTest >&, std::vector< Neg2LogLikelihoodRatio* >& );
+
+  // Constructor for CLs+b and CLs limit.  Does not rake ownership of likelihood ratios supplied
+  PostProcessCL( const std::vector< PValueTest >&, const std::vector< PValueTest >&, std::vector< Neg2LogLikelihoodRatio* >& );
   virtual ~PostProcessCL();
 
 private:
@@ -26,6 +31,7 @@ private:
 
   std::vector< PValueTest > _sigLL;
   std::vector< PValueTest > _bkgLL;
+  std::vector< Neg2LogLikelihoodRatio* > _errorLLRs;
 
 };
 
