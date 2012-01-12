@@ -76,6 +76,7 @@ public:
   PseudoExperimentFactory( const PDF* pdf, const Experiment& graft, unsigned int seed = 65539 );
   virtual ~PseudoExperimentFactory();
   std::vector<PseudoExperiment> build( const double& alpha, const int& n );
+  PseudoExperiment build( const double& alpha );
 
 private:
   PseudoExperimentFactory();
@@ -86,8 +87,6 @@ private:
   TRandom _random;
   std::map<double,unsigned int>      _nGenerated;
   std::map<double,std::vector<PseudoExperiment*> > _generated;
-
-  PseudoExperiment build( const double& alpha );
 
 };
 
