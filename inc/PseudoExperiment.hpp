@@ -78,6 +78,9 @@ public:
   std::vector<PseudoExperiment> build( const double& alpha, const int& n );
   PseudoExperiment build( const double& alpha );
 
+  // getters
+  const PDF * pdf() const;
+
 private:
   PseudoExperimentFactory();
 

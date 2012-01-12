@@ -230,3 +230,5 @@ vector< PseudoExperiment > PseudoExperimentFactory::build( const double& alpha, 
 
 }
 
+const PDF * PseudoExperimentFactory::pdf() const { return _pdf; }
+
