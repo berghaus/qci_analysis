@@ -98,7 +98,6 @@ void PostProcessCL::proc() {
       sort( cls_expected.begin(), cls_expected.end() );
 
       _CLs->add( scale, cls_observed, cls_expected );
-
     }
 
     ++sigItr;
