@@ -40,6 +40,7 @@ private:
   std::vector< Neg2LogLikelihoodRatio* > _errorLLRs;
   Neg2LogLikelihoodRatio* _dataLLR;
 
+  double _pValue;
   CertaintyLevel * _CLsb;
   CertaintyLevel * _CLs;
 

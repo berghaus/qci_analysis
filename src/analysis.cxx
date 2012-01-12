@@ -64,6 +64,7 @@ template< class T > bool compByName( const T* x, const T* y ) {
 
 int main( int argc, char* argv[] ) {
 
+  //---------------------------------------------------------------------------
   // process cmd opts
   // Declare the supported options.
   po::options_description desc( "Allowed options" );
@@ -92,16 +93,11 @@ int main( int argc, char* argv[] ) {
     cout << "Defaulting to using " << nPE << " pseudo-experiments for each alpha.\n";
   }
 
-  double nBinsScale = 0.;
-  double minScale = 0.;
-  double maxScale = 0.;
   vector< double > scales;
   if ( vm.count( "scales" ) ) {
     scales = vm["scales"].as< vector< double > >();
     sort( scales.begin(), scales.end() );
-    minScale = scales.front();
-    maxScale = scales.back();
-    nBinsScale = scales.size();
+
     cout << "Running over " << scales.size() << " scale values:\n";
     foreach( double scale, scales )
       cout << "   - " << scale << '\n';
@@ -138,37 +134,30 @@ int main( int argc, char* argv[] ) {
     cout << "No data event distribution supplied. Aborting.\n";
     return ERROR_NO_DATA;
   }
+  //---------------------------------------------------------------------------
 
-  CertaintyLevel CL_sb( "CL_{s+b}", nBinsScale, minScale, maxScale );
-  CertaintyLevel CL_s( "CL_{s}", nBinsScale, minScale, maxScale );
-
-  // for GUI;
-//  TApplication theApp( "Analysis", &argc, argv );
-//  SetAtlasStyle();
-//  TGClient windowClient;
-//  const TGWindow * rootWindow = windowClient.GetRoot();
-//  ControlFrame * control = new ControlFrame( rootWindow, 350, 80 );
-
-  // read in our files
-  TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
-  vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
-  TDirectoryFile* pdfDir = pdfDirs.back();
-
-  TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
-  vector< TH1* > dataHists = GetHists( dataFile );
-  TH1 * dataHist = dataHists.back();
-  Experiment data( *dataHist );
-
-  data.plot();
-
-  // Set up PDF for data
 
   try {
+    // Set up PDF to run
+
+    // read in data file
+    TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
+    vector< TH1* > dataHists = GetHists( dataFile );
+    TH1 * dataHist = dataHists.back();
+    Experiment data( *dataHist );
+    data.plot();
+
+    // read in our PDF from file
+    TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
+    vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
+    TDirectoryFile* pdfDir = pdfDirs.back();
+
 
     PDF * pdf = new PDF( pdfDir, data.integral() );
     Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
 
-    foreach( const double& scale, scales )
+    // --- make sure we get something reasonable across interesting scale values
+    for( double scale = 0.5; scale < 10.; scale += 0.1 )
       dataLikelihoodRatio( vector< double >( 1, scale ) );
 
     TestStatMonitor tm( -1., "figures/", ".png" );
@@ -184,20 +173,7 @@ int main( int argc, char* argv[] ) {
 
     PseudoExperimentFactory peFactory( pdf, data );
 
-    vector< PseudoExperiment > errorBandPEs = peFactory.build( 0., nPE );
-    vector< Neg2LogLikelihoodRatio* > errorBandLRs;
-    errorBandLRs.reserve( errorBandLRs.size() );
-    foreach( const PseudoExperiment& pe, errorBandPEs )
-    {
-      PDF * pePDF = new PDF( pdf->pdfFitParams(), pe.integral() );
-      errorBandLRs.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
-    }
-
-    PValueTest pValueTest( 0., errorBandLRs );
-    double pValue = pValueTest( dataLikelihoodRatio );
-
-    pValueTest.finalize();
-
+    // create PEs for background likelihood distribution
     vector< PseudoExperiment > bgPEs = peFactory.build( 0., nPE );
     vector< Neg2LogLikelihoodRatio* > bgLikelihoodRatios;
     bgLikelihoodRatios.reserve( bgPEs.size() );
@@ -207,82 +183,53 @@ int main( int argc, char* argv[] ) {
       bgLikelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
     }
 
-    // -- file to ouput PValue test into
+    // --- open output files for likelihood distributions
     ofstream signalOutFile, bkgrndOutFile;
     signalOutFile.open( ( outDir + "/signalOutput-" + jobID + ".bin" ).c_str(), ios::binary );
     bkgrndOutFile.open( ( outDir + "/bkgrndOutput-" + jobID + ".bin" ).c_str(), ios::binary );
+
     int scaleBin = 0;
     foreach( double scale, scales )
     {
       double alpha = pow( scale, -4 );
-      vector< PseudoExperiment > pes = peFactory.build( alpha, nPE );
 
       // -------
       // CL_s+b
       PValueTest signalPlusBackgroundPValue( alpha, nPE, peFactory );
       signalOutFile << signalPlusBackgroundPValue << endl;
-      vector< double > par( 1, alpha );
-      double clsb_observed = signalPlusBackgroundPValue( dataLikelihoodRatio );
-
-      vector< double > clsb_expected;
-      clsb_expected.reserve( nPE );
-      foreach( Neg2LogLikelihoodRatio* l, errorBandLRs )
-        clsb_expected.push_back( signalPlusBackgroundPValue( *l ) );
-      sort( clsb_expected.begin(), clsb_expected.end() );
-
-      CL_sb.add( scale, clsb_observed, clsb_expected );
-
 
       // -----------
       // CL_s
       PValueTest backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
       bkgrndOutFile << backgroundPValue << endl;
-      double cls_observed = signalPlusBackgroundPValue( dataLikelihoodRatio ) / backgroundPValue( dataLikelihoodRatio );
-
-      vector< double > cls_expected;
-      cls_expected.reserve( nPE );
-      foreach( Neg2LogLikelihoodRatio* l, errorBandLRs )
-        cls_expected.push_back( signalPlusBackgroundPValue( *l ) / backgroundPValue( *l ) );
-      sort( cls_expected.begin(), cls_expected.end() );
-
-      CL_s.add( scale, cls_observed, cls_expected );
 
       // ----------
       // monitoring
-      if ( !( scaleBin % 10 ) ) {
+      if ( !( scaleBin % 1000 ) ) {
         signalPlusBackgroundPValue.finalize();
         backgroundPValue.finalize();
       }
       ++scaleBin;
 
     }
-    // clean up error band Likelihoods
-    for_each( errorBandLRs.begin(), errorBandLRs.end(), boost::checked_deleter< Neg2LogLikelihoodRatio >() );
+
+    // clean up background Likelihoods
     for_each( bgLikelihoodRatios.begin(), bgLikelihoodRatios.end(),
               boost::checked_deleter< Neg2LogLikelihoodRatio >() );
 
-    CL_sb.plot();
-    CL_s.plot();
-
-    cout << " * pvalue( Lambda = " << 0. << ") = " << pValue << endl;
-    cout << CL_sb << endl;
-    cout << CL_s << endl;
-
-//    theApp.Run( kTRUE );
+    // close output files
     signalOutFile.close();
     bkgrndOutFile.close();
+
+    // close data and PDF input files
+    pdfFile->Close();
+    dataFile->Close();
 
   } catch ( exception& e ) {
     // print exception to console
     cout << "caught exception:\n" << e.what() << endl;
 
-    // give some time to look at problems
-//    theApp.Run( kTRUE );
-
   }
-
-  pdfFile->Close();
-  dataFile->Close();
 
   return 0;
 

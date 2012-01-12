@@ -4,10 +4,12 @@
  *  Created on: 2012-01-11
  *      Author: frank
  */
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <vector>
 
+#include <boost/checked_delete.hpp>
 #include <boost/foreach.hpp>
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/config.hpp>
@@ -53,7 +55,8 @@ template< class T > bool compByName( const T* x, const T* y ) {
 
 int main( int argc, char* argv[] ) {
 
-  // process cmd opts
+  //---------------------------------------------------------------------------
+  // process command line options
   // Declare the supported options.
   po::options_description desc( "Allowed options" );
   desc.add_options()( "help,h", "print this help message" )
@@ -140,16 +143,23 @@ int main( int argc, char* argv[] ) {
   vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
   TDirectoryFile* pdfDir = pdfDirs.back();
   PDF * pdf = new PDF( pdfDir, data.integral() );
+  //---------------------------------------------------------------------------
 
+  // sanity check for read in of likelihood distributions
   if ( doCLs && sigLLDistributions.size() != bkgLLDistributions.size() ) {
     cerr <<  "number of singal and background likelihood distributions does not match!\n";
     return ERROR_SIGNAL_BACKGROUND_MISMATCH;
   }
 
-
+  // set up data likelihood distribution
   Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
+  // --- make sure we get something reasonable across interesting scale values
+  for( double scale = 0.5; scale < 10.; scale += 0.1 )
+    dataLikelihoodRatio( vector< double >( 1, scale ) );
+
   PseudoExperimentFactory peFactory( pdf, data );
 
+  // set up likelihood ratios for error bands
   vector< PseudoExperiment > errorBandPEs = peFactory.build( 0., nPE );
   vector< Neg2LogLikelihoodRatio* > errorBandLRs;
   errorBandLRs.reserve( errorBandPEs.size() );
@@ -159,6 +169,7 @@ int main( int argc, char* argv[] ) {
     errorBandLRs.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
   }
 
+  // find p-value and limits
   if ( doCLs ) {
     PostProcessCL pp( sigLLDistributions, bkgLLDistributions, errorBandLRs, &dataLikelihoodRatio );
     pp.proc();
@@ -170,6 +181,9 @@ int main( int argc, char* argv[] ) {
     pp.plot( folder );
     pp.print();
   }
+
+  // clean up error bar likelihoods
+  for_each( errorBandLRs.begin(), errorBandLRs.end(), boost::checked_deleter< Neg2LogLikelihoodRatio >() );
 
   return 0;
 }
