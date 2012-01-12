@@ -59,7 +59,7 @@ analysis_DEPENDENCIES =
 am_postProcess_OBJECTS = postProcess.$(OBJEXT) PDF.$(OBJEXT) \
 	TestStatMonitor.$(OBJEXT) Likelihood.$(OBJEXT) \
 	PseudoExperiment.$(OBJEXT) PValueTest.$(OBJEXT) \
-	PostProcessCL.$(OBJEXT)
+	CertaintyLevel.$(OBJEXT) PostProcessCL.$(OBJEXT)
 postProcess_OBJECTS = $(am_postProcess_OBJECTS)
 postProcess_DEPENDENCIES =
 DEFAULT_INCLUDES = -I. -I$(top_builddir)
@@ -182,7 +182,7 @@ analysis_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lT
 
 # post-processing/merging program
 postProcessdir = ../bin
-postProcess_SOURCES = postProcess.cxx PDF.cxx TestStatMonitor.cxx Likelihood.cxx PseudoExperiment.cxx PValueTest.cxx PostProcessCL.cxx
+postProcess_SOURCES = postProcess.cxx PDF.cxx TestStatMonitor.cxx Likelihood.cxx PseudoExperiment.cxx PValueTest.cxx CertaintyLevel.cxx PostProcessCL.cxx
 postProcess_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 all: all-am
 
@@ -268,6 +268,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+include ./$(DEPDIR)/CertaintyLevel.Po
 include ./$(DEPDIR)/Likelihood.Po
 include ./$(DEPDIR)/PDF.Po
 include ./$(DEPDIR)/PValueTest.Po

@@ -26,7 +26,7 @@ public:
   void add( const double&, const double&, const std::vector<double>& );
 
   // draws a canvas with the current graph
-  void plot();
+  void plot( const std::string& folder = "./"  );
 
   friend std::ostream& operator<<( std::ostream&, const CertaintyLevel& );
 

@@ -68,7 +68,7 @@ void CertaintyLevel::add( const double& scale, const double& obs, const vector< 
 
 }
 
-void CertaintyLevel::plot() {
+void CertaintyLevel::plot( const string& folder ) {
 
   assert( _scales.size() == _nBins );
   assert( _obs.size() == _nBins );
@@ -128,7 +128,7 @@ void CertaintyLevel::plot() {
   fullHist->Draw( "ASAME" );
   legend->Draw();
   line->Draw();
-  fullCanvas->Print( ("./figures/limits/"+_name+"-full.pdf").c_str() );
+  fullCanvas->Print( (folder+"/"+_name+"-full.pdf").c_str() );
 
   TCanvas * zoomCanvas = new TCanvas( ( _name + "_zoom" ).c_str(), "", 800, 800 );
   zoomCanvas->cd();
@@ -141,7 +141,7 @@ void CertaintyLevel::plot() {
   zoomHist->Draw( "ASAME" );
   legend->Draw();
   line->Draw();
-  zoomCanvas->Print( ("./figures/limits/"+_name+"-zoom.pdf").c_str() );
+  zoomCanvas->Print( (folder+"/"+_name+"-zoom.pdf").c_str() );
 
 }
 

@@ -160,9 +160,15 @@ int main( int argc, char* argv[] ) {
   }
 
   if ( doCLs ) {
-    PostProcessCL pp( sigLLDistributions, bkgLLDistributions, errorBandLRs );
+    PostProcessCL pp( sigLLDistributions, bkgLLDistributions, errorBandLRs, &dataLikelihoodRatio );
+    pp.proc();
+    pp.plot( folder );
+    pp.print();
   } else {
-    PostProcessCL pp( sigLLDistributions, errorBandLRs );
+    PostProcessCL pp( sigLLDistributions, errorBandLRs, &dataLikelihoodRatio );
+    pp.proc();
+    pp.plot( folder );
+    pp.print();
   }
 
   return 0;
