@@ -2,10 +2,13 @@
 
 #include <cfloat>
 #include <cmath>
+#include <cstdio>
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 #include <boost/foreach.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include <TClass.h>
 #include <TDirectoryFile.h>
@@ -26,15 +29,16 @@ using namespace std;
 
 #define foreach BOOST_FOREACH
 using boost::lexical_cast;
+using namespace boost::assign;
 
 PDF::PDF() :
     _nData( 1 ),
-    _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ) {
+    _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 16. ) ) {
 }
 
 PDF::PDF( TDirectoryFile* dir, const double nData ) :
     _nData( nData ),
-    _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ) {
+    _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 16. ) ) {
 
   if ( !dir ) throw domain_error(
       lexical_cast< string >( __FILE__ ) + " " + lexical_cast< string >( __LINE__ ) + ": No input file for PDF" );
@@ -51,11 +55,16 @@ PDF::PDF( TDirectoryFile* dir, const double nData ) :
       double chi = lexical_cast< double >( name.substr( 7 ) );
       TGraphErrors * graph = (TGraphErrors*) obj;
       _eventCounts[chi] = graph;
-      TFitResultPtr fitResult = graph->Fit( _pdfFit, "Q" );
+      TFitResultPtr fitResult = graph->Fit( _pdfFit, "QS" );
 
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 0 ) );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 1 ) );
       _pdfFitParams[chi].push_back( _pdfFit->GetParameter( 2 ) );
+
+      _covarianceMaticies.insert( make_pair( chi, fitResult->GetCovarianceMatrix() ) );
+
+      cout << "insterted at chi = " << chi << endl;
+
     }
   }
 
@@ -67,18 +76,14 @@ PDF::PDF( const map< double, vector< double > >& pdfFitParams, double nData ) :
     _pdfFitParams( pdfFitParams ) {
 }
 
-PDF::PDF( const PDF& orig ) {
+PDF::PDF( const PDF& orig ) :
+    _pdfFit( static_cast< TF1* >( orig._pdfFit->Clone( "PDFFit" ) ) ),
+    _nData( orig._nData ),
+    _pdfFitParams( orig.pdfFitParams() ),
+    _covarianceMaticies( orig._covarianceMaticies ) {
 
-  _pdfFit = orig._pdfFit;
-  _nData = orig._nData;
-
-  typedef map< double, TGraphErrors* > chiGraphMap_t;
-  foreach( chiGraphMap_t::value_type ec, orig._eventCounts )
-    _eventCounts[ec.first] = (TGraphErrors*) ec.second->Clone();
-
-  typedef map< double, vector< double > > chiFitParams_t;
-  foreach( chiFitParams_t::value_type params, _pdfFitParams )
-    _pdfFitParams[params.first] = params.second;
+  cout << "No of original cov mats: " << orig._covarianceMaticies.size() << "\n";
+  cout << "No of copied cov mats:   " << _covarianceMaticies.size() << "\n";
 
 }
 
@@ -95,9 +100,18 @@ double PDF::operator()( const double& chi, const int& data, const vector< double
   if ( par.at( 0 ) != par.at( 0 ) ) return 0.;
 
   if ( par.size() != 1 ) throw( domain_error( "PDF needs at least the compositeness parameter in passed vector" ) );
-  double nMC = interpolate( chi, par.at( 0 ) ); // predicted events at x for parameters
 
-  //cout << "n( alpha = " << par.at(0) << " | Data = " << data << ", Chi = " << chi << " ) : " << nMC << '\n';
+  // for looking things up need chi precision rounded to one sig fig
+  double x = int( chi * 100 ) % 10 > 4 ?
+      ceil( chi * 10 ) / 10. :
+      floor( chi * 10 ) / 10.;
+
+  double nMC = interpolate( x, par.at( 0 ) ); // predicted events at x for parameters
+  double eMC = error( x, par.at( 0 ) ); // error on predicted value
+
+  //cout << "n( alpha = " << par.at(0) << " | Data = " << data << ", Chi = " << chi << " ) : " << nMC << " pm " << eMC << '\n';
+
+  nMC = fabs( _random.Gaus( nMC, eMC ) ); // must be positive
 
   double result = 0;
   if ( nMC <= 0 ) throw logic_error(
@@ -113,7 +127,11 @@ double PDF::operator()( const double& chi, const int& data, const vector< double
 }
 
 double PDF::operator()( const double& chi, const double& alpha ) const {
-  return interpolate( chi, alpha );
+  // for looking things up need chi precision rounded to one sig fig
+  double x = int( chi * 100 ) % 10 > 4 ?
+      ceil( chi * 10 ) / 10. :
+      floor( chi * 10 ) / 10.;
+  return interpolate( x, alpha );
 }
 
 double PDF::interpolate( const double& chi, const double& alpha ) const {
@@ -166,3 +184,30 @@ double PDF::sumOverChi( const double& alpha ) const {
   return result;
 }
 
+double PDF::error( const double& chi, const double& alpha ) const {
+
+  if ( _covarianceMaticies.find( chi ) == _covarianceMaticies.end() ) return 0;
+
+  const TMatrixTSym< double > & mat = _covarianceMaticies.find( chi )->second;
+
+  // I know the gradients of my fit function are:
+  vector<double> grad = list_of(0.)( alpha )( pow( alpha, 0.5 ) );
+  vector<double> sum(3,0.);
+  double error = 0.;
+
+  // first sum
+  for( int i = 0; i < mat.GetNrows(); ++i ) {
+    sum[i] = 0;
+    for( int j = 0; j < mat.GetNcols(); ++j ) {
+      sum[i] += mat( i, j ) * grad[j];
+    }
+  }
+
+  // second sum
+  for( int i = 0; i < mat.GetNcols(); ++i ) {
+    error += sum[i] * grad[i];
+  }
+
+  return error;
+
+}

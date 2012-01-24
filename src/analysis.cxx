@@ -179,7 +179,7 @@ int main( int argc, char* argv[] ) {
     bgLikelihoodRatios.reserve( bgPEs.size() );
     foreach( const PseudoExperiment& pe, bgPEs )
     {
-      PDF * pePDF = new PDF( pdf->pdfFitParams(), pe.integral() );
+      PDF * pePDF = new PDF( *pdf );
       bgLikelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
     }
 

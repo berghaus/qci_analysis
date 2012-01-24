@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+#include <TMatrixTSym.h>
+#include <TRandom3.h>
+
 class TDirectoryFile;
 class TF1;
 class TGraphErrors;
@@ -13,6 +16,7 @@ class PDFMonitor;
 class PDF {
 
 public:
+
   // default constructor - should not be used
   PDF();
 
@@ -45,6 +49,7 @@ public:
   void accept( PDFMonitor& );
 
   double interpolate( const double&, const double& ) const;
+  double error( const double&, const double& ) const;
 
   std::map< double, TGraphErrors* > eventCounts() const;
   std::map< double, std::vector< double > > pdfFitParams() const;
@@ -56,6 +61,8 @@ private:
   double _nData;
   std::map< double, TGraphErrors* > _eventCounts;
   std::map< double, std::vector< double > > _pdfFitParams;
+  std::map< double, TMatrixTSym<double> > _covarianceMaticies;
+  mutable TRandom3 _random;
 
 };
 
