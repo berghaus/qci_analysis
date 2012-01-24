@@ -180,7 +180,10 @@ int main( int argc, char* argv[] ) {
     foreach( const PseudoExperiment& pe, bgPEs )
     {
       PDF * pePDF = new PDF( *pdf );
-      bgLikelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
+      Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
+      for( double scale = 2.; scale < 8.; scale += 0.1 )
+	(*l)( vector< double >( 1, scale ) );
+      bgLikelihoodRatios.push_back( l );
     }
 
     // --- open output files for likelihood distributions

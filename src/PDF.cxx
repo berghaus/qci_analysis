@@ -131,7 +131,7 @@ double PDF::operator()( const double& chi, const double& alpha ) const {
   double eMC = error( x, alpha ); // error on predicted value
 
   // predicted number of events modified by statistical uncertainty
-  nMC = _random.Gaus( nMC, eMC ); // must be positive
+  // nMC = _random.Gaus( nMC, eMC ); // must be positive
 
   return nMC;
 }

@@ -117,7 +117,6 @@ int main( int argc, char* argv[] ) {
   }
   cout << "directing figures to: " << folder << "\n";
 
-
   string dataFileName;
   if ( vm.count( "data" ) ) {
     dataFileName = vm["data"].as< string >();
@@ -150,12 +149,13 @@ int main( int argc, char* argv[] ) {
     cerr <<  "number of singal and background likelihood distributions does not match!\n";
     return ERROR_SIGNAL_BACKGROUND_MISMATCH;
   }
-
   // set up data likelihood distribution
   Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
   // --- make sure we get something reasonable across interesting scale values
-  for( double scale = 0.5; scale < 10.; scale += 0.1 )
+  for( double scale = 2.; scale < 8.; scale += 0.1 )
     dataLikelihoodRatio( vector< double >( 1, scale ) );
+
+
 
   PseudoExperimentFactory peFactory( pdf, data );
 
@@ -165,8 +165,11 @@ int main( int argc, char* argv[] ) {
   errorBandLRs.reserve( errorBandPEs.size() );
   foreach( const PseudoExperiment& pe, errorBandPEs )
   {
-    PDF * pePDF = new PDF( pdf->pdfFitParams(), pe.integral() );
-    errorBandLRs.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
+    PDF * pePDF = new PDF( *pdf );
+    Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
+    for( double scale = 2.; scale < 8.; scale += 0.1 )
+      (*l)( vector< double >( 1, scale ) );
+    errorBandLRs.push_back( l );
   }
 
   // find p-value and limits

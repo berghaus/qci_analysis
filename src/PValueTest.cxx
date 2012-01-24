@@ -40,6 +40,9 @@ void PValueTest::init( const int& nPE, PseudoExperimentFactory& peFactory ) {
     PseudoExperiment pe = peFactory.build( _alpha );
     PDF * pePDF = new PDF( peFactory.pdf()->pdfFitParams(), pe.integral() );
     Neg2LogLikelihoodRatio n2llr( &pe, pePDF, _alpha );
+    for( double scale = 2.; scale < 8.; scale += 0.1 )
+      n2llr( vector< double >( 1, scale ) );
+
     _testStats.push_back( n2llr( par ) );
   }
 
@@ -129,7 +132,7 @@ void PValueTest::clear(  ) {
   _lambdas.clear();
   _dataLLR = 0.;
 
-  delete _minus2LnLikelihoodDistribution;
+  //delete _minus2LnLikelihoodDistribution;
   _testStats.clear();
 
 }
