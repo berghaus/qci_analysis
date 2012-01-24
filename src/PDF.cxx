@@ -82,9 +82,6 @@ PDF::PDF( const PDF& orig ) :
     _pdfFitParams( orig.pdfFitParams() ),
     _covarianceMaticies( orig._covarianceMaticies ) {
 
-  cout << "No of original cov mats: " << orig._covarianceMaticies.size() << "\n";
-  cout << "No of copied cov mats:   " << _covarianceMaticies.size() << "\n";
-
 }
 
 PDF::~PDF() {
@@ -107,16 +104,14 @@ double PDF::operator()( const double& chi, const int& data, const vector< double
       floor( chi * 10 ) / 10.;
 
   double nMC = interpolate( x, par.at( 0 ) ); // predicted events at x for parameters
-  double eMC = error( x, par.at( 0 ) ); // error on predicted value
 
   //cout << "n( alpha = " << par.at(0) << " | Data = " << data << ", Chi = " << chi << " ) : " << nMC << " pm " << eMC << '\n';
-
-  nMC = fabs( _random.Gaus( nMC, eMC ) ); // must be positive
 
   double result = 0;
   if ( nMC <= 0 ) throw logic_error(
       lexical_cast< string >( __FILE__ ) + " " + lexical_cast< string >( __LINE__ )
       + ": Predicted zero or less events" );
+
   // return log of poisson probability
   if ( data < 0. ) result = 0.;
   else if ( data == 0.0 ) result = -nMC;
@@ -131,7 +126,14 @@ double PDF::operator()( const double& chi, const double& alpha ) const {
   double x = int( chi * 100 ) % 10 > 4 ?
       ceil( chi * 10 ) / 10. :
       floor( chi * 10 ) / 10.;
-  return interpolate( x, alpha );
+
+  double nMC = interpolate( x, alpha );
+  double eMC = error( x, alpha ); // error on predicted value
+
+  // predicted number of events modified by statistical uncertainty
+  nMC = _random.Gaus( nMC, eMC ); // must be positive
+
+  return nMC;
 }
 
 double PDF::interpolate( const double& chi, const double& alpha ) const {

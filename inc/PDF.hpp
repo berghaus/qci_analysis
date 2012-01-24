@@ -41,7 +41,7 @@ public:
   // smoothness
   double operator()( const double&, const int&, const std::vector< double >& ) const;
 
-  // expectated number of events at x, y
+  // expectated number of events at chi and alpha modified by statistical and systematic uncertainty
   double operator()( const double&, const double& ) const;
 
   void init();
