@@ -207,7 +207,7 @@ PseudoExperiment PseudoExperimentFactory::build( const double& alpha ) {
   vector< double > chis;
   for( int bin = 0; bin < _graft.x().size(); ++bin ) {
     double chi = _graft.x( bin );
-    double expectedN = ( *_pdf )( chi, alpha );
+    double expectedN = ( *_pdf )( chi, alpha ); // modify by systematics
     chis.push_back( chi );
     content.push_back( _random.Poisson( expectedN ) );
   }
