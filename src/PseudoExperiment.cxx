@@ -184,8 +184,7 @@ ostream& operator<< ( ostream& out, const PseudoExperiment& e ) {
 //------------------------------------------------------------------------------
 
 PseudoExperimentFactory::PseudoExperimentFactory() :
-    _pdf( 0 ),
-    _random( 65539 ) {
+    _pdf( 0 ) {
 }
 
 PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf, const Experiment& graft, unsigned int seed ) :

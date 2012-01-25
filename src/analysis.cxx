@@ -6,6 +6,7 @@
 #include <cfloat>
 #include <cstdlib>
 #include <stdexcept>
+#include <ctime>
 #include <limits>
 
 #include <boost/foreach.hpp>
@@ -171,7 +172,7 @@ int main( int argc, char* argv[] ) {
     PDFMonitor pdfMon;
     pdf->accept( pdfMon );
 
-    PseudoExperimentFactory peFactory( pdf, data );
+    PseudoExperimentFactory peFactory( pdf, data, time( 0 ) );
 
     // create PEs for background likelihood distribution
     vector< PseudoExperiment > bgPEs = peFactory.build( 0., nPE );
@@ -196,9 +197,19 @@ int main( int argc, char* argv[] ) {
     {
       double alpha = pow( scale, -4 );
 
+      // create signal PEs
+      vector< PseudoExperiment > sigPEs = peFactory.build( alpha, nPE );
+      vector< Neg2LogLikelihoodRatio* > sigLikelihoodRatios;
+      sigLikelihoodRatios.reserve( sigPEs.size() );
+      foreach( const PseudoExperiment& pe, sigPEs )
+      {
+        PDF * pePDF = new PDF( *pdf );
+        sigLikelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
+      }
+
       // -------
       // CL_s+b
-      PValueTest signalPlusBackgroundPValue( alpha, nPE, peFactory );
+      PValueTest signalPlusBackgroundPValue( alpha, sigLikelihoodRatios );
       signalOutFile << signalPlusBackgroundPValue << endl;
 
       // -----------
@@ -210,7 +221,7 @@ int main( int argc, char* argv[] ) {
       // monitoring
       if ( !( scaleBin % 1000 ) ) {
         signalPlusBackgroundPValue.finalize();
-        backgroundPValue.finalize();
+        //backgroundPValue.finalize();
       }
       ++scaleBin;
 

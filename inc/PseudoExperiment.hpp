@@ -5,7 +5,7 @@
 #include <vector>
 
 #include <TH1.h>
-#include <TRandom.h>
+#include <TRandom3.h>
 
 #include "PDF.hpp"
 
@@ -87,7 +87,7 @@ private:
   const PDF *      _pdf;
   const Experiment _graft;
 
-  TRandom _random;
+  TRandom3 _random;
   std::map<double,unsigned int>      _nGenerated;
   std::map<double,std::vector<PseudoExperiment*> > _generated;
 
