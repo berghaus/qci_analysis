@@ -32,6 +32,7 @@
 
 #include "PostProcessCL.hpp"
 #include "PValueTest.hpp"
+#include "AtlasStyle.hpp"
 
 
 #define foreach BOOST_FOREACH
@@ -44,8 +45,6 @@ using namespace std;
 namespace po = boost::program_options;
 
 void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest >& );
-void ComputeCLsb( const vector< PValueTest >& );
-void ComputeCLs( const vector< PValueTest >&, const vector< PValueTest >& );
 vector< TDirectoryFile* > GetDirs( const TFile* );
 vector< TH1* > GetHists( const TFile* );
 template< class T > bool compByName( const T* x, const T* y ) {
@@ -144,6 +143,8 @@ int main( int argc, char* argv[] ) {
   PDF * pdf = new PDF( pdfDir, data.integral() );
   //---------------------------------------------------------------------------
 
+  SetAtlasStyle();
+
   // sanity check for read in of likelihood distributions
   if ( doCLs && sigLLDistributions.size() != bkgLLDistributions.size() ) {
     cerr <<  "number of singal and background likelihood distributions does not match!\n";
@@ -207,16 +208,6 @@ void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest 
 }
 
 
-void ComputeCLsb( const vector< PValueTest >& LL ) {
-
-  double clsb_observed = 0.; // likelihood ration from data
-  vector< double > clsb_expected;
-}
-
-
-void ComputeCLs( const vector< PValueTest >& sigLL, const vector< PValueTest >& bkgLL ) {
-
-}
 
 vector< TDirectoryFile* > GetDirs( const TFile* file ) {
 
