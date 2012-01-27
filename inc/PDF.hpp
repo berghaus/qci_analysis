@@ -56,6 +56,9 @@ public:
   TF1* pdfFit( const std::string& ) const;
   double sumOverChi( const double& ) const;
 
+  void nData( const int& );
+  int nData() const;
+
 private:
   TF1* _pdfFit;
   double _nData;

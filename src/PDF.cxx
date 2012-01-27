@@ -133,7 +133,8 @@ double PDF::operator()( const double& chi, const double& alpha ) const {
   // predicted number of events modified by statistical uncertainty
   // nMC = _random.Gaus( nMC, eMC ); // must be positive
 
-  return nMC;
+
+  return nMC > 0. ? nMC : 0.;
 }
 
 double PDF::interpolate( const double& chi, const double& alpha ) const {
@@ -212,4 +213,12 @@ double PDF::error( const double& chi, const double& alpha ) const {
 
   return error;
 
+}
+
+void PDF::nData( const int& nData ) {
+  _nData = nData;
+}
+
+int PDF::nData() const {
+  return _nData;
 }
