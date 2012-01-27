@@ -205,7 +205,12 @@ int main( int argc, char* argv[] ) {
       foreach( const PseudoExperiment& pe, sigPEs )
       {
         PDF * pePDF = new PDF( *pdf );
-        sigLikelihoodRatios.push_back( new Neg2LogLikelihoodRatio( &pe, pePDF, 0. ) );
+        pePDF->nData( pe.integral() );
+        Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, alpha );
+        for( double s = 0.5; s < 10.; s += 0.1 )
+          ( *l )( vector< double >( 1, s ) );
+        sigLikelihoodRatios.push_back( l );
+
       }
 
       // -------
