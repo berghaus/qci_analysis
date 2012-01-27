@@ -213,3 +213,11 @@ double PDF::error( const double& chi, const double& alpha ) const {
   return error;
 
 }
+
+void PDF::nData( const int& nData ) {
+  _nData = nData;
+}
+
+int PDF::nData() const {
+  return _nData;
+}
