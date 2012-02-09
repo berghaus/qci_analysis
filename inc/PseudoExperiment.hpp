@@ -73,18 +73,18 @@ private:
 class PseudoExperimentFactory {
 
 public:
-  PseudoExperimentFactory( const PDF* pdf, const Experiment& graft, unsigned int seed = 65539 );
+  PseudoExperimentFactory( const Prediction* pdf, const Experiment& graft, unsigned int seed = 65539 );
   virtual ~PseudoExperimentFactory();
   std::vector<PseudoExperiment> build( const double& alpha, const int& n );
   PseudoExperiment build( const double& alpha );
 
   // getters
-  const PDF * pdf() const;
+  const Prediction * pdf() const;
 
 private:
   PseudoExperimentFactory();
 
-  const PDF *      _pdf;
+  const Prediction *      _pdf;
   const Experiment _graft;
 
   TRandom3 _random;

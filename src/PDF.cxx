@@ -31,12 +31,12 @@ using namespace std;
 using boost::lexical_cast;
 using namespace boost::assign;
 
-PDF::PDF() :
+Prediction::Prediction() :
     _nData( 1 ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 16. ) ) {
 }
 
-PDF::PDF( TDirectoryFile* dir, const double nData ) :
+Prediction::Prediction( TDirectoryFile* dir, const double nData ) :
     _nData( nData ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 16. ) ) {
 
@@ -70,13 +70,13 @@ PDF::PDF( TDirectoryFile* dir, const double nData ) :
 
 }
 
-PDF::PDF( const map< double, vector< double > >& pdfFitParams, double nData ) :
+Prediction::Prediction( const map< double, vector< double > >& pdfFitParams, double nData ) :
     _nData( nData ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ),
     _pdfFitParams( pdfFitParams ) {
 }
 
-PDF::PDF( const PDF& orig ) :
+Prediction::Prediction( const Prediction& orig ) :
     _pdfFit( static_cast< TF1* >( orig._pdfFit->Clone( "PDFFit" ) ) ),
     _nData( orig._nData ),
     _pdfFitParams( orig.pdfFitParams() ),
@@ -84,15 +84,15 @@ PDF::PDF( const PDF& orig ) :
 
 }
 
-PDF::~PDF() {
+Prediction::~Prediction() {
   _pdfFit->Delete();
 }
 
-void PDF::init() {
+void Prediction::init() {
 
 }
 
-double PDF::operator()( const double& chi, const int& data, const vector< double >& par ) const {
+double Prediction::operator()( const double& chi, const int& data, const vector< double >& par ) const {
 
   if ( par.at( 0 ) != par.at( 0 ) ) return 0.;
 
@@ -121,7 +121,7 @@ double PDF::operator()( const double& chi, const int& data, const vector< double
 
 }
 
-double PDF::operator()( const double& chi, const double& alpha ) const {
+double Prediction::operator()( const double& chi, const double& alpha ) const {
   // for looking things up need chi precision rounded to one sig fig
   double x = int( chi * 100 ) % 10 > 4 ?
       ceil( chi * 10 ) / 10. :
@@ -137,7 +137,7 @@ double PDF::operator()( const double& chi, const double& alpha ) const {
   return nMC > 0. ? nMC : 0.;
 }
 
-double PDF::interpolate( const double& chi, const double& alpha ) const {
+double Prediction::interpolate( const double& chi, const double& alpha ) const {
 
   typedef map< double, vector< double > > chiFitParams_t;
   // sum over all chi bins
@@ -158,23 +158,23 @@ double PDF::interpolate( const double& chi, const double& alpha ) const {
 
 }
 
-void PDF::accept( PDFMonitor& mon ) {
+void Prediction::accept( PDFMonitor& mon ) {
   mon.monitor( *this );
 }
 
-map< double, TGraphErrors* > PDF::eventCounts() const {
+map< double, TGraphErrors* > Prediction::eventCounts() const {
   return _eventCounts;
 }
 
-map< double, vector< double > > PDF::pdfFitParams() const {
+map< double, vector< double > > Prediction::pdfFitParams() const {
   return _pdfFitParams;
 }
 
-TF1* PDF::pdfFit( const std::string& name ) const {
+TF1* Prediction::pdfFit( const std::string& name ) const {
   return (TF1*) _pdfFit->Clone( name.c_str() );
 }
 
-double PDF::sumOverChi( const double& alpha ) const {
+double Prediction::sumOverChi( const double& alpha ) const {
   typedef map< double, vector< double > > chiFitParams_t;
   double result = 0.;
   foreach( const chiFitParams_t::value_type ec, _pdfFitParams )
@@ -187,7 +187,7 @@ double PDF::sumOverChi( const double& alpha ) const {
   return result;
 }
 
-double PDF::error( const double& chi, const double& alpha ) const {
+double Prediction::error( const double& chi, const double& alpha ) const {
 
   if ( _covarianceMaticies.find( chi ) == _covarianceMaticies.end() ) return 0;
 
@@ -215,10 +215,10 @@ double PDF::error( const double& chi, const double& alpha ) const {
 
 }
 
-void PDF::nData( const int& nData ) {
+void Prediction::nData( const int& nData ) {
   _nData = nData;
 }
 
-int PDF::nData() const {
+int Prediction::nData() const {
   return _nData;
 }

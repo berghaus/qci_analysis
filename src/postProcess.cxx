@@ -140,7 +140,7 @@ int main( int argc, char* argv[] ) {
   TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
   vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
   TDirectoryFile* pdfDir = pdfDirs.back();
-  PDF * pdf = new PDF( pdfDir, data.integral() );
+  Prediction * pdf = new Prediction( pdfDir, data.integral() );
   //---------------------------------------------------------------------------
 
   SetAtlasStyle();
@@ -166,7 +166,7 @@ int main( int argc, char* argv[] ) {
   errorBandLRs.reserve( errorBandPEs.size() );
   foreach( const PseudoExperiment& pe, errorBandPEs )
   {
-    PDF * pePDF = new PDF( *pdf );
+    Prediction * pePDF = new Prediction( *pdf );
     Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
     for( double scale = 2.; scale < 8.; scale += 0.1 )
       (*l)( vector< double >( 1, scale ) );

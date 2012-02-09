@@ -6,7 +6,7 @@
 #include <TCanvas.h>
 
 
-class PDF;
+class Prediction;
 class TGraph;
 
 class PDFMonitor {
@@ -16,7 +16,7 @@ public:
   PDFMonitor( const std::string&, const std::string );
   virtual ~PDFMonitor();
 
-  virtual void monitor( PDF& );
+  virtual void monitor( Prediction& );
 
 private:
 

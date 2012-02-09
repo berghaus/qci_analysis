@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE( constructors_test ) {
   TH1 * dataHist = (TH1*) dataF->Get( "Chi_2000-to-7000all" );
   Experiment atlas( *dataHist );
   TFile * input = TFile::Open( "~/docs/comp/analysis/vanilla.root", "READ" );
-  PDF pdf( input, atlas.integral() );
+  Prediction pdf( input, atlas.integral() );
   // int pefSeed = 1;
   // int nPE = 10;
   // PseudoExperimentFactory pef0( &pdf, atlas , pefSeed );

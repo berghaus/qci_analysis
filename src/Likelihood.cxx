@@ -25,7 +25,7 @@ Neg2LogLikelihood_FCN::Neg2LogLikelihood_FCN() :
   _pars.Add( "alpha", 0., 2.e-4, 0., 16. );
 }
 
-Neg2LogLikelihood_FCN::Neg2LogLikelihood_FCN( const Experiment* data, const PDF* pdf, const double alpha ) :
+Neg2LogLikelihood_FCN::Neg2LogLikelihood_FCN( const Experiment* data, const Prediction* pdf, const double alpha ) :
     _data( data ),
     _pdf( pdf ) {
 
@@ -44,7 +44,7 @@ double Neg2LogLikelihood_FCN::operator()() const {
 
 double Neg2LogLikelihood_FCN::operator()( const std::vector< double >& par ) const {
 
-  const PDF& pdf = *_pdf;
+  const Prediction& pdf = *_pdf;
   double result = 0.;
   for( int bin = 0; bin < _data->x().size(); ++bin ) {
     double x = _data->x( bin );
@@ -65,7 +65,7 @@ void Neg2LogLikelihood_FCN::data( const Experiment* data ) {
   _isMinimized = false;
 }
 
-void Neg2LogLikelihood_FCN::pdf( const PDF* pdf ) {
+void Neg2LogLikelihood_FCN::pdf( const Prediction* pdf ) {
   _pdf = pdf;
   _isMinimized = false;
 }
@@ -73,7 +73,7 @@ void Neg2LogLikelihood_FCN::pdf( const PDF* pdf ) {
 const Experiment* Neg2LogLikelihood_FCN::data() const {
   return _data;
 }
-const PDF* Neg2LogLikelihood_FCN::pdf() const {
+const Prediction* Neg2LogLikelihood_FCN::pdf() const {
   return _pdf;
 }
 bool Neg2LogLikelihood_FCN::isMinimized() const {
@@ -130,7 +130,7 @@ Neg2LogLikelihoodRatio::Neg2LogLikelihoodRatio() :
     _inCaseShitMonitor( 0 ) {
 }
 
-Neg2LogLikelihoodRatio::Neg2LogLikelihoodRatio( const Experiment* data, const PDF* pdf, const double& alpha ) :
+Neg2LogLikelihoodRatio::Neg2LogLikelihoodRatio( const Experiment* data, const Prediction* pdf, const double& alpha ) :
     _data( data ),
     _pdf( pdf ),
     _numerator( data, pdf, alpha ),
@@ -197,7 +197,7 @@ void Neg2LogLikelihoodRatio::data( const Experiment* data ) {
   init();
 }
 
-void Neg2LogLikelihoodRatio::pdf( const PDF* pdf ) {
+void Neg2LogLikelihoodRatio::pdf( const Prediction* pdf ) {
   _pdf = pdf;
   _numerator.pdf( pdf );
   _denominator.pdf( pdf );
@@ -208,7 +208,7 @@ const Experiment* Neg2LogLikelihoodRatio::data() const {
   return _data;
 }
 
-const PDF* Neg2LogLikelihoodRatio::pdf() const {
+const Prediction* Neg2LogLikelihoodRatio::pdf() const {
   return _pdf;
 }
 

@@ -154,7 +154,7 @@ int main( int argc, char* argv[] ) {
     TDirectoryFile* pdfDir = pdfDirs.back();
 
 
-    PDF * pdf = new PDF( pdfDir, data.integral() );
+    Prediction * pdf = new Prediction( pdfDir, data.integral() );
     Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
 
     // --- make sure we get something reasonable across interesting scale values
@@ -180,7 +180,7 @@ int main( int argc, char* argv[] ) {
     bgLikelihoodRatios.reserve( bgPEs.size() );
     foreach( const PseudoExperiment& pe, bgPEs )
     {
-      PDF * pePDF = new PDF( *pdf );
+      Prediction * pePDF = new Prediction( *pdf );
       pePDF->nData( pe.integral() );
       Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
       for( double scale = 0.5; scale < 10.; scale += 0.1 )
@@ -204,7 +204,7 @@ int main( int argc, char* argv[] ) {
       sigLikelihoodRatios.reserve( sigPEs.size() );
       foreach( const PseudoExperiment& pe, sigPEs )
       {
-        PDF * pePDF = new PDF( *pdf );
+        Prediction * pePDF = new Prediction( *pdf );
         pePDF->nData( pe.integral() );
         Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, alpha );
         for( double s = 0.5; s < 10.; s += 0.1 )

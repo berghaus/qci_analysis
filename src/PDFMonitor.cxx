@@ -51,7 +51,7 @@ PDFMonitor::~PDFMonitor() {
   for_each( _fitResults.begin(), _fitResults.end(), checked_deleter< TGraph >() );
 }
 
-void PDFMonitor::monitor( PDF& pdf ) {
+void PDFMonitor::monitor( Prediction& pdf ) {
 
   // make some histograms
   int nPad = 1;

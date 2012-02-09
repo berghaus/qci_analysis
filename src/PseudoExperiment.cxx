@@ -187,7 +187,7 @@ PseudoExperimentFactory::PseudoExperimentFactory() :
     _pdf( 0 ) {
 }
 
-PseudoExperimentFactory::PseudoExperimentFactory( const PDF* pdf, const Experiment& graft, unsigned int seed ) :
+PseudoExperimentFactory::PseudoExperimentFactory( const Prediction* pdf, const Experiment& graft, unsigned int seed ) :
     _pdf( pdf ),
     _graft( graft ),
     _random( seed ) {
@@ -229,5 +229,5 @@ vector< PseudoExperiment > PseudoExperimentFactory::build( const double& alpha, 
 
 }
 
-const PDF * PseudoExperimentFactory::pdf() const { return _pdf; }
+const Prediction * PseudoExperimentFactory::pdf() const { return _pdf; }
 

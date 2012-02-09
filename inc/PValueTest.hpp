@@ -7,7 +7,7 @@
 
 class TFitterMinuit;
 class TH1;
-class PDF;
+class Prediction;
 
 class PValueTest {
 
