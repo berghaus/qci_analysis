@@ -8,7 +8,7 @@
 #include <Minuit2/MnUserParameters.h>
 #include <Minuit2/MnUserParameterState.h>
 
-#include "PDF.hpp"
+#include "Prediction.hpp"
 #include "TestStatMonitor.hpp"
 #include "PseudoExperiment.hpp"
 

@@ -7,7 +7,7 @@
 #include <TH1.h>
 #include <TRandom3.h>
 
-#include "PDF.hpp"
+#include "Prediction.hpp"
 
 class TCanvas;
 class TGraph;

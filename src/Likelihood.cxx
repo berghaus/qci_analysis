@@ -12,7 +12,7 @@
 #include <Minuit2/MnStrategy.h>
 
 #include "PseudoExperiment.hpp"
-#include "PDF.hpp"
+#include "Prediction.hpp"
 #include "TestStatMonitor.hpp"
 
 using namespace std;

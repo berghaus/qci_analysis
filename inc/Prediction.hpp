@@ -1,5 +1,5 @@
-#ifndef PDF_HPP
-#define PDF_HPP
+#ifndef PREDICTION_HPP
+#define PREDICTION_HPP
 
 #include <map>
 #include <string>
@@ -155,4 +155,4 @@ private:
 
 };
 
-#endif // PDF_HPP
+#endif // PREDICTION_HPP

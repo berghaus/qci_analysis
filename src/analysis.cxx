@@ -38,7 +38,7 @@
 #include <TClass.h>
 
 #include "Likelihood.hpp"
-#include "PDF.hpp"
+#include "Prediction.hpp"
 #include "PseudoExperiment.hpp"
 #include "PValueTest.hpp"
 #include "AtlasStyle.hpp"

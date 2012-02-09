@@ -13,7 +13,7 @@
 #include <TH1.h>
 #include <TLine.h>
 
-#include "PDF.hpp"
+#include "Prediction.hpp"
 #include "Likelihood.hpp"
 
 #define foreach BOOST_FOREACH

@@ -16,11 +16,12 @@
 #include "TH2.h"
 #include "TF1.h"
 
-#include "PDF.hpp"
+#include "Prediction.hpp"
 using namespace std;
 #define foreach BOOST_FOREACH
 using namespace boost;
 
+//_____________________________________________________________________________________________________________________
 PDFMonitor::PDFMonitor() :
     _folder( "figures/PDF/" ),
     _ext( ".pdf" ),
@@ -33,6 +34,7 @@ PDFMonitor::PDFMonitor() :
   _fitResultCanvas.Divide( 4, 3 );
 }
 
+//_____________________________________________________________________________________________________________________
 PDFMonitor::PDFMonitor( const string& folder, const string ext ) :
     _folder( folder ),
     _ext( ext ),
@@ -45,12 +47,14 @@ PDFMonitor::PDFMonitor( const string& folder, const string ext ) :
   _fitResultCanvas.Divide( 4, 3 );
 }
 
+//_____________________________________________________________________________________________________________________
 PDFMonitor::~PDFMonitor() {
   // delete _interpolations
   for_each( _interpolations.begin(), _interpolations.end(), checked_deleter< TGraph >() );
   for_each( _fitResults.begin(), _fitResults.end(), checked_deleter< TGraph >() );
 }
 
+//_____________________________________________________________________________________________________________________
 void PDFMonitor::monitor( Prediction& pdf ) {
 
   // make some histograms
