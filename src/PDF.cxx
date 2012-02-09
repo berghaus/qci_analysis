@@ -31,11 +31,13 @@ using namespace std;
 using boost::lexical_cast;
 using namespace boost::assign;
 
+//_____________________________________________________________________________________________________________________
 Prediction::Prediction() :
     _nData( 1 ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 16. ) ) {
 }
 
+//_____________________________________________________________________________________________________________________
 Prediction::Prediction( TDirectoryFile* dir, const double nData ) :
     _nData( nData ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 16. ) ) {
@@ -70,12 +72,14 @@ Prediction::Prediction( TDirectoryFile* dir, const double nData ) :
 
 }
 
+//_____________________________________________________________________________________________________________________
 Prediction::Prediction( const map< double, vector< double > >& pdfFitParams, double nData ) :
     _nData( nData ),
     _pdfFit( new TF1( "PDFFit", "[0]+[1]*x+[2]*sqrt(x)", 0., 4. ) ),
     _pdfFitParams( pdfFitParams ) {
 }
 
+//_____________________________________________________________________________________________________________________
 Prediction::Prediction( const Prediction& orig ) :
     _pdfFit( static_cast< TF1* >( orig._pdfFit->Clone( "PDFFit" ) ) ),
     _nData( orig._nData ),
@@ -84,14 +88,17 @@ Prediction::Prediction( const Prediction& orig ) :
 
 }
 
+//_____________________________________________________________________________________________________________________
 Prediction::~Prediction() {
   _pdfFit->Delete();
 }
 
+//_____________________________________________________________________________________________________________________
 void Prediction::init() {
 
 }
 
+//_____________________________________________________________________________________________________________________
 double Prediction::operator()( const double& chi, const int& data, const vector< double >& par ) const {
 
   if ( par.at( 0 ) != par.at( 0 ) ) return 0.;
@@ -121,7 +128,9 @@ double Prediction::operator()( const double& chi, const int& data, const vector<
 
 }
 
+//_____________________________________________________________________________________________________________________
 double Prediction::operator()( const double& chi, const double& alpha ) const {
+
   // for looking things up need chi precision rounded to one sig fig
   double x = int( chi * 100 ) % 10 > 4 ?
       ceil( chi * 10 ) / 10. :
@@ -131,12 +140,14 @@ double Prediction::operator()( const double& chi, const double& alpha ) const {
   double eMC = error( x, alpha ); // error on predicted value
 
   // predicted number of events modified by statistical uncertainty
-  // nMC = _random.Gaus( nMC, eMC ); // must be positive
+  nMC = _random.Gaus( nMC, eMC ); // must be positive
 
-
-  return nMC > 0. ? nMC : 0.;
+  return nMC > 0. ?
+      nMC :
+      0.;
 }
 
+//_____________________________________________________________________________________________________________________
 double Prediction::interpolate( const double& chi, const double& alpha ) const {
 
   typedef map< double, vector< double > > chiFitParams_t;
@@ -158,22 +169,27 @@ double Prediction::interpolate( const double& chi, const double& alpha ) const {
 
 }
 
+//_____________________________________________________________________________________________________________________
 void Prediction::accept( PDFMonitor& mon ) {
   mon.monitor( *this );
 }
 
+//_____________________________________________________________________________________________________________________
 map< double, TGraphErrors* > Prediction::eventCounts() const {
   return _eventCounts;
 }
 
+//_____________________________________________________________________________________________________________________
 map< double, vector< double > > Prediction::pdfFitParams() const {
   return _pdfFitParams;
 }
 
+//_____________________________________________________________________________________________________________________
 TF1* Prediction::pdfFit( const std::string& name ) const {
   return (TF1*) _pdfFit->Clone( name.c_str() );
 }
 
+//_____________________________________________________________________________________________________________________
 double Prediction::sumOverChi( const double& alpha ) const {
   typedef map< double, vector< double > > chiFitParams_t;
   double result = 0.;
@@ -187,6 +203,7 @@ double Prediction::sumOverChi( const double& alpha ) const {
   return result;
 }
 
+//_____________________________________________________________________________________________________________________
 double Prediction::error( const double& chi, const double& alpha ) const {
 
   if ( _covarianceMaticies.find( chi ) == _covarianceMaticies.end() ) return 0;
@@ -194,8 +211,8 @@ double Prediction::error( const double& chi, const double& alpha ) const {
   const TMatrixTSym< double > & mat = _covarianceMaticies.find( chi )->second;
 
   // I know the gradients of my fit function are:
-  vector<double> grad = list_of(0.)( alpha )( pow( alpha, 0.5 ) );
-  vector<double> sum(3,0.);
+  vector< double > grad = list_of( 0. )( alpha )( pow( alpha, 0.5 ) );
+  vector< double > sum( 3, 0. );
   double error = 0.;
 
   // first sum
@@ -215,10 +232,12 @@ double Prediction::error( const double& chi, const double& alpha ) const {
 
 }
 
+//_____________________________________________________________________________________________________________________
 void Prediction::nData( const int& nData ) {
   _nData = nData;
 }
 
+//_____________________________________________________________________________________________________________________
 int Prediction::nData() const {
   return _nData;
 }
