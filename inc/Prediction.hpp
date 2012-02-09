@@ -13,8 +13,9 @@ class TF1;
 class TGraphErrors;
 class PredictionMonitor;
 
-//! Class implementing MC prediction of di-jet spectrum in chi for QCI and QCD
-/*!
+//! Implements MC prediction of di-jet spectrum in chi for QCI and QCD
+/*! \class Prediction
+ *
  * Stores the result of MC analysis on QCD and QCI samples with various contact
  * interaction scales (Lambda).  For each bin in chi the prediction is fit with
  *
