@@ -1,20 +1,19 @@
-#ifndef PDF_MONITOR_HPP
-#define PDF_MONITOR_HPP
+#ifndef PREDICTION_MONITOR_HPP
+#define PREDICTION_MONITOR_HPP
 
 #include <string>
 #include <vector>
 #include <TCanvas.h>
 
-
 class Prediction;
 class TGraph;
 
-class PDFMonitor {
+class PredictionMonitor {
 
 public:
-  PDFMonitor();
-  PDFMonitor( const std::string&, const std::string );
-  virtual ~PDFMonitor();
+  PredictionMonitor();
+  PredictionMonitor( const std::string&, const std::string );
+  virtual ~PredictionMonitor();
 
   virtual void monitor( Prediction& );
 
@@ -35,4 +34,4 @@ private:
 };
 
 
-#endif // PDF_MONITOR_HPP
+#endif // PREDICTION_MONITOR_HPP

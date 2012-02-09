@@ -45,7 +45,7 @@
 #include "ControlFrame.hpp"
 #include "CertaintyLevel.hpp"
 
-#include "PDFMonitor.hpp"
+#include "PredictionMonitor.hpp"
 #include "TestStatMonitor.hpp"
 
 #define ERROR_NO_SCALE_VALUE 1
@@ -169,7 +169,7 @@ int main( int argc, char* argv[] ) {
     tm.finalize();
 
     // Monitor data PDF
-    PDFMonitor pdfMon;
+    PredictionMonitor pdfMon;
     pdf->accept( pdfMon );
 
     PseudoExperimentFactory peFactory( pdf, data, time( 0 ) );

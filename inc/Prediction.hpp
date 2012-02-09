@@ -11,7 +11,7 @@
 class TDirectoryFile;
 class TF1;
 class TGraphErrors;
-class PDFMonitor;
+class PredictionMonitor;
 
 //! Class implementing MC prediction of di-jet spectrum in chi for QCI and QCD
 /*!
@@ -87,7 +87,7 @@ public:
   void init();
 
   //! accept monitoring visitor
-  void accept( PDFMonitor& );
+  void accept( PredictionMonitor& );
 
   //! provides predicted number of events scaled to nData
   /*!

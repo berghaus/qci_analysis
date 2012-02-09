@@ -23,7 +23,7 @@
 #include <TFitResultPtr.h>
 #include <TFitResult.h>
 
-#include "PDFMonitor.hpp"
+#include "PredictionMonitor.hpp"
 
 using namespace std;
 
@@ -170,7 +170,7 @@ double Prediction::interpolate( const double& chi, const double& alpha ) const {
 }
 
 //_____________________________________________________________________________________________________________________
-void Prediction::accept( PDFMonitor& mon ) {
+void Prediction::accept( PredictionMonitor& mon ) {
   mon.monitor( *this );
 }
 

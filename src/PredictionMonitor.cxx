@@ -1,4 +1,4 @@
-#include "PDFMonitor.hpp"
+#include "PredictionMonitor.hpp"
 #include <algorithm>
 #include <functional>
 #include <cmath>
@@ -22,7 +22,7 @@ using namespace std;
 using namespace boost;
 
 //_____________________________________________________________________________________________________________________
-PDFMonitor::PDFMonitor() :
+PredictionMonitor::PredictionMonitor() :
     _folder( "figures/PDF/" ),
     _ext( ".pdf" ),
     _pdfCanvas( "PDFMonCanvas", "", 800, 600 ),
@@ -35,7 +35,7 @@ PDFMonitor::PDFMonitor() :
 }
 
 //_____________________________________________________________________________________________________________________
-PDFMonitor::PDFMonitor( const string& folder, const string ext ) :
+PredictionMonitor::PredictionMonitor( const string& folder, const string ext ) :
     _folder( folder ),
     _ext( ext ),
     _pdfCanvas( "PDFMonCanvas", "", 800, 600 ),
@@ -48,14 +48,14 @@ PDFMonitor::PDFMonitor( const string& folder, const string ext ) :
 }
 
 //_____________________________________________________________________________________________________________________
-PDFMonitor::~PDFMonitor() {
+PredictionMonitor::~PredictionMonitor() {
   // delete _interpolations
   for_each( _interpolations.begin(), _interpolations.end(), checked_deleter< TGraph >() );
   for_each( _fitResults.begin(), _fitResults.end(), checked_deleter< TGraph >() );
 }
 
 //_____________________________________________________________________________________________________________________
-void PDFMonitor::monitor( Prediction& pdf ) {
+void PredictionMonitor::monitor( Prediction& pdf ) {
 
   // make some histograms
   int nPad = 1;

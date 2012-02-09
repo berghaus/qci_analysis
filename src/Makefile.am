@@ -11,7 +11,7 @@ bin_PROGRAMS = analysis postProcess # testPE
 # parallel analysis program
 analysisdir = ../bin
 analysis_SOURCES = analysis.cxx Prediction.cxx Likelihood.cxx PValueTest.cxx PseudoExperiment.cxx \
-	AtlasStyle.cxx TestStatMonitor.cxx PDFMonitor.cxx ControlFrame.cxx ControlFrameDict.cxx \
+	AtlasStyle.cxx TestStatMonitor.cxx PredictionMonitor.cxx ControlFrame.cxx ControlFrameDict.cxx \
 	CertaintyLevel.cxx
 analysis_CPPFLAGS = `root-config --cflags` -I ../inc -pthread -fopenmp
 analysis_LDADD   = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
@@ -21,7 +21,7 @@ postProcessdir = ../bin
 postProcess_SOURCES = postProcess.cxx Prediction.cxx TestStatMonitor.cxx Likelihood.cxx PseudoExperiment.cxx PValueTest.cxx CertaintyLevel.cxx PostProcessCL.cxx AtlasStyle.cxx 
 postProcess_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 
-#testPE_SOURCES = PseudoExperiment_test.cxx PseudoExperiment.cxx PDF.cxx
+#testPE_SOURCES = PseudoExperiment_test.cxx PseudoExperiment.cxx Prediction.cxx
 #testPE_LDADD   = -lboost_test_exec_monitor -lboost_unit_test_framework -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 
 
