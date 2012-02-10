@@ -106,11 +106,10 @@ double Prediction::operator()( const double& chi, const int& data, const vector<
   if ( par.size() != 1 ) throw( domain_error( "PDF needs at least the compositeness parameter in passed vector" ) );
 
   // for looking things up need chi precision rounded to one sig fig
-  double x = int( chi * 100 ) % 10 > 4 ?
-      ceil( chi * 10 ) / 10. :
-      floor( chi * 10 ) / 10.;
+  double x = labelChi( chi );
 
-  double nMC = interpolate( x, par.at( 0 ) ); // predicted events at x for parameters
+  // predicted events at chi for parameters
+  double nMC = interpolate( x, par.at( 0 ) );
 
   //cout << "n( alpha = " << par.at(0) << " | Data = " << data << ", Chi = " << chi << " ) : " << nMC << " pm " << eMC << '\n';
 
@@ -132,9 +131,7 @@ double Prediction::operator()( const double& chi, const int& data, const vector<
 double Prediction::operator()( const double& chi, const double& alpha ) const {
 
   // for looking things up need chi precision rounded to one sig fig
-  double x = int( chi * 100 ) % 10 > 4 ?
-      ceil( chi * 10 ) / 10. :
-      floor( chi * 10 ) / 10.;
+  double x = labelChi( chi );
 
   double nMC = interpolate( x, alpha );
   double eMC = error( x, alpha ); // error on predicted value
@@ -240,4 +237,11 @@ void Prediction::nData( const int& nData ) {
 //_____________________________________________________________________________________________________________________
 int Prediction::nData() const {
   return _nData;
+}
+
+//_____________________________________________________________________________________________________________________
+double Prediction::labelChi( const double& chi ) const {
+  return int( chi * 100 ) % 10 > 4 ?
+      ceil( chi * 10 ) / 10. :
+      floor( chi * 10 ) / 10.;
 }

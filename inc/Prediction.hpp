@@ -154,6 +154,9 @@ private:
   //! random number generator
   mutable TRandom3 _random;
 
+  //! translate given chi to one used as label in the maps
+  double labelChi( const double& ) const;
+
 };
 
 #endif // PREDICTION_HPP
