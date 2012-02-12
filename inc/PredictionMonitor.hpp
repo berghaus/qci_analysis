@@ -21,17 +21,15 @@ private:
 
   std::string _folder;
   std::string _ext;
-  std::vector<TGraph*> _interpolations;
-  std::vector<TGraph*> _fitResults;
-  std::vector<TGraph*> _parameters;
+  std::vector< TGraph* > _interpolations;
+  std::vector< TGraph* > _fitResults;
+  std::vector< TGraph* > _parameters;
 
   TCanvas _pdfCanvas;
   TCanvas _interpolCanvas;
   TCanvas _fitResultCanvas;
   TCanvas _parameterCanvas;
 
-
 };
-
 
 #endif // PREDICTION_MONITOR_HPP

@@ -69,13 +69,14 @@ int main( int argc, char* argv[] ) {
   // process cmd opts
   // Declare the supported options.
   po::options_description desc( "Allowed options" );
-  desc.add_options()( "help,h", "print this help message" )
-      ( "nPE,n", po::value< int >(), "number of pseudo-experiments to run on each alpha" )
-      ( "scales,s", po::value< vector< double > >()->multitoken(), "list of contact interaction scale values to run on (in TeV)" )
-      ( "jobID,j", po::value< int >(), "PBS job ID for output naming" )
-      ( "outDir,o", po::value< string >(), "output directory for likelihood disctributions" )
-      ( "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )
-      ( "data,d", po::value< string >(), "ROOT file containing data event distribution" );
+  desc.add_options()( "help,h", "print this help message" )( "nPE,n", po::value< int >(),
+                                                             "number of pseudo-experiments to run on each alpha" )(
+      "scales,s", po::value< vector< double > >()->multitoken(),
+      "list of contact interaction scale values to run on (in TeV)" )( "jobID,j", po::value< int >(),
+                                                                       "PBS job ID for output naming" )(
+      "outDir,o", po::value< string >(), "output directory for likelihood disctributions" )(
+      "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )(
+      "data,d", po::value< string >(), "ROOT file containing data event distribution" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -137,7 +138,6 @@ int main( int argc, char* argv[] ) {
   }
   //---------------------------------------------------------------------------
 
-
   try {
     // Set up PDF to run
 
@@ -152,7 +152,6 @@ int main( int argc, char* argv[] ) {
     TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
     vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
     TDirectoryFile* pdfDir = pdfDirs.back();
-
 
     Prediction * pdf = new Prediction( pdfDir, data.integral() );
     Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
@@ -184,7 +183,7 @@ int main( int argc, char* argv[] ) {
       pePDF->nData( pe.integral() );
       Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
       for( double scale = 0.5; scale < 10.; scale += 0.1 )
-            (*l)( vector< double >( 1, scale ) );
+        ( *l )( vector< double >( 1, scale ) );
       bgLikelihoodRatios.push_back( l );
     }
 

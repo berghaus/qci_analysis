@@ -8,7 +8,7 @@
 template< class T >
 T quantile( const std::vector< T >&, const double& );
 
-double findX( const double&, const std::vector<double>&, const std::vector<double>& );
+double findX( const double&, const std::vector< double >&, const std::vector< double >& );
 
 class CertaintyLevel {
 
@@ -17,16 +17,16 @@ public:
   CertaintyLevel();
 
   // constructor specifying name (CLs, CLs+b, etc) and number of values to expect
-  CertaintyLevel( const std::string&, const std::vector<double>::size_type& );
+  CertaintyLevel( const std::string&, const std::vector< double >::size_type& );
 
   // constructor specifying name (CLs, CLs+b, etc) and number of values to expect and min/max scale to plot
-  CertaintyLevel( const std::string&, const std::vector<double>::size_type&, const double&, const double& );
+  CertaintyLevel( const std::string&, const std::vector< double >::size_type&, const double&, const double& );
 
   // adds point in scale with observed and expected with error bands
-  void add( const double&, const double&, const std::vector<double>& );
+  void add( const double&, const double&, const std::vector< double >& );
 
   // draws a canvas with the current graph
-  void plot( const std::string& folder = "./"  );
+  void plot( const std::string& folder = "./" );
 
   friend std::ostream& operator<<( std::ostream&, const CertaintyLevel& );
 
@@ -36,7 +36,6 @@ private:
   double observed() const;
   // determine expected 95% exclusion
   double expected() const;
-
 
   int _nBins; // number of scale bins
   double _min; // range for plotting
@@ -57,8 +56,6 @@ private:
   boost::math::normal _myGaus;
 
 };
-
-
 
 // -----
 template< class T >

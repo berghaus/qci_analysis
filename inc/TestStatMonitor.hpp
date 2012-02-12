@@ -38,8 +38,8 @@ private:
   TH1* _minimizedAlpha;
   TH1* _minimizedLaunda;
 
-  Random<double> _randomCompScale;
-  Random<double> _randomAlpha;
+  Random< double > _randomCompScale;
+  Random< double > _randomAlpha;
 
   double _minScale;
   double _maxScale;

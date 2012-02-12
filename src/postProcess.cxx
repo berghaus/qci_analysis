@@ -34,7 +34,6 @@
 #include "PValueTest.hpp"
 #include "AtlasStyle.hpp"
 
-
 #define foreach BOOST_FOREACH
 #define ERROR_NO_SIGNAL_INPUT 1
 #define ERROR_SIGNAL_BACKGROUND_MISMATCH 2
@@ -51,20 +50,21 @@ template< class T > bool compByName( const T* x, const T* y ) {
   return string( x->GetName() ) < string( y->GetName() );
 }
 
-
 int main( int argc, char* argv[] ) {
 
   //---------------------------------------------------------------------------
   // process command line options
   // Declare the supported options.
   po::options_description desc( "Allowed options" );
-  desc.add_options()( "help,h", "print this help message" )
-    ( "nPE,n", po::value< int >(), "number of pseudo-experiments to run on each alpha" )
-    ( "sigInputFiles,s", po::value< vector< string > >()->multitoken(), "list of input files containing signal likelihood distributions" )
-    ( "bkgInputFiles,b", po::value< vector< string > >()->multitoken(), "list of input files containing background likelihood distributions" )
-    ( "outDir,o", po::value< string >(), "output directory for plots" )
-    ( "data,d", po::value< string >(), "ROOT file containing data event distribution" )
-    ( "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" );
+  desc.add_options()( "help,h", "print this help message" )( "nPE,n", po::value< int >(),
+                                                             "number of pseudo-experiments to run on each alpha" )(
+      "sigInputFiles,s", po::value< vector< string > >()->multitoken(),
+      "list of input files containing signal likelihood distributions" )(
+      "bkgInputFiles,b", po::value< vector< string > >()->multitoken(),
+      "list of input files containing background likelihood distributions" )( "outDir,o", po::value< string >(),
+                                                                              "output directory for plots" )(
+      "data,d", po::value< string >(), "ROOT file containing data event distribution" )(
+      "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -147,7 +147,7 @@ int main( int argc, char* argv[] ) {
 
   // sanity check for read in of likelihood distributions
   if ( doCLs && sigLLDistributions.size() != bkgLLDistributions.size() ) {
-    cerr <<  "number of singal and background likelihood distributions does not match!\n";
+    cerr << "number of singal and background likelihood distributions does not match!\n";
     return ERROR_SIGNAL_BACKGROUND_MISMATCH;
   }
   // set up data likelihood distribution
@@ -155,8 +155,6 @@ int main( int argc, char* argv[] ) {
   // --- make sure we get something reasonable across interesting scale values
   for( double scale = 2.; scale < 8.; scale += 0.1 )
     dataLikelihoodRatio( vector< double >( 1, scale ) );
-
-
 
   PseudoExperimentFactory peFactory( pdf, data );
 
@@ -169,7 +167,7 @@ int main( int argc, char* argv[] ) {
     Prediction * pePDF = new Prediction( *pdf );
     Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
     for( double scale = 2.; scale < 8.; scale += 0.1 )
-      (*l)( vector< double >( 1, scale ) );
+      ( *l )( vector< double >( 1, scale ) );
     errorBandLRs.push_back( l );
   }
 
@@ -192,7 +190,6 @@ int main( int argc, char* argv[] ) {
   return 0;
 }
 
-
 void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest >& pvs ) {
 
   foreach( const string& fn, names )
@@ -206,8 +203,6 @@ void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest 
   }
 
 }
-
-
 
 vector< TDirectoryFile* > GetDirs( const TFile* file ) {
 

@@ -24,7 +24,8 @@ public:
   PostProcessCL( const std::vector< PValueTest >&, std::vector< Neg2LogLikelihoodRatio* >&, Neg2LogLikelihoodRatio* );
 
   // Constructor for CLs+b and CLs limit.  Does not rake ownership of likelihood ratios supplied
-  PostProcessCL( const std::vector< PValueTest >&, const std::vector< PValueTest >&, std::vector< Neg2LogLikelihoodRatio* >&, Neg2LogLikelihoodRatio* );
+  PostProcessCL( const std::vector< PValueTest >&, const std::vector< PValueTest >&,
+                 std::vector< Neg2LogLikelihoodRatio* >&, Neg2LogLikelihoodRatio* );
   virtual ~PostProcessCL();
 
   virtual void proc();
@@ -45,6 +46,5 @@ private:
   CertaintyLevel * _CLs;
 
 };
-
 
 #endif /* POSTPROCESSCL_HPP_ */

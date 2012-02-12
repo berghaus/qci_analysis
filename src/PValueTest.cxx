@@ -36,7 +36,7 @@ PValueTest::PValueTest( const double& alpha, const int& nPE, PseudoExperimentFac
 void PValueTest::init( const int& nPE, PseudoExperimentFactory& peFactory ) {
 
   vector< double > par( 1, _alpha );
-  for ( int i = 0; i< nPE; ++i ){
+  for( int i = 0; i < nPE; ++i ) {
     PseudoExperiment pe = peFactory.build( _alpha );
     Prediction * pePDF = new Prediction( peFactory.pdf()->pdfFitParams(), pe.integral() );
     Neg2LogLikelihoodRatio n2llr( &pe, pePDF, _alpha );
@@ -47,7 +47,6 @@ void PValueTest::init( const int& nPE, PseudoExperimentFactory& peFactory ) {
   }
 
 }
-
 
 void PValueTest::init() {
 
@@ -74,8 +73,7 @@ double PValueTest::operator()( Neg2LogLikelihoodRatio& lambda ) {
 
   vector< double > par( 1, _alpha );
 
-  return (*this)( lambda( par ) );
-
+  return ( *this )( lambda( par ) );
 
 }
 
@@ -126,7 +124,7 @@ void PValueTest::alpha( const double& alpha ) {
   _alpha = alpha;
 }
 
-void PValueTest::clear(  ) {
+void PValueTest::clear() {
 
   _alpha = -1.;
   _lambdas.clear();
@@ -140,9 +138,9 @@ void PValueTest::clear(  ) {
 ostream& operator<<( ostream& out, const PValueTest& test ) {
 
   out << test.alpha() << " ";
-  vector<double>::const_iterator itr = test._testStats.begin();
-  vector<double>::const_iterator end = test._testStats.end();
-  for ( ; itr != end; ++itr ) {
+  vector< double >::const_iterator itr = test._testStats.begin();
+  vector< double >::const_iterator end = test._testStats.end();
+  for( ; itr != end; ++itr ) {
     out << *itr << " ";
   }
 

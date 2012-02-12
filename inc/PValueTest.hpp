@@ -32,7 +32,6 @@ private:
   void init( const int&, PseudoExperimentFactory& ); //<- construct likelihood distribution from PEs
   void clear(); //<- purge all information in PValueTest
 
-
   double _alpha; // alpha used for PEs
   std::vector< Neg2LogLikelihoodRatio* > _lambdas;
   double _dataLLR;

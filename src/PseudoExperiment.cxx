@@ -128,14 +128,14 @@ void Experiment::plot() const {
 void Experiment::print( ostream& out ) const {
 
   out << "Experiment " << _name << '\n';
-    assert( _x.size() == _y.size() );
-    for ( int i = 0;  i < _x.size(); ++i ) {
-      out << "   chi = " << _x.at(i) << ",   n = " << _y.at(i) << '\n';
-    }
-    out << " sum = " << _integral << '\n';
+  assert( _x.size() == _y.size() );
+  for( int i = 0; i < _x.size(); ++i ) {
+    out << "   chi = " << _x.at( i ) << ",   n = " << _y.at( i ) << '\n';
+  }
+  out << " sum = " << _integral << '\n';
 
 }
-ostream& operator<< ( ostream& out, const Experiment& e ) {
+ostream& operator<<( ostream& out, const Experiment& e ) {
 
   e.print( out );
   return out;
@@ -162,22 +162,21 @@ double PseudoExperiment::alpha() const {
 void PseudoExperiment::print( ostream& out ) const {
 
   out << "Experiment " << name() << '\n';
-    assert( x().size() == y().size() );
-    for ( int i = 0;  i < x().size(); ++i ) {
-      out << "   chi = " << x(i) << ",   n = " << y(i) << '\n';
-    }
-    out << " sum =   " << integral() << '\n';
-    out << " alpha = " << _alpha << '\n';
+  assert( x().size() == y().size() );
+  for( int i = 0; i < x().size(); ++i ) {
+    out << "   chi = " << x( i ) << ",   n = " << y( i ) << '\n';
+  }
+  out << " sum =   " << integral() << '\n';
+  out << " alpha = " << _alpha << '\n';
 
 }
 
-ostream& operator<< ( ostream& out, const PseudoExperiment& e ) {
+ostream& operator<<( ostream& out, const PseudoExperiment& e ) {
 
   e.print( out );
   return out;
 
 }
-
 
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
@@ -229,5 +228,7 @@ vector< PseudoExperiment > PseudoExperimentFactory::build( const double& alpha, 
 
 }
 
-const Prediction * PseudoExperimentFactory::pdf() const { return _pdf; }
+const Prediction * PseudoExperimentFactory::pdf() const {
+  return _pdf;
+}
 

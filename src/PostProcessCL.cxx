@@ -20,7 +20,8 @@ PostProcessCL::PostProcessCL() :
     _CLs( 0 ) {
 }
 
-PostProcessCL::PostProcessCL( const vector< PValueTest >& sigLL, vector< Neg2LogLikelihoodRatio* >& errorLLRs, Neg2LogLikelihoodRatio* dataLLR ) :
+PostProcessCL::PostProcessCL( const vector< PValueTest >& sigLL, vector< Neg2LogLikelihoodRatio* >& errorLLRs,
+                              Neg2LogLikelihoodRatio* dataLLR ) :
     _doCLs( false ),
     _sigLL( sigLL ),
     _errorLLRs( errorLLRs ),
@@ -30,7 +31,8 @@ PostProcessCL::PostProcessCL( const vector< PValueTest >& sigLL, vector< Neg2Log
     _CLs( 0 ) {
 }
 
-PostProcessCL::PostProcessCL( const vector< PValueTest >& sigLL, const vector< PValueTest >& bkgLL, vector< Neg2LogLikelihoodRatio* >& errorLLRs, Neg2LogLikelihoodRatio* dataLLR ) :
+PostProcessCL::PostProcessCL( const vector< PValueTest >& sigLL, const vector< PValueTest >& bkgLL,
+                              vector< Neg2LogLikelihoodRatio* >& errorLLRs, Neg2LogLikelihoodRatio* dataLLR ) :
     _doCLs( sigLL.size() == bkgLL.size() ),
     _sigLL( sigLL ),
     _bkgLL( bkgLL ),
@@ -44,8 +46,8 @@ PostProcessCL::PostProcessCL( const vector< PValueTest >& sigLL, const vector< P
 
 PostProcessCL::~PostProcessCL() {
 
-  if( _CLsb ) delete _CLsb;
-  if( _CLs ) delete _CLs;
+  if ( _CLsb ) delete _CLsb;
+  if ( _CLs ) delete _CLs;
 
 }
 
@@ -86,12 +88,12 @@ void PostProcessCL::proc() {
 
     // --- CL_s+b
     vector< double > par( 1, alpha );
-    double clsb_observed = (*sigItr)( *_dataLLR );
+    double clsb_observed = ( *sigItr )( *_dataLLR );
 
     vector< double > clsb_expected;
     clsb_expected.reserve( _errorLLRs.size() );
     foreach( Neg2LogLikelihoodRatio * l, _errorLLRs )
-    clsb_expected.push_back( (*sigItr)( *l ) );
+      clsb_expected.push_back( ( *sigItr )( *l ) );
     sort( clsb_expected.begin(), clsb_expected.end() );
 
     _CLsb->add( scale, clsb_observed, clsb_expected );
@@ -99,12 +101,12 @@ void PostProcessCL::proc() {
     // --- CL_s
     if ( _doCLs ) {
 
-      double cls_observed = (*sigItr)( *_dataLLR ) / (*bkgItr)( *_dataLLR );
+      double cls_observed = ( *sigItr )( *_dataLLR ) / ( *bkgItr )( *_dataLLR );
 
       vector< double > cls_expected;
       cls_expected.reserve( _errorLLRs.size() );
       foreach( Neg2LogLikelihoodRatio* l, _errorLLRs )
-        cls_expected.push_back( (*sigItr)( *l ) / (*bkgItr)( *l ) );
+        cls_expected.push_back( ( *sigItr )( *l ) / ( *bkgItr )( *l ) );
       sort( cls_expected.begin(), cls_expected.end() );
 
       _CLs->add( scale, cls_observed, cls_expected );
@@ -117,7 +119,6 @@ void PostProcessCL::proc() {
 
 }
 
-
 void PostProcessCL::print() {
 
   cout << " p-value: " << _pValue << "\n\n";
@@ -126,12 +127,10 @@ void PostProcessCL::print() {
 
 }
 
-
 void PostProcessCL::plot( const string& folder ) {
 
   if ( _CLsb ) _CLsb->plot( folder );
   if ( _CLs ) _CLs->plot( folder );
 
 }
-
 

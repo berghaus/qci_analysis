@@ -5,22 +5,21 @@
 #include <TGButton.h>
 #include <TGFrame.h>
 
-class ControlFrame : public TGMainFrame {
+class ControlFrame: public TGMainFrame {
 
 private:
-   TGCompositeFrame *_cFrame;
-   TGTextButton     *_start, *_pause, *fExit;
-   Bool_t            _isRunning, _isPaused;
+  TGCompositeFrame *_cFrame;
+  TGTextButton *_start, *_pause, *fExit;
+  Bool_t _isRunning, _isPaused;
 
 public:
-   ControlFrame(const TGWindow *p, UInt_t w, UInt_t h);
-   virtual ~ControlFrame();
-   // slots
-   void ChangeStartLabel();
-   void ChangePauseLabel();
+  ControlFrame( const TGWindow *p, UInt_t w, UInt_t h );
+  virtual ~ControlFrame();
+  // slots
+  void ChangeStartLabel();
+  void ChangePauseLabel();
 
-   ClassDef(ControlFrame, 0)
+ClassDef(ControlFrame, 0)
 };
-
 
 #endif // CONTROL_FRAME_HPP

@@ -128,7 +128,7 @@ void CertaintyLevel::plot( const string& folder ) {
   fullHist->Draw( "ASAME" );
   legend->Draw();
   line->Draw();
-  fullCanvas->Print( (folder+"/"+_name+"-full.pdf").c_str() );
+  fullCanvas->Print( ( folder + "/" + _name + "-full.pdf" ).c_str() );
 
   TCanvas * zoomCanvas = new TCanvas( ( _name + "_zoom" ).c_str(), "", 800, 800 );
   zoomCanvas->cd();
@@ -141,7 +141,7 @@ void CertaintyLevel::plot( const string& folder ) {
   zoomHist->Draw( "ASAME" );
   legend->Draw();
   line->Draw();
-  zoomCanvas->Print( (folder+"/"+_name+"-zoom.pdf").c_str() );
+  zoomCanvas->Print( ( folder + "/" + _name + "-zoom.pdf" ).c_str() );
 
 }
 
