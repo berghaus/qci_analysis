@@ -36,6 +36,7 @@ public:
 
 private:
 
+  double error( const double&, const double&, const double&, const double& );
   TF1 * _fitFunction;
   std::map< double, TMatrixTSym< double > > _covarianceMaticies;
 

@@ -8,6 +8,8 @@
 #include <TMatrixTSym.h>
 #include <TRandom3.h>
 
+#include "Error.hpp"
+
 class TDirectoryFile;
 class TF1;
 class TGraphErrors;
@@ -156,6 +158,9 @@ private:
 
   //! translate given chi to one used as label in the maps
   double labelChi( const double& ) const;
+
+  //! vector of statistical and systematic errors
+  vector< Error* > _errors;
 
 };
 
