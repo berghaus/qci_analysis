@@ -5,7 +5,7 @@
  *      Author: frank
  */
 
-#include "Error.hpp"
+#include "Effect.hpp"
 
 #include <cmath>
 #include <stdexcept>
@@ -21,32 +21,39 @@ using namespace std;
 using namespace boost::assign;
 
 //_____________________________________________________________________________________________________________________
-Statitical_Error::Statitical_Error() :
+Statitical_Effect::Statitical_Effect() :
     _fitFunction( 0 ) {
 }
 
 //_____________________________________________________________________________________________________________________
-Statitical_Error::Statitical_Error( const TF1* fitFunction,
-                                    const map< double, TMatrixTSym< double > >& covarianceMaticies ) :
+Statitical_Effect::Statitical_Effect( const TF1* fitFunction,
+                                      const map< double, TMatrixTSym< double > >& covarianceMaticies ) :
     _fitFunction( (TF1*) fitFunction->Clone( "fitFunction" ) ),
     _covarianceMaticies( covarianceMaticies ) {
 
 }
 
 //_____________________________________________________________________________________________________________________
-Statitical_Error::~Statitical_Error() {
+Statitical_Effect::~Statitical_Effect() {
   delete _fitFunction;
 }
 
 //_____________________________________________________________________________________________________________________
-double Statitical_Error::apply( const double& mu, const double& lambda, const double& chi, const double& mjj ) {
+double Statitical_Effect::apply( const double& mu, const double& lambda, const double& chi, const double& mjj ) const {
 
+//  cout << "in Statitical_Effect::apply\n";
+//  cout << "   * mu = " << mu << "\n";
+//  cout << "   * lambda = " << lambda << "\n";
+//  cout << "   * chi = " << chi << "\n";
+//  cout << "   * mjj = " << mjj << "\n";
   double result = mu;
   double err = error( mu, lambda, chi, mjj );
+//  cout << "   * err = " << err << "\n";
 
-  // predicted number of events modified by statistical uncertainty
+// predicted number of events modified by statistical uncertainty
   result = _random.Gaus( result, err ); // must be positive
 
+//  cout << "   * modified mu = " << result << "\n";
   return result > 0. ?
       result :
       0.;
@@ -54,18 +61,22 @@ double Statitical_Error::apply( const double& mu, const double& lambda, const do
 }
 
 //_____________________________________________________________________________________________________________________
-double Statitical_Error::error( const double& mu, const double& lambda, const double& chi, const double& mjj ) {
+double Statitical_Effect::error( const double& mu, const double& lambda, const double& chi, const double& mjj ) const {
 
   double alpha = pow( lambda, -4. );
 
   // do stuff to result.
-  if ( _covarianceMaticies.find( chi ) == _covarianceMaticies.end() ) 
-    throw( range_error( str( format( "Statistical_Error::error - no covariance matrix at chi = %2.1f in " + string( __FILE__ ) + ": %3.0i" ) % chi % __LINE__ ) ) );
+  if ( _covarianceMaticies.find( chi ) == _covarianceMaticies.end() ) throw( range_error(
+      str(
+          format(
+              "Statistical_Error::error - no covariance matrix at chi = %2.1f in " + string( __FILE__ ) + ": %3.0i" )
+          % chi
+          % __LINE__ ) ) );
 
   const TMatrixTSym< double > & mat = _covarianceMaticies.find( chi )->second;
 
   // I know the gradients of my fit function are:
-  vector< double > grad = list_of( 0. )( alpha )( pow( alpha, 0.5 ) );
+  vector< double > grad = list_of( 0. )( alpha )( sqrt( alpha ) );
   vector< double > sum( 3, 0. );
   double error = 0.;
 

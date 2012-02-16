@@ -12,7 +12,7 @@ bin_PROGRAMS = analysis postProcess # testPE
 analysisdir = ../bin
 analysis_SOURCES = analysis.cxx Prediction.cxx Likelihood.cxx PValueTest.cxx PseudoExperiment.cxx \
 	AtlasStyle.cxx TestStatMonitor.cxx PredictionMonitor.cxx ControlFrame.cxx ControlFrameDict.cxx \
-	CertaintyLevel.cxx Error.cxx
+	CertaintyLevel.cxx Effect.cxx
 analysis_CPPFLAGS = `root-config --cflags` -I ../inc -pthread -fopenmp
 analysis_LDADD   = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 

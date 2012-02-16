@@ -44,6 +44,7 @@
 #include "AtlasStyle.hpp"
 #include "ControlFrame.hpp"
 #include "CertaintyLevel.hpp"
+#include "Effect.hpp"
 
 #include "PredictionMonitor.hpp"
 #include "TestStatMonitor.hpp"
@@ -76,15 +77,18 @@ int main( int argc, char* argv[] ) {
                                                                        "PBS job ID for output naming" )(
       "outDir,o", po::value< string >(), "output directory for likelihood disctributions" )(
       "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )(
-      "data,d", po::value< string >(), "ROOT file containing data event distribution" );
+      "data,d", po::value< string >(), "ROOT file containing data event distribution" )(
+      "stochastic", "include error due to limited statistics in QCD and QCI MC" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
   po::notify( vm );
 
+  vector< Effect* > errors;
+
   if ( vm.count( "help" ) ) {
     cout << desc << "\n";
-    return 1;
+    return 0;
   }
 
   int nPE = 1000;
@@ -121,14 +125,6 @@ int main( int argc, char* argv[] ) {
     cout << "directing output to: " << outDir << "\n";
   }
 
-  string pdfFileName;
-  if ( vm.count( "pdf" ) ) {
-    pdfFileName = vm["pdf"].as< string >();
-  } else {
-    cout << "No predicted event distributions supplied. Aborting.\n";
-    return ERROR_NO_PDF;
-  }
-
   string dataFileName;
   if ( vm.count( "data" ) ) {
     dataFileName = vm["data"].as< string >();
@@ -136,24 +132,41 @@ int main( int argc, char* argv[] ) {
     cout << "No data event distribution supplied. Aborting.\n";
     return ERROR_NO_DATA;
   }
+  // read in data file
+  TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
+  vector< TH1* > dataHists = GetHists( dataFile );
+  TH1 * dataHist = dataHists.back();
+  Experiment data( *dataHist );
+  data.plot();
+
+  string pdfFileName;
+  if ( vm.count( "pdf" ) ) {
+    pdfFileName = vm["pdf"].as< string >();
+  } else {
+    cout << "No predicted event distributions supplied. Aborting.\n";
+    return ERROR_NO_PDF;
+  }
+  // read in our PDF from file
+  TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
+  vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
+  TDirectoryFile* pdfDir = pdfDirs.back();
+  // Set up PDF to run
+  Prediction * pdf = new Prediction( pdfDir, data.integral() );
+
+  if ( vm.count( "stochastic" ) ) {
+    cout << "including errors arising from limited statistics in QCD and QCI MC\n";
+    Statitical_Effect * statEff = new Statitical_Effect( pdf->pdfFit( "PredictionFunctionForError" ),
+                                                         pdf->covarianceMaticies() );
+    Effect * eff = dynamic_cast< Effect* >( statEff );
+    if ( eff ) pdf->addEffect( eff );
+    else cout << "failed to downcast Statitical_Effect to Effect\n";
+
+  }
+
   //---------------------------------------------------------------------------
 
   try {
-    // Set up PDF to run
 
-    // read in data file
-    TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
-    vector< TH1* > dataHists = GetHists( dataFile );
-    TH1 * dataHist = dataHists.back();
-    Experiment data( *dataHist );
-    data.plot();
-
-    // read in our PDF from file
-    TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
-    vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
-    TDirectoryFile* pdfDir = pdfDirs.back();
-
-    Prediction * pdf = new Prediction( pdfDir, data.integral() );
     Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
 
     // --- make sure we get something reasonable across interesting scale values

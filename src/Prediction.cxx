@@ -95,9 +95,6 @@ Prediction::~Prediction() {
 
 //_____________________________________________________________________________________________________________________
 void Prediction::init() {
-
-  _errors;
-
 }
 
 //_____________________________________________________________________________________________________________________
@@ -134,16 +131,22 @@ double Prediction::operator()( const double& chi, const double& alpha ) const {
 
   // for looking things up need chi precision rounded to one sig fig
   double x = labelChi( chi );
+  double mjj = 2001.;
+  double lambda = pow( alpha, -0.25 );
 
   double nMC = interpolate( x, alpha );
-  double eMC = error( x, alpha ); // error on predicted value
+
+//  cout << "\n--------------------------------\n";
+//  cout << "starting nMC = " << nMC << "\n";
+  foreach( const Effect* eff, _effects ) nMC = eff->apply( nMC, lambda, x, mjj );
+//  cout << "final nMC = " << nMC << "\n";
+//  cout << "outside error = " << eMC << endl;
+//  cout << "--------------------------------\n";
 
   // predicted number of events modified by statistical uncertainty
-  nMC = _random.Gaus( nMC, eMC ); // must be positive
+  //nMC = _random.Gaus( nMC, eMC ); // must be positive
 
-  return nMC > 0. ?
-      nMC :
-      0.;
+  return nMC;
 }
 
 //_____________________________________________________________________________________________________________________
@@ -203,35 +206,6 @@ double Prediction::sumOverChi( const double& alpha ) const {
 }
 
 //_____________________________________________________________________________________________________________________
-double Prediction::error( const double& chi, const double& alpha ) const {
-
-  if ( _covarianceMaticies.find( chi ) == _covarianceMaticies.end() ) return 0;
-
-  const TMatrixTSym< double > & mat = _covarianceMaticies.find( chi )->second;
-
-  // I know the gradients of my fit function are:
-  vector< double > grad = list_of( 0. )( alpha )( pow( alpha, 0.5 ) );
-  vector< double > sum( 3, 0. );
-  double error = 0.;
-
-  // first sum
-  for( int i = 0; i < mat.GetNrows(); ++i ) {
-    sum[i] = 0;
-    for( int j = 0; j < mat.GetNcols(); ++j ) {
-      sum[i] += mat( i, j ) * grad[j];
-    }
-  }
-
-  // second sum
-  for( int i = 0; i < mat.GetNcols(); ++i ) {
-    error += sum[i] * grad[i];
-  }
-
-  return error;
-
-}
-
-//_____________________________________________________________________________________________________________________
 void Prediction::nData( const int& nData ) {
   _nData = nData;
 }
@@ -246,4 +220,19 @@ double Prediction::labelChi( const double& chi ) const {
   return int( chi * 100 ) % 10 > 4 ?
       ceil( chi * 10 ) / 10. :
       floor( chi * 10 ) / 10.;
+}
+
+//_____________________________________________________________________________________________________________________
+map< double, TMatrixTSym< double > > Prediction::covarianceMaticies() const {
+  return _covarianceMaticies;
+}
+
+//_____________________________________________________________________________________________________________________
+void Prediction::effects( vector< Effect* > effects ) {
+  _effects = effects;
+}
+
+//_____________________________________________________________________________________________________________________
+void Prediction::addEffect( Effect* effect ) {
+  _effects.push_back( effect );
 }

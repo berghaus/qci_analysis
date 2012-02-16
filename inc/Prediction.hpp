@@ -8,7 +8,7 @@
 #include <TMatrixTSym.h>
 #include <TRandom3.h>
 
-#include "Error.hpp"
+#include "Effect.hpp"
 
 class TDirectoryFile;
 class TF1;
@@ -102,25 +102,22 @@ public:
    */
   double interpolate( const double&, const double& ) const;
 
-  //! returns error on the fit at given chi and CI scale parameter
-  /*!
-   * uses covariance matrix for given chi to determine the error on the fit
-   * along with the function gradient in parameter space.  For use with
-   * generation of pseudoexperiments
-   * \param di-jet separation chi = exp( | y1 - y2 | )
-   * \param contact interaction parameter ( Lambda^-4 ) for prediction
-   * \return statistical error on the fit of the given chi bin
-   */
-  double error( const double&, const double& ) const;
-
   //! getter from graphs read in by Prediction
   std::map< double, TGraphErrors* > eventCounts() const;
 
   //! getter for parameters resulting from fitting to eventCounts
   std::map< double, std::vector< double > > pdfFitParams() const;
 
-  //! change fit function for Prediction
+  //! return a clone of the pdf fit function
+  /*!
+   * clones the fit function and returns the pointer. passes ownership of
+   * cloned function
+   * \param name for TF1 clone
+   */
   TF1* pdfFit( const std::string& ) const;
+
+  //! getter for covariance matricies
+  std::map< double, TMatrixTSym< double > > covarianceMaticies() const;
 
   //! sum event prediction over chi bins in the given CI parameter
   /*!
@@ -135,6 +132,12 @@ public:
 
   //! getter for number of observed events to normalize the prediction to
   int nData() const;
+
+  //! setter function for statistical and systematics effects to include
+  void effects( std::vector< Effect* > );
+
+  //! add a single effect
+  void addEffect( Effect* );
 
 private:
 
@@ -160,7 +163,7 @@ private:
   double labelChi( const double& ) const;
 
   //! vector of statistical and systematic errors
-  vector< Error* > _errors;
+  std::vector< Effect* > _effects;
 
 };
 
