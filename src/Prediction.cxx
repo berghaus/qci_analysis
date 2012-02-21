@@ -236,3 +236,8 @@ void Prediction::effects( vector< Effect* > effects ) {
 void Prediction::addEffect( Effect* effect ) {
   _effects.push_back( effect );
 }
+
+//_____________________________________________________________________________________________________________________
+void Prediction::newPE() const {
+  foreach( Effect* e, _effects ) e->newPE();
+}

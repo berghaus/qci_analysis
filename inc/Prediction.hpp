@@ -139,6 +139,9 @@ public:
   //! add a single effect
   void addEffect( Effect* );
 
+  //! set up systematic effects for a new PE
+  void newPE() const;
+
 private:
 
   //! fit function to use - same for all chi bins

@@ -198,6 +198,7 @@ PseudoExperimentFactory::~PseudoExperimentFactory() {
 PseudoExperiment PseudoExperimentFactory::build( const double& alpha ) {
 
   ++_nGenerated[alpha];
+  _pdf->newPE();
 
   string peName = str( format( "PE_alpha%2.1e_n%1.0f" ) % pow( alpha, -0.25 ) % _nGenerated[alpha] );
 
