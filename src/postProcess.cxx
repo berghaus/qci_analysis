@@ -33,6 +33,7 @@
 #include "PostProcessCL.hpp"
 #include "PValueTest.hpp"
 #include "AtlasStyle.hpp"
+#include "Effect.hpp"
 
 #define foreach BOOST_FOREACH
 #define ERROR_NO_SIGNAL_INPUT 1
@@ -64,7 +65,10 @@ int main( int argc, char* argv[] ) {
       "list of input files containing background likelihood distributions" )( "outDir,o", po::value< string >(),
                                                                               "output directory for plots" )(
       "data,d", po::value< string >(), "ROOT file containing data event distribution" )(
-      "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" );
+      "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )(
+          "stochastic", "include error due to limited statistics in QCD and QCI MC" )(
+          "jes", po::value< string >(), "include error due to jet energy scale uncertainty described in given root file" )(
+          "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -141,8 +145,37 @@ int main( int argc, char* argv[] ) {
   vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
   TDirectoryFile* pdfDir = pdfDirs.back();
   Prediction * pdf = new Prediction( pdfDir, data.integral() );
-  //---------------------------------------------------------------------------
 
+  if ( vm.count( "stochastic" ) ) {
+    cout << "including errors arising from limited statistics in QCD and QCI MC\n";
+    Statitical_Effect * statEff = new Statitical_Effect( pdf->pdfFit( "PredictionFunctionForError" ),
+                                                         pdf->covarianceMaticies() );
+    Effect * eff = dynamic_cast< Effect* >( statEff );
+    if ( eff ) pdf->addEffect( eff );
+    else cout << "failed to downcast Statitical_Effect to Effect\n";
+
+  }
+
+  if ( vm.count( "jes" ) ) {
+    cout << "including errors arising from jet energy scale uncertainty\n";
+    string jesErrorFileName = vm["jes"].as< string >();
+    JES_Systematic_Effect * sysEff = new JES_Systematic_Effect( jesErrorFileName );
+    Effect * eff = dynamic_cast< Effect* >( sysEff );
+    if ( eff ) pdf->addEffect( eff );
+    else cout << "failed to downcast JES_Systematic_Effect to Effect\n";
+  }
+
+
+  if ( vm.count( "jer" ) ) {
+    cout << "including errors arising from jet p_T Resolution\n";
+    string jerErrorFileName = vm["jer"].as< string >();
+    JER_Systematic_Effect * sysEff = new JER_Systematic_Effect( jerErrorFileName );
+    Effect * eff = dynamic_cast< Effect* >( sysEff );
+    if ( eff ) pdf->addEffect( eff );
+    else cout << "failed to downcast JER_Systematic_Effect to Effect\n";
+  }
+
+  //---------------------------------------------------------------------------
   SetAtlasStyle();
 
   // sanity check for read in of likelihood distributions
