@@ -118,7 +118,7 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
     index.reserve( n );
     offset.reserve( n );
     for( int i = 0; i < n; ++i ) {
-      index.push_back( n - i ); // remeber reverse ordering for alpha
+      index.push_back( n - i ); // remember reverse ordering for alpha
       double graphY = yArr[i];
       double funcY = func->Eval( xArr[i] );
       offset.push_back( ( graphY - funcY ) / eyArr[i] );
@@ -127,8 +127,8 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
     _fitResults.push_back( fitResult );
     fitResult->SetMarkerColor( kRed );
     fitResult->SetTitle( title.c_str() );
-    fitResult->GetXaxis()->SetTitle( "Index of #alpha = #Lambda^{-4}" );
-    fitResult->GetYaxis()->SetTitle( "( n^{MC}(#alpha) - n^{fit}(#alpha) ) / #sigma^{MC}" );
+    fitResult->GetXaxis()->SetTitle( "#Lambda Index" );
+    fitResult->GetYaxis()->SetTitle( "[ #mu^{MC}(#Lambda) - #mu^{fit}(#Lambda) ] / #sigma^{MC}" );
     fitResult->Draw( "AP" );
     ++nPad;
   }

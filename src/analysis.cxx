@@ -72,15 +72,15 @@ int main( int argc, char* argv[] ) {
   po::options_description desc( "Allowed options" );
   desc.add_options()( "help,h", "print this help message" )( "nPE,n", po::value< int >(),
                                                              "number of pseudo-experiments to run on each alpha" )(
-      "scales,s", po::value< vector< double > >()->multitoken(),
-      "list of contact interaction scale values to run on (in TeV)" )( "jobID,j", po::value< int >(),
-                                                                       "PBS job ID for output naming" )(
+      "scales,s", po::value< vector< double > >()->multitoken(), "list of contact interaction scale values (in TeV)" )(
+      "jobID,j", po::value< int >(), "PBS job ID for output naming" )(
       "outDir,o", po::value< string >(), "output directory for likelihood disctributions" )(
       "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )(
       "data,d", po::value< string >(), "ROOT file containing data event distribution" )(
       "stochastic", "include error due to limited statistics in QCD and QCI MC" )(
       "jes", po::value< string >(), "include error due to jet energy scale uncertainty described in given root file" )(
-      "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" );
+      "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" )(
+      "figures,f", po::value<string>(), "directory for output figures" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -172,7 +172,6 @@ int main( int argc, char* argv[] ) {
     else cout << "failed to downcast JES_Systematic_Effect to Effect\n";
   }
 
-
   if ( vm.count( "jer" ) ) {
     cout << "including errors arising from jet p_T Resolution\n";
     string jerErrorFileName = vm["jer"].as< string >();
@@ -182,8 +181,13 @@ int main( int argc, char* argv[] ) {
     else cout << "failed to downcast JER_Systematic_Effect to Effect\n";
   }
 
-
+  string figureDir = "./";
+  if ( vm.count( "figures" ) ) {
+    figureDir = vm["figures"].as< string >();
+  }
+  cout << "directing figures to " << figureDir << "\n";
   //---------------------------------------------------------------------------
+  SetAtlasStyle();
 
   try {
 
@@ -193,7 +197,7 @@ int main( int argc, char* argv[] ) {
     for( double scale = 0.5; scale < 10.; scale += 0.1 )
       dataLikelihoodRatio( vector< double >( 1, scale ) );
 
-    TestStatMonitor tm( -1., "figures/", ".png" );
+    TestStatMonitor tm( -1., figureDir+"/Likelihood/", ".eps" );
     for( int i = 0; i < 10; ++i ) {
       dataLikelihoodRatio.accept( tm );
       dataLikelihoodRatio.denominator().accept( tm );
@@ -201,7 +205,7 @@ int main( int argc, char* argv[] ) {
     tm.finalize();
 
     // Monitor data PDF
-    PredictionMonitor pdfMon;
+    PredictionMonitor pdfMon( figureDir+"/PDF/", ".eps" );
     pdf->accept( pdfMon );
 
     PseudoExperimentFactory peFactory( pdf, data, time( 0 ) );
@@ -258,8 +262,8 @@ int main( int argc, char* argv[] ) {
       // ----------
       // monitoring
       if ( !( scaleBin % 1000 ) ) {
-        signalPlusBackgroundPValue.finalize();
-        //backgroundPValue.finalize();
+        signalPlusBackgroundPValue.finalize( figureDir+"/Likelihood/signal/" );
+        backgroundPValue.finalize( figureDir+"/Likelihood/bkgrnd/" );
       }
       ++scaleBin;
 

@@ -87,7 +87,7 @@ double PValueTest::operator()( const double& llr ) {
 
 }
 
-void PValueTest::finalize() {
+void PValueTest::finalize( const std::string& dir ) {
 
   double histMax = _testStats[_testStats.size() / 2] > _dataLLR ?
       2 * _testStats[_testStats.size() / 2] :
@@ -114,7 +114,7 @@ void PValueTest::finalize() {
   _minus2LnLikelihoodDistribution->Draw();
   dataLine->Draw();
   string cName = _minus2LnLikelihoodDistribution->GetName();
-  pvc->Print( ( "figures/Likelihood/" + cName + ".pdf" ).c_str() );
+  pvc->Print( ( dir + cName + ".eps" ).c_str() );
 }
 
 double PValueTest::alpha() const {

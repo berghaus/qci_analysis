@@ -1,6 +1,7 @@
 #ifndef PVALUE_TEST_HPP
 #define PVALUE_TEST_HPP
 #include <iostream>
+#include <string>
 #include <vector>
 #include "PseudoExperiment.hpp"
 #include "Likelihood.hpp"
@@ -19,7 +20,7 @@ public:
 
   double operator()( Neg2LogLikelihoodRatio& );
   double operator()( const double& );
-  void finalize();
+  void finalize( const std::string& dir = "./" );
   double alpha() const;
   void alpha( const double& );
 
