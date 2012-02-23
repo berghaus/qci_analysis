@@ -58,8 +58,8 @@ using namespace std;
 using namespace boost::assign;
 namespace po = boost::program_options;
 
-vector< TDirectoryFile* > GetDirs( const TFile* );
-vector< TH1* > GetHists( const TFile* );
+map< double, TDirectoryFile* > GetDirs( const TFile* );
+map< double, TH1* > GetHists( const TFile* );
 template< class T > bool compByName( const T* x, const T* y ) {
   return string( x->GetName() ) < string( y->GetName() );
 }
@@ -134,8 +134,8 @@ int main( int argc, char* argv[] ) {
   }
   // read in data file
   TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
-  vector< TH1* > dataHists = GetHists( dataFile );
-  TH1 * dataHist = dataHists.back();
+  map< double, TH1* > dataHists = GetHists( dataFile );
+  TH1 * dataHist = dataHists[2000.];
   Experiment data( *dataHist );
   data.plot();
 
@@ -148,8 +148,8 @@ int main( int argc, char* argv[] ) {
   }
   // read in our PDF from file
   TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
-  vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
-  TDirectoryFile* pdfDir = pdfDirs.back();
+  map< double, TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
+  TDirectoryFile* pdfDir = pdfDirs[2000.];
   // Set up PDF to run
   Prediction * pdf = new Prediction( pdfDir, data.integral() );
 
@@ -291,9 +291,9 @@ int main( int argc, char* argv[] ) {
 
 }
 
-vector< TDirectoryFile* > GetDirs( const TFile* file ) {
+map< double, TDirectoryFile* > GetDirs( const TFile* file ) {
 
-  vector< TDirectoryFile* > result;
+  map< double, TDirectoryFile* > result;
 
   TIter nextKey( file->GetListOfKeys() );
   TKey * key = (TKey*) nextKey();
@@ -308,7 +308,8 @@ vector< TDirectoryFile* > GetDirs( const TFile* file ) {
 
     if ( obj && obj->IsA()->InheritsFrom( "TDirectory" ) ) {
       cout << "found: " << name << endl;
-      result.push_back( (TDirectoryFile*) obj );
+      double mjjMin = lexical_cast<double>( name.substr( 0, name.find("-mjj-") ) );
+      result.insert( make_pair( mjjMin, (TDirectoryFile*) obj ) );
     }
 
   } while ( key = (TKey*) nextKey() );
@@ -317,9 +318,9 @@ vector< TDirectoryFile* > GetDirs( const TFile* file ) {
 
 }
 
-vector< TH1* > GetHists( const TFile* file ) {
+map< double, TH1* > GetHists( const TFile* file ) {
 
-  vector< TH1* > result;
+  map< double, TH1* > result;
 
   TIter nextKey( file->GetListOfKeys() );
   TKey * key = (TKey*) nextKey();
@@ -334,7 +335,8 @@ vector< TH1* > GetHists( const TFile* file ) {
 
     if ( obj && obj->IsA()->InheritsFrom( "TH1" ) ) {
       cout << "found: " << name << endl;
-      result.push_back( (TH1*) obj );
+      double mjjMin = lexical_cast<double>( name.substr( 4, name.find("-to-")-4 ) );
+      result.insert( make_pair( mjjMin, (TH1*) obj ) );
     }
 
   } while ( key = (TKey*) nextKey() );

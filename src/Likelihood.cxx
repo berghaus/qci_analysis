@@ -46,9 +46,9 @@ double Neg2LogLikelihood_FCN::operator()( const std::vector< double >& par ) con
 
   const Prediction& pdf = *_pdf;
   double result = 0.;
-  for( int bin = 0; bin < _data->x().size(); ++bin ) {
-    double x = _data->x( bin );
-    int n = _data->y( bin );
+  for( int bin = 0; bin < _data->chi().size(); ++bin ) {
+    double x = _data->chi( bin );
+    int n = _data->n( bin );
     double logProb = pdf( x, n, par );
     result += -2 * logProb;
   }

@@ -57,15 +57,15 @@ Experiment::Experiment( const TH1& h ) :
   _integral = h.Integral();
   int nBins = h.GetNbinsX();
   for( int bin = 1; bin <= nBins; ++bin ) {
-    _x.push_back( h.GetBinCenter( bin ) );
-    _y.push_back( h.GetBinContent( bin ) );
+    _chi.push_back( h.GetBinCenter( bin ) );
+    _n.push_back( h.GetBinContent( bin ) );
   }
 
 }
 
 Experiment::Experiment( const vector< double >& x, const vector< double >& y ) :
-    _x( x ),
-    _y( y ),
+    _chi( x ),
+    _n( y ),
     _canvas( 0 ),
     _graph( 0 ) {
   _integral = for_each( y.begin(), y.end(), adder() ).sum;
@@ -79,17 +79,17 @@ Experiment::~Experiment() {
 string Experiment::name() const {
   return _name;
 }
-double Experiment::x( int& i ) const {
-  return _x.at( i );
+double Experiment::chi( int& i ) const {
+  return _chi.at( i );
 }
-double Experiment::y( int& i ) const {
-  return _y.at( i );
+double Experiment::n( int& i ) const {
+  return _n.at( i );
 }
-vector< double > Experiment::x() const {
-  return _x;
+vector< double > Experiment::chi() const {
+  return _chi;
 }
-vector< double > Experiment::y() const {
-  return _y;
+vector< double > Experiment::n() const {
+  return _n;
 }
 double Experiment::integral() const {
   return _integral;
@@ -98,11 +98,11 @@ double Experiment::integral() const {
 void Experiment::name( const string& name ) {
   _name = name;
 }
-void Experiment::x( const std::vector< double >& x ) {
-  _x = x;
+void Experiment::chi( const std::vector< double >& x ) {
+  _chi = x;
 }
-void Experiment::y( const std::vector< double >& y ) {
-  _y = y;
+void Experiment::n( const std::vector< double >& y ) {
+  _n = y;
   _integral = for_each( y.begin(), y.end(), adder() ).sum;
 }
 
@@ -118,7 +118,7 @@ void Experiment::plot() const {
   else name = _name;
   _canvas = new TCanvas( ( name + "Canvas" ).c_str(), "", 500, 500 );
   _canvas->cd();
-  _graph = new TGraph( _x.size(), &_x[0], &_y[0] );
+  _graph = new TGraph( _chi.size(), &_chi[0], &_n[0] );
   _graph->Draw( "AP" );
   _graph->GetXaxis()->SetTitle( "#chi" );
   _graph->GetYaxis()->SetTitle( _name.c_str() );
@@ -128,9 +128,9 @@ void Experiment::plot() const {
 void Experiment::print( ostream& out ) const {
 
   out << "Experiment " << _name << '\n';
-  assert( _x.size() == _y.size() );
-  for( int i = 0; i < _x.size(); ++i ) {
-    out << "   chi = " << _x.at( i ) << ",   n = " << _y.at( i ) << '\n';
+  assert( _chi.size() == _n.size() );
+  for( int i = 0; i < _chi.size(); ++i ) {
+    out << "   chi = " << _chi.at( i ) << ",   n = " << _n.at( i ) << '\n';
   }
   out << " sum = " << _integral << '\n';
 
@@ -162,9 +162,9 @@ double PseudoExperiment::alpha() const {
 void PseudoExperiment::print( ostream& out ) const {
 
   out << "Experiment " << name() << '\n';
-  assert( x().size() == y().size() );
-  for( int i = 0; i < x().size(); ++i ) {
-    out << "   chi = " << x( i ) << ",   n = " << y( i ) << '\n';
+  assert( chi().size() == n().size() );
+  for( int i = 0; i < chi().size(); ++i ) {
+    out << "   chi = " << chi( i ) << ",   n = " << n( i ) << '\n';
   }
   out << " sum =   " << integral() << '\n';
   out << " alpha = " << _alpha << '\n';
@@ -204,8 +204,8 @@ PseudoExperiment PseudoExperimentFactory::build( const double& alpha ) {
 
   vector< double > content;
   vector< double > chis;
-  for( int bin = 0; bin < _graft.x().size(); ++bin ) {
-    double chi = _graft.x( bin );
+  for( int bin = 0; bin < _graft.chi().size(); ++bin ) {
+    double chi = _graft.chi( bin );
     double expectedN = ( *_pdf )( chi, alpha ); // modify by systematics
     chis.push_back( chi );
     content.push_back( _random.Poisson( expectedN ) );

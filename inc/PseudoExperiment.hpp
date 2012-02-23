@@ -20,17 +20,17 @@ public:
   Experiment( const std::vector< double >&, const std::vector< double >& );
   virtual ~Experiment();
 
-  double x( int& ) const;
-  double y( int& ) const;
+  double chi( int& ) const;
+  double n( int& ) const;
 
   std::string name() const;
-  std::vector< double > x() const;
-  std::vector< double > y() const;
+  std::vector< double > chi() const;
+  std::vector< double > n() const;
   double integral() const;
 
   void name( const std::string& );
-  void x( const std::vector< double >& );
-  void y( const std::vector< double >& );
+  void chi( const std::vector< double >& );
+  void n( const std::vector< double >& );
 
   virtual void plot() const;
 
@@ -41,8 +41,8 @@ protected:
 
 private:
   std::string _name;
-  std::vector< double > _x;
-  std::vector< double > _y;
+  std::vector< double > _chi;
+  std::vector< double > _n;
   double _integral;
   mutable TCanvas *_canvas;
   mutable TGraph *_graph;
