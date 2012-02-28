@@ -7,7 +7,7 @@
 #include "PDF.hpp"
 
 BOOST_AUTO_TEST_CASE( constructors_test ) {
-  Experiment exp0;
+  MjjExperiment exp0;
   BOOST_CHECK_EQUAL( exp0.integral(), int(0) );
   BOOST_CHECK_EQUAL( exp0.name(), std::string("") );
   BOOST_CHECK( exp0.chi().empty() );
@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE( constructors_test ) {
   for( int i = 0; i < 10; ++i )
     x.push_back( i );
   std::vector< double > y( x.size(), 1 );
-  Experiment exp1( x, y );
+  MjjExperiment exp1( x, y );
   BOOST_CHECK_EQUAL( exp1.integral(), double( x.size() ) );
   BOOST_CHECK_EQUAL( exp1.name(), std::string("") );
   BOOST_CHECK_EQUAL( exp1.chi().size(), x.size() );
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE( constructors_test ) {
   TH1D histogram( "testHistogram", "", x.size() - 1, &x[0] );
   for( int i = 0; i < x.size() - 1; ++i )
     histogram.Fill( x[i], 1. );
-  Experiment exp2( histogram );
+  MjjExperiment exp2( histogram );
   BOOST_CHECK_EQUAL( exp2.integral(), double( histogram.Integral() ) );
   BOOST_CHECK_EQUAL( exp2.name(), std::string(histogram.GetName()) );
   BOOST_CHECK_EQUAL( exp2.chi().size(), histogram.GetNbinsX() );
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE( constructors_test ) {
 
   TFile * dataF = TFile::Open( "~/docs/comp/analysis/data.root", "READ" );
   TH1 * dataHist = (TH1*) dataF->Get( "Chi_2000-to-7000all" );
-  Experiment atlas( *dataHist );
+  MjjExperiment atlas( *dataHist );
   TFile * input = TFile::Open( "~/docs/comp/analysis/vanilla.root", "READ" );
   Prediction pdf( input, atlas.integral() );
   // int pefSeed = 1;
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE( constructors_test ) {
 }
 
 BOOST_AUTO_TEST_CASE( setter_and_getter_test ) {
-  Experiment exp0;
+  MjjExperiment exp0;
   std::vector< double > x;
   for( int i = 0; i < 10; ++i )
     x.push_back( i );
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE( plot_test ) {
   for( int i = 0; i < 10; ++i )
     x.push_back( i );
   std::vector< double > y( x.size(), 1 );
-  Experiment exp0( x, y );
+  MjjExperiment exp0( x, y );
   exp0.plot();
 
   double a = 5.;

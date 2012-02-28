@@ -40,7 +40,7 @@ Statitical_Effect::Statitical_Effect() :
 
 //_____________________________________________________________________________________________________________________
 Statitical_Effect::Statitical_Effect( const TF1* fitFunction,
-                                      const map< double, TMatrixTSym< double > >& covarianceMaticies ) :
+                                      const map< double, map< double, TMatrixTSym< double > > >& covarianceMaticies ) :
     _fitFunction( (TF1*) fitFunction->Clone( "fitFunction" ) ),
     _covarianceMaticies( covarianceMaticies ) {
 
@@ -78,15 +78,20 @@ double Statitical_Effect::error( const double& mu, const double& lambda, const d
 
   double alpha = pow( lambda, -4. );
 
-  // do stuff to result.
-  if ( _covarianceMaticies.find( chi ) == _covarianceMaticies.end() ) throw( range_error(
-      str(
-          format(
-              "Statistical_Error::error - no covariance matrix at chi = %2.1f in " + string( __FILE__ ) + ": %3.0i" )
-          % chi
-          % __LINE__ ) ) );
+  // find appropriate covariance matrix
+  map< double, map< double, TMatrixTSym< double > > >::const_iterator mjjIt = _covarianceMaticies.lower_bound( mjj );
+  if ( mjjIt == _covarianceMaticies.end() ) throw( range_error(
+      string( __FILE__ ) +  " "
+      + str(
+          format( "Statistical_Error::error line %3.0i: - no covariance matrix at mjj = %3.1f in " ) % __LINE__ % mjj ) ) );
 
-  const TMatrixTSym< double > & mat = _covarianceMaticies.find( chi )->second;
+  map< double, TMatrixTSym< double > >::const_iterator chiIt = mjjIt->second.find( chi );
+  if ( chiIt == mjjIt->second.end() ) throw( range_error(
+      string( __FILE__ ) + " "
+      + str(
+          format( "Statistical_Error::error line %3.0i: - no covariance matrix at chi = %2.1f in " ) % __LINE__ % chi ) ) );
+
+  const TMatrixTSym< double > & mat = chiIt->second;
 
   // I know the gradients of my fit function are:
   vector< double > grad = list_of( 0. )( alpha )( sqrt( alpha ) );
@@ -232,7 +237,7 @@ double Systematic_Effect::apply( const double& mu, const double& lambda, const d
   if ( lambda == lambda && lambda < _errors.rbegin()->first ) lKey = _errors.lower_bound( lambda )->first;
 
   double sKey = 0;
-  if ( _nSigma >  _errors.find( lKey )->second.rbegin()->first ) sKey = _errors.find( lKey )->second.rbegin()->first;
+  if ( _nSigma > _errors.find( lKey )->second.rbegin()->first ) sKey = _errors.find( lKey )->second.rbegin()->first;
   else sKey = _errors.find( lKey )->second.lower_bound( _nSigma )->first;
 
   double mKey = _errors.find( lKey )->second.find( sKey )->second.rbegin()->first;
@@ -252,7 +257,7 @@ JES_Systematic_Effect::JES_Systematic_Effect() {
 
 //_____________________________________________________________________________________________________________________
 JES_Systematic_Effect::JES_Systematic_Effect( const std::string& fName ) :
-  Systematic_Effect( fName ) {
+    Systematic_Effect( fName ) {
 
 }
 
@@ -263,9 +268,8 @@ JES_Systematic_Effect::~JES_Systematic_Effect() {
 
 //_____________________________________________________________________________________________________________________
 void JES_Systematic_Effect::newPE() {
-  _nSigma = _random.Gaus(0,1.);
+  _nSigma = _random.Gaus( 0, 1. );
 }
-
 
 //_____________________________________________________________________________________________________________________
 JER_Systematic_Effect::JER_Systematic_Effect() {
@@ -274,7 +278,7 @@ JER_Systematic_Effect::JER_Systematic_Effect() {
 
 //_____________________________________________________________________________________________________________________
 JER_Systematic_Effect::JER_Systematic_Effect( const std::string& fName ) :
-  Systematic_Effect( fName ) {
+    Systematic_Effect( fName ) {
 
 }
 
@@ -285,6 +289,6 @@ JER_Systematic_Effect::~JER_Systematic_Effect() {
 
 //_____________________________________________________________________________________________________________________
 void JER_Systematic_Effect::newPE() {
-  _nSigma = fabs( _random.Gaus(0,1.) );
+  _nSigma = fabs( _random.Gaus( 0, 1. ) );
 }
 

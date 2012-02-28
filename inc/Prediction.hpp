@@ -9,6 +9,7 @@
 #include <TRandom3.h>
 
 #include "Effect.hpp"
+#include "PseudoExperiment.hpp"
 
 class TDirectoryFile;
 class TF1;
@@ -43,7 +44,7 @@ public:
    *        predicted number of events as a function of the scale parameter
    * \param number of events in data to scale the MC prediction to
    */
-  Prediction( TDirectoryFile*, const double );
+  Prediction( std::map< double, TDirectoryFile* >, const Experiment& );
 
   //! recommended constructor - use this once you know the fit parameters
   /*!
@@ -67,24 +68,26 @@ public:
   /*!
    * scales prediction to nData and compares given number of events to
    * Prediction at chi and CI scale
+   * \param di-jet mass (m_jj)
    * \param di-jet separation chi = exp( | y1 - y2 | )
    * \param number of events observed at given chi
    * \param vector with single entry that is the contact interaction parameter
    *        ( Lambda^-4 ) for prediction
    * \return the natural log of the poisson probability
    */
-  double operator()( const double&, const int&, const std::vector< double >& ) const;
+  double operator()( const double&, const double&, const int&, const std::vector< double >& ) const;
 
   //! expected number of events at chi and CI parameter
   /*!
    * provides predicted number of events not scaled to nData for use in
    * creation of pseudo-experiments
+   * \param di-jet mass (m_jj)
    * \param di-jet separation chi = exp( | y1 - y2 | )
    * \param contact interaction parameter ( Lambda^-4 ) for prediction
    * \return expected number of events at chi and alpha modified by
    *         statistical and systematic uncertainty
    */
-  double operator()( const double&, const double& ) const;
+  double operator()( const double&, const double&, const double& ) const;
 
   //! currently does nothing
   void init();
@@ -103,10 +106,10 @@ public:
   double interpolate( const double&, const double& ) const;
 
   //! getter from graphs read in by Prediction
-  std::map< double, TGraphErrors* > eventCounts() const;
+  std::map< double, TGraphErrors* > eventCounts( const double& ) const;
 
   //! getter for parameters resulting from fitting to eventCounts
-  std::map< double, std::vector< double > > pdfFitParams() const;
+  std::map< double, std::vector< double > > pdfFitParams( const double& ) const;
 
   //! return a clone of the pdf fit function
   /*!
@@ -117,7 +120,10 @@ public:
   TF1* pdfFit( const std::string& ) const;
 
   //! getter for covariance matricies
-  std::map< double, TMatrixTSym< double > > covarianceMaticies() const;
+  std::map< double, TMatrixTSym< double > > covarianceMaticies( const double& ) const;
+
+  //! getter for covariance matricies
+  std::map< double, std::map< double, TMatrixTSym< double > > > covarianceMaticies() const;
 
   //! sum event prediction over chi bins in the given CI parameter
   /*!
@@ -128,10 +134,10 @@ public:
   double sumOverChi( const double& ) const;
 
   //! setter for number of observed events to normalize the prediction to
-  void nData( const int& );
+  void nData( const Experiment& );
 
   //! getter for number of observed events to normalize the prediction to
-  int nData() const;
+  int nData( const double& ) const;
 
   //! setter function for statistical and systematics effects to include
   void effects( std::vector< Effect* > );
@@ -142,32 +148,67 @@ public:
   //! set up systematic effects for a new PE
   void newPE() const;
 
+  friend class PredictionMonitor;
+
 private:
 
   //! fit function to use - same for all chi bins
   TF1* _pdfFit;
 
-  //! number of observed events to normalize the prediction to
-  double _nData;
+  std::set<double> _mjjs;
+
+  class MjjPrediction {
+  public:
+    MjjPrediction() {
+    }
+    MjjPrediction( TDirectoryFile*, const double, TF1* );
+    virtual ~MjjPrediction() {
+    }
+
+    //! number of observed events to normalize the prediction to
+    double _nData;
+
+    //! graphs read in containing number of predicted events vs CI parameter
+    std::map< double, TGraphErrors* > _eventCounts;
+
+    //! parameters of pdfFit resulting from fitting to event counts
+    std::map< double, std::vector< double > > _pdfFitParams;
+
+    //! covariance of pdfFit results
+    std::map< double, TMatrixTSym< double > > _covarianceMaticies;
+
+  private:
+    TF1* _pdfFit;
+
+  };
+
+  // necessary parameters for each mjj
+  std::map< double, MjjPrediction > _predictions;
 
   //! graphs read in containing number of predicted events vs CI parameter
-  std::map< double, TGraphErrors* > _eventCounts;
+  //std::map< double, std::map< double, TGraphErrors* > > _eventCounts;
 
   //! parameters of pdfFit resulting from fitting to event counts
-  std::map< double, std::vector< double > > _pdfFitParams;
+  //std::map< double, std::map< double, std::vector< double > > > _pdfFitParams;
 
   //! covariance of pdfFit results
-  std::map< double, TMatrixTSym< double > > _covarianceMaticies;
-
-  //! random number generator
-  mutable TRandom3 _random;
+  //std::map< double, std::map< double, TMatrixTSym< double > > > _covarianceMaticies;
 
   //! translate given chi to one used as label in the maps
   double labelChi( const double& ) const;
 
   //! vector of statistical and systematic errors
-  std::vector< Effect* > _effects;
+  std::vector< Effect* > _effects; // TODO: make smart pointers
+
+  void setMjj( const double& ) const;
+
+  //! mjj for current bin
+  mutable double _mjj;
+
+  //! prediction for current bin
+  mutable MjjPrediction * _mjjPred;
 
 };
+
 
 #endif // PREDICTION_HPP

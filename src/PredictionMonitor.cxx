@@ -57,10 +57,11 @@ PredictionMonitor::~PredictionMonitor() {
 //_____________________________________________________________________________________________________________________
 void PredictionMonitor::monitor( Prediction& pdf ) {
 
+  double mjj = 2000.; // need to re-implement this visitor
   // make some histograms
   int nPad = 1;
   typedef map< double, TGraphErrors* > chiGraphMap_t;
-  chiGraphMap_t graphs = pdf.eventCounts();
+  chiGraphMap_t graphs = pdf.eventCounts(mjj);
   foreach( chiGraphMap_t::value_type ec, graphs )
   {
     double chi = ec.first;
@@ -87,6 +88,7 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
     vector< double > scales( 1, 0.1 );
     vector< double > interpol( 1, pdf.interpolate( chi, 1. / pow( scales.back(), 4 ) ) );
     double delta = 0.1;
+    pdf.setMjj( mjj );
     while ( scales.back() < 20. ) {
       scales.push_back( scales.back() + delta );
       interpol.push_back( pdf.interpolate( chi, 1. / pow( scales.back(), 4 ) ) );
@@ -134,7 +136,7 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
   }
 
   typedef map< double, vector< double > > ParMap_t;
-  ParMap_t params = pdf.pdfFitParams();
+  ParMap_t params = pdf.pdfFitParams( mjj );
   vector< double > chis;
   vector< double > qcdPars;
   vector< double > qciPars;

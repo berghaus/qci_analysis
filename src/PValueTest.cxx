@@ -38,7 +38,8 @@ void PValueTest::init( const int& nPE, PseudoExperimentFactory& peFactory ) {
   vector< double > par( 1, _alpha );
   for( int i = 0; i < nPE; ++i ) {
     PseudoExperiment pe = peFactory.build( _alpha );
-    Prediction * pePDF = new Prediction( peFactory.pdf()->pdfFitParams(), pe.integral() );
+    Prediction * pePDF = new Prediction( *peFactory.pdf() );
+    pePDF->nData( pe );
     Neg2LogLikelihoodRatio n2llr( &pe, pePDF, _alpha );
     for( double scale = 2.; scale < 8.; scale += 0.1 )
       n2llr( vector< double >( 1, scale ) );

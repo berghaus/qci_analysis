@@ -5,15 +5,19 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 #include <boost/format.hpp>
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 #include <boost/checked_delete.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TH2.h>
+
+#include "Prediction.hpp"
 
 using namespace std;
 using namespace boost;
@@ -43,13 +47,73 @@ string RandomString( const int len = 10 ) {
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 
-Experiment::Experiment() :
+Experiment::Experiment() {
+
+}
+
+//_____________________________________________________________________________________________________________________
+Experiment::Experiment( const map< double, MjjExperiment > subExperiments ) :
+    _subExperiments( subExperiments ) {
+
+  typedef const map< double, MjjExperiment > expMap_t;
+  foreach( const expMap_t::value_type& exp, _subExperiments )
+    _mjjs.insert( exp.first );
+
+}
+
+//_____________________________________________________________________________________________________________________
+Experiment::Experiment( const map< double, TH1* > histos ) {
+  typedef const map< double, MjjExperiment > expMap_t;
+  typedef const map< double, TH1* > histMap_t;
+  foreach( const histMap_t::value_type& hist, histos )
+  {
+    expMap_t::value_type entry = make_pair( hist.first, MjjExperiment( *( hist.second ) ) );
+    _subExperiments.insert( entry );
+    _mjjs.insert( hist.first );
+  }
+}
+
+//_____________________________________________________________________________________________________________________
+Experiment::~Experiment() {
+}
+
+//_____________________________________________________________________________________________________________________
+ostream& operator<<( ostream& out, const Experiment& e ) {
+  typedef const map< double, MjjExperiment > expMap_t;
+  foreach( const expMap_t::value_type& exp, e._subExperiments )
+    out << " mjj = " << exp.first << "\n" << exp.second;
+  return out;
+}
+
+//_____________________________________________________________________________________________________________________
+const MjjExperiment& Experiment::mjjExperiment( const double& mjj ) const {
+  map< double, MjjExperiment >::const_iterator itr = _subExperiments.find( mjj );
+  if ( itr == _subExperiments.end() ) throw( range_error(
+      "in " + string( __FILE__ ) + " line " + lexical_cast< string >( __LINE__ ) + ": No experiment for mjj = "
+      + lexical_cast< string >( mjj ) ) );
+  return itr->second;
+}
+
+const MjjExperiment& Experiment::operator[]( const double& mjj ) const {
+  return mjjExperiment( mjj );
+}
+
+//_____________________________________________________________________________________________________________________
+set< double > Experiment::mjjs() const {
+  return _mjjs;
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+MjjExperiment::MjjExperiment() :
     _integral( 0 ),
     _canvas( 0 ),
     _graph( 0 ) {
 }
 
-Experiment::Experiment( const TH1& h ) :
+MjjExperiment::MjjExperiment( const TH1& h ) :
     _name( h.GetName() ),
     _canvas( 0 ),
     _graph( 0 ) {
@@ -63,7 +127,7 @@ Experiment::Experiment( const TH1& h ) :
 
 }
 
-Experiment::Experiment( const vector< double >& x, const vector< double >& y ) :
+MjjExperiment::MjjExperiment( const vector< double >& x, const vector< double >& y ) :
     _chi( x ),
     _n( y ),
     _canvas( 0 ),
@@ -71,42 +135,42 @@ Experiment::Experiment( const vector< double >& x, const vector< double >& y ) :
   _integral = for_each( y.begin(), y.end(), adder() ).sum;
 }
 
-Experiment::~Experiment() {
+MjjExperiment::~MjjExperiment() {
   //delete _canvas;
   //delete _graph;
 }
 
-string Experiment::name() const {
+string MjjExperiment::name() const {
   return _name;
 }
-double Experiment::chi( int& i ) const {
+double MjjExperiment::chi( int& i ) const {
   return _chi.at( i );
 }
-double Experiment::n( int& i ) const {
+double MjjExperiment::n( int& i ) const {
   return _n.at( i );
 }
-vector< double > Experiment::chi() const {
+vector< double > MjjExperiment::chi() const {
   return _chi;
 }
-vector< double > Experiment::n() const {
+vector< double > MjjExperiment::n() const {
   return _n;
 }
-double Experiment::integral() const {
+double MjjExperiment::integral() const {
   return _integral;
 }
 
-void Experiment::name( const string& name ) {
+void MjjExperiment::name( const string& name ) {
   _name = name;
 }
-void Experiment::chi( const std::vector< double >& x ) {
+void MjjExperiment::chi( const std::vector< double >& x ) {
   _chi = x;
 }
-void Experiment::n( const std::vector< double >& y ) {
+void MjjExperiment::n( const std::vector< double >& y ) {
   _n = y;
   _integral = for_each( y.begin(), y.end(), adder() ).sum;
 }
 
-void Experiment::plot() const {
+void MjjExperiment::plot() const {
 
   if ( _canvas || _graph ) {
     cout << "You already plotted this experiment ( " + _name + " ) silly!" << endl;
@@ -125,7 +189,7 @@ void Experiment::plot() const {
 
 }
 
-void Experiment::print( ostream& out ) const {
+void MjjExperiment::print( ostream& out ) const {
 
   out << "Experiment " << _name << '\n';
   assert( _chi.size() == _n.size() );
@@ -135,7 +199,7 @@ void Experiment::print( ostream& out ) const {
   out << " sum = " << _integral << '\n';
 
 }
-ostream& operator<<( ostream& out, const Experiment& e ) {
+ostream& operator<<( ostream& out, const MjjExperiment& e ) {
 
   e.print( out );
   return out;
@@ -150,8 +214,13 @@ PseudoExperiment::PseudoExperiment() :
     _alpha( -1. ) {
 }
 
-PseudoExperiment::PseudoExperiment( const vector< double >& x, const vector< double >& y, const double& alpha ) :
-    Experiment( x, y ),
+PseudoExperiment::PseudoExperiment( const std::map< double, MjjExperiment >& subExperiments, const double& alpha ) :
+    Experiment( subExperiments ),
+    _alpha( alpha ) {
+}
+
+PseudoExperiment::PseudoExperiment( const std::map< double, TH1* >& hists, const double& alpha ) :
+    Experiment( hists ),
     _alpha( alpha ) {
 }
 
@@ -161,13 +230,10 @@ double PseudoExperiment::alpha() const {
 
 void PseudoExperiment::print( ostream& out ) const {
 
-  out << "Experiment " << name() << '\n';
-  assert( chi().size() == n().size() );
-  for( int i = 0; i < chi().size(); ++i ) {
-    out << "   chi = " << chi( i ) << ",   n = " << n( i ) << '\n';
-  }
-  out << " sum =   " << integral() << '\n';
-  out << " alpha = " << _alpha << '\n';
+  out << "PEs with alpha = " << _alpha << '\n';
+  typedef const map< double, MjjExperiment > expMap_t;
+  foreach( const expMap_t::value_type& exp, _subExperiments )
+    out << "mjj = " << exp.first << "\n" << exp.second << "\n";
 
 }
 
@@ -200,20 +266,28 @@ PseudoExperiment PseudoExperimentFactory::build( const double& alpha ) {
   ++_nGenerated[alpha];
   _pdf->newPE();
 
-  string peName = str( format( "PE_alpha%2.1e_n%1.0f" ) % pow( alpha, -0.25 ) % _nGenerated[alpha] );
-
+  map< double, MjjExperiment > mjjPEs;
   vector< double > content;
   vector< double > chis;
-  for( int bin = 0; bin < _graft.chi().size(); ++bin ) {
-    double chi = _graft.chi( bin );
-    double expectedN = ( *_pdf )( chi, alpha ); // modify by systematics
-    chis.push_back( chi );
-    content.push_back( _random.Poisson( expectedN ) );
+  foreach( const double& mjj, _graft.mjjs() )
+  {
+    string peName = str( format( "PE_mjj%2.1f_L%2.1e_n%1.0f" ) % mjj % pow( alpha, -0.25 ) % _nGenerated[alpha] );
+    for( int bin = 0; bin < _graft[mjj].chi().size(); ++bin ) {
+      double chi = _graft[mjj].chi( bin );
+      double expectedN = ( *_pdf )( mjj, chi, alpha ); // modify by systematics
+      chis.push_back( chi );
+      content.push_back( _random.Poisson( expectedN ) );
+    }
+
+    pair< map< double, MjjExperiment >::iterator, bool > val = mjjPEs.insert(
+        make_pair( mjj, MjjExperiment( chis, content ) ) );
+    if ( !val.second ) throw( logic_error(
+        string( __FILE__ ) + " line " + lexical_cast< string >( __LINE__ ) + ": Generated two PEs at same m_jj = "
+        + lexical_cast< string >( mjj ) ) );
+    val.first->second.name( peName );
   }
 
-  PseudoExperiment result( chis, content, alpha );
-  result.name( peName );
-
+  PseudoExperiment result( mjjPEs, alpha );
   return result;
 
 }

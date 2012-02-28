@@ -51,7 +51,7 @@ public:
 class Statitical_Effect: public Effect {
 public:
   Statitical_Effect();
-  Statitical_Effect( const TF1*, const std::map< double, TMatrixTSym< double > >& );
+  Statitical_Effect( const TF1*, const std::map< double, std::map< double, TMatrixTSym< double > > >& );
   virtual ~Statitical_Effect();
 
   //! implementation of function from Effect interface
@@ -62,7 +62,7 @@ private:
 
   double error( const double&, const double&, const double&, const double& ) const;
   TF1 * _fitFunction;
-  std::map< double, TMatrixTSym< double > > _covarianceMaticies;
+  std::map< double, std::map< double, TMatrixTSym< double > > > _covarianceMaticies;
 
   mutable TRandom3 _random;
 

@@ -73,6 +73,7 @@ int main( int argc, char* argv[] ) {
   desc.add_options()( "help,h", "print this help message" )( "nPE,n", po::value< int >(),
                                                              "number of pseudo-experiments to run on each alpha" )(
       "scales,s", po::value< vector< double > >()->multitoken(), "list of contact interaction scale values (in TeV)" )(
+      "mjjs,m", po::value< vector< double > >()->multitoken(), "mjj bins to consider (use mjj max)" )(
       "jobID,j", po::value< int >(), "PBS job ID for output naming" )(
       "outDir,o", po::value< string >(), "output directory for likelihood disctributions" )(
       "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )(
@@ -80,7 +81,7 @@ int main( int argc, char* argv[] ) {
       "stochastic", "include error due to limited statistics in QCD and QCI MC" )(
       "jes", po::value< string >(), "include error due to jet energy scale uncertainty described in given root file" )(
       "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" )(
-      "figures,f", po::value<string>(), "directory for output figures" );
+      "figures,f", po::value< string >(), "directory for output figures" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -112,6 +113,18 @@ int main( int argc, char* argv[] ) {
     return ERROR_NO_SCALE_VALUE;
   }
 
+  vector< double > mjjs( 1, 7000. );
+  if ( vm.count( "mjjs" ) ) {
+    mjjs = vm["mjjs"].as< vector< double > >();
+    sort( mjjs.begin(), mjjs.end() );
+
+    cout << "Running over " << mjjs.size() << " scale values:\n";
+    foreach( double mjj, mjjs )
+      cout << "   - " << mjj << '\n';
+  } else {
+    cout << "No scale to run on given, defaulting to top mjj bin." << endl;
+  }
+
   string jobID = "";
   if ( vm.count( "jobID" ) ) {
     int j = vm["jobID"].as< int >();
@@ -134,10 +147,15 @@ int main( int argc, char* argv[] ) {
   }
   // read in data file
   TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
-  map< double, TH1* > dataHists = GetHists( dataFile );
-  TH1 * dataHist = dataHists[2000.];
-  Experiment data( *dataHist );
-  data.plot();
+  typedef map< double, TH1* > th1Map_t;
+  th1Map_t dataHists = GetHists( dataFile );
+  th1Map_t::iterator dataIt = dataHists.begin();
+  while ( dataIt != dataHists.end() ) {
+    if ( find( mjjs.begin(), mjjs.end(), dataIt->first ) == mjjs.end() ) dataHists.erase( dataIt++ );
+    else ++dataIt;
+  }
+  Experiment data( dataHists );
+  //data.plot();
 
   string pdfFileName;
   if ( vm.count( "pdf" ) ) {
@@ -148,10 +166,15 @@ int main( int argc, char* argv[] ) {
   }
   // read in our PDF from file
   TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
-  map< double, TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
-  TDirectoryFile* pdfDir = pdfDirs[2000.];
+  typedef map< double, TDirectoryFile* > tDirFileMap_t;
+  tDirFileMap_t pdfDirs = GetDirs( pdfFile );
+  tDirFileMap_t::iterator predIt = pdfDirs.begin();
+  while ( predIt != pdfDirs.end() ) {
+    if ( find( mjjs.begin(), mjjs.end(), predIt->first ) == mjjs.end() ) pdfDirs.erase( predIt++ );
+    else ++predIt;
+  }
   // Set up PDF to run
-  Prediction * pdf = new Prediction( pdfDir, data.integral() );
+  Prediction * pdf = new Prediction( pdfDirs, data );
 
   if ( vm.count( "stochastic" ) ) {
     cout << "including errors arising from limited statistics in QCD and QCI MC\n";
@@ -197,7 +220,7 @@ int main( int argc, char* argv[] ) {
     for( double scale = 0.5; scale < 10.; scale += 0.1 )
       dataLikelihoodRatio( vector< double >( 1, scale ) );
 
-    TestStatMonitor tm( -1., figureDir+"/Likelihood/", ".eps" );
+    TestStatMonitor tm( -1., figureDir + "/Likelihood/", ".eps" );
     for( int i = 0; i < 10; ++i ) {
       dataLikelihoodRatio.accept( tm );
       dataLikelihoodRatio.denominator().accept( tm );
@@ -205,7 +228,7 @@ int main( int argc, char* argv[] ) {
     tm.finalize();
 
     // Monitor data PDF
-    PredictionMonitor pdfMon( figureDir+"/PDF/", ".eps" );
+    PredictionMonitor pdfMon( figureDir + "/PDF/", ".eps" );
     pdf->accept( pdfMon );
 
     PseudoExperimentFactory peFactory( pdf, data, time( 0 ) );
@@ -217,7 +240,7 @@ int main( int argc, char* argv[] ) {
     foreach( const PseudoExperiment& pe, bgPEs )
     {
       Prediction * pePDF = new Prediction( *pdf );
-      pePDF->nData( pe.integral() );
+      pePDF->nData( dynamic_cast< const Experiment& >( pe ) );
       Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
       for( double scale = 0.5; scale < 10.; scale += 0.1 )
         ( *l )( vector< double >( 1, scale ) );
@@ -241,7 +264,7 @@ int main( int argc, char* argv[] ) {
       foreach( const PseudoExperiment& pe, sigPEs )
       {
         Prediction * pePDF = new Prediction( *pdf );
-        pePDF->nData( pe.integral() );
+        pePDF->nData( dynamic_cast< const Experiment& >( pe ) );
         Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, alpha );
         for( double s = 0.5; s < 10.; s += 0.1 )
           ( *l )( vector< double >( 1, s ) );
@@ -262,8 +285,8 @@ int main( int argc, char* argv[] ) {
       // ----------
       // monitoring
       if ( !( scaleBin % 1000 ) ) {
-        signalPlusBackgroundPValue.finalize( figureDir+"/Likelihood/signal/" );
-        backgroundPValue.finalize( figureDir+"/Likelihood/bkgrnd/" );
+        signalPlusBackgroundPValue.finalize( figureDir + "/Likelihood/signal/" );
+        backgroundPValue.finalize( figureDir + "/Likelihood/bkgrnd/" );
       }
       ++scaleBin;
 
@@ -308,8 +331,9 @@ map< double, TDirectoryFile* > GetDirs( const TFile* file ) {
 
     if ( obj && obj->IsA()->InheritsFrom( "TDirectory" ) ) {
       cout << "found: " << name << endl;
-      double mjjMin = lexical_cast<double>( name.substr( 0, name.find("-mjj-") ) );
-      result.insert( make_pair( mjjMin, (TDirectoryFile*) obj ) );
+      double mjjMax = lexical_cast< double >(
+          name.substr( name.find( "-mjj-" ) + 5, name.size() - name.find( "-mjj-" ) - 8 ) );
+      result.insert( make_pair( mjjMax, (TDirectoryFile*) obj ) );
     }
 
   } while ( key = (TKey*) nextKey() );
@@ -335,8 +359,9 @@ map< double, TH1* > GetHists( const TFile* file ) {
 
     if ( obj && obj->IsA()->InheritsFrom( "TH1" ) ) {
       cout << "found: " << name << endl;
-      double mjjMin = lexical_cast<double>( name.substr( 4, name.find("-to-")-4 ) );
-      result.insert( make_pair( mjjMin, (TH1*) obj ) );
+      double mjjMax = lexical_cast< double >(
+          name.substr( name.find( "-to-" ) + 4, name.size() - name.find( "-to-" ) - 7 ) );
+      result.insert( make_pair( mjjMax, (TH1*) obj ) );
     }
 
   } while ( key = (TKey*) nextKey() );

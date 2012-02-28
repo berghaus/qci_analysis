@@ -1,5 +1,6 @@
 #ifndef PSEUDO_EXPERIMENT_HPP
 #define PSEUDO_EXPERIMENT_HPP
+#include <set>
 #include <ostream>
 #include <map>
 #include <vector>
@@ -7,18 +8,35 @@
 #include <TH1.h>
 #include <TRandom3.h>
 
-#include "Prediction.hpp"
-
 class TCanvas;
 class TGraph;
 
-class Experiment {
+class MjjExperiment;
+class Prediction;
 
+class Experiment {
 public:
   Experiment();
-  Experiment( const TH1& );
-  Experiment( const std::vector< double >&, const std::vector< double >& );
+  Experiment( const std::map< double, MjjExperiment > );
+  Experiment( const std::map< double, TH1* > );
   virtual ~Experiment();
+  virtual const MjjExperiment& mjjExperiment( const double& ) const;
+  virtual std::set< double > mjjs() const;
+  virtual const MjjExperiment& operator[] ( const double& ) const;
+  friend std::ostream& operator<<( std::ostream&, const Experiment& );
+protected:
+  std::map< double, MjjExperiment > _subExperiments;
+  std::set< double > _mjjs;
+
+};
+
+class MjjExperiment {
+
+public:
+  MjjExperiment();
+  MjjExperiment( const TH1& );
+  MjjExperiment( const std::vector< double >&, const std::vector< double >& );
+  virtual ~MjjExperiment();
 
   double chi( int& ) const;
   double n( int& ) const;
@@ -34,7 +52,7 @@ public:
 
   virtual void plot() const;
 
-  friend std::ostream& operator<<( std::ostream&, const Experiment& );
+  friend std::ostream& operator<<( std::ostream&, const MjjExperiment& );
 
 protected:
   virtual void print( std::ostream& ) const;
@@ -53,7 +71,8 @@ class PseudoExperiment: public Experiment {
 
 public:
   PseudoExperiment();
-  PseudoExperiment( const std::vector< double >&, const std::vector< double >&, const double& );
+  PseudoExperiment( const std::map< double, MjjExperiment >&, const double& );
+  PseudoExperiment( const std::map< double, TH1* >&, const double& );
   double alpha() const;
 
   friend std::ostream& operator<<( std::ostream&, const PseudoExperiment& );

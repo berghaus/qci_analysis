@@ -2,6 +2,10 @@
 
 #include <cfloat>
 #include <stdexcept>
+#include <boost/foreach.hpp>
+#ifndef foreach
+#define foreach BOOST_FOREACH
+#endif
 #include <boost/lexical_cast.hpp>
 #include <TH1.h>
 #include <Minuit2/FCNBase.h>
@@ -46,11 +50,14 @@ double Neg2LogLikelihood_FCN::operator()( const std::vector< double >& par ) con
 
   const Prediction& pdf = *_pdf;
   double result = 0.;
-  for( int bin = 0; bin < _data->chi().size(); ++bin ) {
-    double x = _data->chi( bin );
-    int n = _data->n( bin );
-    double logProb = pdf( x, n, par );
-    result += -2 * logProb;
+  foreach( const double& mjj, _data->mjjs() ) {
+    const MjjExperiment& mjjData = (*_data)[mjj];
+    for( int bin = 0; bin < mjjData.chi().size(); ++bin ) {
+      double x = mjjData.chi( bin );
+      int n = mjjData.n( bin );
+      double logProb = pdf( mjj, x, n, par );
+      result += -2 * logProb;
+    }
   }
 
   return result;
@@ -172,7 +179,7 @@ double Neg2LogLikelihoodRatio::operator()( const std::vector< double >& par ) {
            << _numerator( par ) << "\n denominator = " << _denominator() << "\n ratio       = "
            << _numerator( par ) - _denominator() << '\n';
 
-      _data->plot();
+      // _pdf->plot( *_data ); make an experiment visitor for this
       cout << *_data << endl;
 
       // throw up

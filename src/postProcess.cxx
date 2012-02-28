@@ -11,6 +11,7 @@
 
 #include <boost/checked_delete.hpp>
 #include <boost/foreach.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/config.hpp>
 #include <boost/program_options/environment_iterator.hpp>
@@ -41,12 +42,14 @@
 #define ERROR_NO_PDF 3
 #define ERROR_NO_DATA 4
 
-using namespace std;
 namespace po = boost::program_options;
 
+using namespace std;
+using namespace boost;
+
 void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest >& );
-vector< TDirectoryFile* > GetDirs( const TFile* );
-vector< TH1* > GetHists( const TFile* );
+map< double, TDirectoryFile* > GetDirs( const TFile* );
+map< double, TH1* > GetHists( const TFile* );
 template< class T > bool compByName( const T* x, const T* y ) {
   return string( x->GetName() ) < string( y->GetName() );
 }
@@ -59,6 +62,7 @@ int main( int argc, char* argv[] ) {
   po::options_description desc( "Allowed options" );
   desc.add_options()( "help,h", "print this help message" )( "nPE,n", po::value< int >(),
                                                              "number of pseudo-experiments to run on each alpha" )(
+      "mjjs,m", po::value< vector< double > >()->multitoken(), "mjj bins to consider (use mjj max)" )(
       "sigInputFiles,s", po::value< vector< string > >()->multitoken(),
       "list of input files containing signal likelihood distributions" )(
       "bkgInputFiles,b", po::value< vector< string > >()->multitoken(),
@@ -66,9 +70,9 @@ int main( int argc, char* argv[] ) {
                                                                               "output directory for plots" )(
       "data,d", po::value< string >(), "ROOT file containing data event distribution" )(
       "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )(
-          "stochastic", "include error due to limited statistics in QCD and QCI MC" )(
-          "jes", po::value< string >(), "include error due to jet energy scale uncertainty described in given root file" )(
-          "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" );
+      "stochastic", "include error due to limited statistics in QCD and QCI MC" )(
+      "jes", po::value< string >(), "include error due to jet energy scale uncertainty described in given root file" )(
+      "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -85,6 +89,18 @@ int main( int argc, char* argv[] ) {
     nPE = vm["nPE"].as< int >();
   } else {
     cout << "Defaulting to using " << nPE << " pseudo-experiments for each alpha.\n";
+  }
+
+  vector< double > mjjs( 1, 7000. );
+  if ( vm.count( "mjjs" ) ) {
+    mjjs = vm["mjjs"].as< vector< double > >();
+    sort( mjjs.begin(), mjjs.end() );
+
+    cout << "Running over " << mjjs.size() << " scale values:\n";
+    foreach( double mjj, mjjs )
+      cout << "   - " << mjj << '\n';
+  } else {
+    cout << "No scale to run on given, defaulting to top mjj bin." << endl;
   }
 
   vector< string > sigFileNames;
@@ -127,11 +143,17 @@ int main( int argc, char* argv[] ) {
     cout << "No data event distribution supplied. Aborting.\n";
     return ERROR_NO_DATA;
   }
-  // read in data
+  // read in data file
   TFile * dataFile = TFile::Open( dataFileName.c_str(), "READ" );
-  vector< TH1* > dataHists = GetHists( dataFile );
-  TH1 * dataHist = dataHists.back();
-  Experiment data( *dataHist );
+  typedef map< double, TH1* > th1Map_t;
+  th1Map_t dataHists = GetHists( dataFile );
+  th1Map_t::iterator dataIt = dataHists.begin();
+  while ( dataIt != dataHists.end() ) {
+    if ( find( mjjs.begin(), mjjs.end(), dataIt->first ) == mjjs.end() ) dataHists.erase( dataIt++ );
+    else ++dataIt;
+  }
+  Experiment data( dataHists );
+  //data.plot();
 
   string pdfFileName;
   if ( vm.count( "pdf" ) ) {
@@ -140,11 +162,17 @@ int main( int argc, char* argv[] ) {
     cout << "No predicted event distributions supplied. Aborting.\n";
     return ERROR_NO_PDF;
   }
-  // read in PDF
+  // read in our PDF from file
   TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
-  vector< TDirectoryFile* > pdfDirs = GetDirs( pdfFile );
-  TDirectoryFile* pdfDir = pdfDirs.back();
-  Prediction * pdf = new Prediction( pdfDir, data.integral() );
+  typedef map< double, TDirectoryFile* > tDirFileMap_t;
+  tDirFileMap_t pdfDirs = GetDirs( pdfFile );
+  tDirFileMap_t::iterator predIt = pdfDirs.begin();
+  while ( predIt != pdfDirs.end() ) {
+    if ( find( mjjs.begin(), mjjs.end(), predIt->first ) == mjjs.end() ) pdfDirs.erase( predIt++ );
+    else ++predIt;
+  }
+  // Set up PDF to run
+  Prediction * pdf = new Prediction( pdfDirs, data );
 
   if ( vm.count( "stochastic" ) ) {
     cout << "including errors arising from limited statistics in QCD and QCI MC\n";
@@ -164,7 +192,6 @@ int main( int argc, char* argv[] ) {
     if ( eff ) pdf->addEffect( eff );
     else cout << "failed to downcast JES_Systematic_Effect to Effect\n";
   }
-
 
   if ( vm.count( "jer" ) ) {
     cout << "including errors arising from jet p_T Resolution\n";
@@ -198,6 +225,7 @@ int main( int argc, char* argv[] ) {
   foreach( const PseudoExperiment& pe, errorBandPEs )
   {
     Prediction * pePDF = new Prediction( *pdf );
+    pePDF->nData( pe );
     Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
     for( double scale = 2.; scale < 8.; scale += 0.1 )
       ( *l )( vector< double >( 1, scale ) );
@@ -237,9 +265,9 @@ void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest 
 
 }
 
-vector< TDirectoryFile* > GetDirs( const TFile* file ) {
+map< double, TDirectoryFile* > GetDirs( const TFile* file ) {
 
-  vector< TDirectoryFile* > result;
+  map< double, TDirectoryFile* > result;
 
   TIter nextKey( file->GetListOfKeys() );
   TKey * key = (TKey*) nextKey();
@@ -254,7 +282,9 @@ vector< TDirectoryFile* > GetDirs( const TFile* file ) {
 
     if ( obj && obj->IsA()->InheritsFrom( "TDirectory" ) ) {
       cout << "found: " << name << endl;
-      result.push_back( (TDirectoryFile*) obj );
+      double mjjMax = lexical_cast< double >(
+          name.substr( name.find( "-mjj-" ) + 5, name.size() - name.find( "-mjj-" ) - 8 ) );
+      result.insert( make_pair( mjjMax, (TDirectoryFile*) obj ) );
     }
 
   } while ( key = (TKey*) nextKey() );
@@ -263,9 +293,9 @@ vector< TDirectoryFile* > GetDirs( const TFile* file ) {
 
 }
 
-vector< TH1* > GetHists( const TFile* file ) {
+map< double, TH1* > GetHists( const TFile* file ) {
 
-  vector< TH1* > result;
+  map< double, TH1* > result;
 
   TIter nextKey( file->GetListOfKeys() );
   TKey * key = (TKey*) nextKey();
@@ -280,7 +310,9 @@ vector< TH1* > GetHists( const TFile* file ) {
 
     if ( obj && obj->IsA()->InheritsFrom( "TH1" ) ) {
       cout << "found: " << name << endl;
-      result.push_back( (TH1*) obj );
+      double mjjMax = lexical_cast< double >(
+          name.substr( name.find( "-to-" ) + 4, name.size() - name.find( "-to-" ) - 7 ) );
+      result.insert( make_pair( mjjMax, (TH1*) obj ) );
     }
 
   } while ( key = (TKey*) nextKey() );
