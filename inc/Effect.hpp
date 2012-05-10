@@ -57,10 +57,10 @@ public:
   //! implementation of function from Effect interface
   virtual double apply( const double&, const double&, const double&, const double& ) const;
   virtual void newPE() {} //< nothing needs to be done here
+  double error( const double&, const double&, const double&, const double& ) const;
 
 private:
 
-  double error( const double&, const double&, const double&, const double& ) const;
   TF1 * _fitFunction;
   std::map< double, std::map< double, TMatrixTSym< double > > > _covarianceMaticies;
 

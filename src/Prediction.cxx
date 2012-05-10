@@ -52,6 +52,7 @@ Prediction::Prediction( map< double, TDirectoryFile* > dirs, const Experiment& e
 
     _predictions.insert( make_pair( mjj, MjjPrediction( dir, exp[mjj].integral(), _pdfFit ) ) );
     _mjjs.insert( mjj );
+    cout << " added for mjj = " << mjj << endl;
 
   }
 
@@ -297,7 +298,7 @@ Prediction::MjjPrediction::MjjPrediction( TDirectoryFile* dir, const double nDat
 
       _covarianceMaticies.insert( make_pair( chi, fitResult->GetCovarianceMatrix() ) );
 
-      cout << "insterted at chi = " << chi << endl;
+      cout << "  | added chi = " << chi << endl;
 
     }
   }

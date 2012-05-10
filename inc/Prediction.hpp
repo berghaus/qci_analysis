@@ -150,6 +150,11 @@ public:
 
   friend class PredictionMonitor;
 
+  void setMjj( const double& ) const;
+
+  //! translate given chi to one used as label in the maps
+  double labelChi( const double& ) const;
+
 private:
 
   //! fit function to use - same for all chi bins
@@ -194,13 +199,9 @@ private:
   //! covariance of pdfFit results
   //std::map< double, std::map< double, TMatrixTSym< double > > > _covarianceMaticies;
 
-  //! translate given chi to one used as label in the maps
-  double labelChi( const double& ) const;
-
   //! vector of statistical and systematic errors
   std::vector< Effect* > _effects; // TODO: make smart pointers
 
-  void setMjj( const double& ) const;
 
   //! mjj for current bin
   mutable double _mjj;
