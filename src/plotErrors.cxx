@@ -158,10 +158,7 @@ int main( int argc, char* argv[] ) {
 
   //---------------------------------------------------------------------------
   SetAtlasStyle();
-
-  plotErrors( data, *pdf , *statEff, 5. );
-  plotErrors( data, *pdf , *statEff, 5.5 );
-  plotErrors( data, *pdf , *statEff, 6. );
+  foreach( const double& s, scales ) plotErrors( data, *pdf , *statEff, s );
 
   return 0;
 
