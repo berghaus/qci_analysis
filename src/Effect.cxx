@@ -118,17 +118,17 @@ double Statitical_Effect::error( const double& mu, const double& lambda, const d
 
 
 //=====================================================================================================================
-//=====================================    Systematic_Effect   ========================================================
+//=====================================    Experimental_Systematic_Effect   ========================================================
 //=====================================================================================================================
 
 //_____________________________________________________________________________________________________________________
-Systematic_Effect::Systematic_Effect() :
+Experimental_Systematic_Effect::Experimental_Systematic_Effect() :
     _file( 0 ),
     _nSigma( 0 ) {
 }
 
 //_____________________________________________________________________________________________________________________
-Systematic_Effect::Systematic_Effect( const string& fName ) :
+Experimental_Systematic_Effect::Experimental_Systematic_Effect( const string& fName ) :
     _file( TFile::Open( fName.c_str(), "READ" ) ),
     _nSigma( 0. ) {
 
@@ -228,11 +228,11 @@ Systematic_Effect::Systematic_Effect( const string& fName ) :
 }
 
 //_____________________________________________________________________________________________________________________
-Systematic_Effect::~Systematic_Effect() {
+Experimental_Systematic_Effect::~Experimental_Systematic_Effect() {
 }
 
 //_____________________________________________________________________________________________________________________
-double Systematic_Effect::apply( const double& mu, const double& lambda, const double& chi, const double& mjj ) const {
+double Experimental_Systematic_Effect::apply( const double& mu, const double& lambda, const double& chi, const double& mjj ) const {
   double result = mu;
 
   double lKey = 0.; // <- QCD
@@ -253,44 +253,44 @@ double Systematic_Effect::apply( const double& mu, const double& lambda, const d
 }
 
 //_____________________________________________________________________________________________________________________
-JES_Systematic_Effect::JES_Systematic_Effect() {
+JES_Effect::JES_Effect() {
 
 }
 
 //_____________________________________________________________________________________________________________________
-JES_Systematic_Effect::JES_Systematic_Effect( const std::string& fName ) :
-    Systematic_Effect( fName ) {
+JES_Effect::JES_Effect( const std::string& fName ) :
+    Experimental_Systematic_Effect( fName ) {
 
 }
 
 //_____________________________________________________________________________________________________________________
-JES_Systematic_Effect::~JES_Systematic_Effect() {
+JES_Effect::~JES_Effect() {
 
 }
 
 //_____________________________________________________________________________________________________________________
-void JES_Systematic_Effect::newPE() {
+void JES_Effect::newPE() {
   _nSigma = _random.Gaus( 0, 1. );
 }
 
 //_____________________________________________________________________________________________________________________
-JER_Systematic_Effect::JER_Systematic_Effect() {
+JER_Effect::JER_Effect() {
 
 }
 
 //_____________________________________________________________________________________________________________________
-JER_Systematic_Effect::JER_Systematic_Effect( const std::string& fName ) :
-    Systematic_Effect( fName ) {
+JER_Effect::JER_Effect( const std::string& fName ) :
+    Experimental_Systematic_Effect( fName ) {
 
 }
 
 //_____________________________________________________________________________________________________________________
-JER_Systematic_Effect::~JER_Systematic_Effect() {
+JER_Effect::~JER_Effect() {
 
 }
 
 //_____________________________________________________________________________________________________________________
-void JER_Systematic_Effect::newPE() {
+void JER_Effect::newPE() {
   _nSigma = fabs( _random.Gaus( 0, 1. ) );
 }
 

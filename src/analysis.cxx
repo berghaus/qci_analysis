@@ -189,7 +189,7 @@ int main( int argc, char* argv[] ) {
   if ( vm.count( "jes" ) ) {
     cout << "including errors arising from jet energy scale uncertainty\n";
     string jesErrorFileName = vm["jes"].as< string >();
-    JES_Systematic_Effect * sysEff = new JES_Systematic_Effect( jesErrorFileName );
+    JES_Effect * sysEff = new JES_Effect( jesErrorFileName );
     Effect * eff = dynamic_cast< Effect* >( sysEff );
     if ( eff ) pdf->addEffect( eff );
     else cout << "failed to downcast JES_Systematic_Effect to Effect\n";
@@ -198,7 +198,7 @@ int main( int argc, char* argv[] ) {
   if ( vm.count( "jer" ) ) {
     cout << "including errors arising from jet p_T Resolution\n";
     string jerErrorFileName = vm["jer"].as< string >();
-    JER_Systematic_Effect * sysEff = new JER_Systematic_Effect( jerErrorFileName );
+    JER_Effect * sysEff = new JER_Effect( jerErrorFileName );
     Effect * eff = dynamic_cast< Effect* >( sysEff );
     if ( eff ) pdf->addEffect( eff );
     else cout << "failed to downcast JER_Systematic_Effect to Effect\n";

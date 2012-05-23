@@ -21,11 +21,12 @@ class TFile;
  */
 class Effect {
 public:
-  virtual ~Effect() {
-  }
+	virtual ~Effect() {
+	}
 
-  virtual double apply( const double&, const double&, const double&, const double& ) const = 0;
-  virtual void newPE() = 0; //< select new _nSigma
+	virtual double apply(const double&, const double&, const double&,
+			const double&) const = 0;
+	virtual void newPE() = 0; //< select new _nSigma
 
 };
 
@@ -50,58 +51,66 @@ public:
  */
 class Statitical_Effect: public Effect {
 public:
-  Statitical_Effect();
-  Statitical_Effect( const TF1*, const std::map< double, std::map< double, TMatrixTSym< double > > >& );
-  virtual ~Statitical_Effect();
+	Statitical_Effect();
+	Statitical_Effect(const TF1*,
+			const std::map<double, std::map<double, TMatrixTSym<double> > >&);
+	virtual ~Statitical_Effect();
 
-  //! implementation of function from Effect interface
-  virtual double apply( const double&, const double&, const double&, const double& ) const;
-  virtual void newPE() {} //< nothing needs to be done here
-  double error( const double&, const double&, const double&, const double& ) const;
+	//! implementation of function from Effect interface
+	virtual double apply(const double&, const double&, const double&,
+			const double&) const;
+	virtual void newPE() {
+	} //< nothing needs to be done here
+	double
+			error(const double&, const double&, const double&, const double&) const;
 
 private:
 
-  TF1 * _fitFunction;
-  std::map< double, std::map< double, TMatrixTSym< double > > > _covarianceMaticies;
+	TF1 * _fitFunction;
+	std::map<double, std::map<double, TMatrixTSym<double> > >
+			_covarianceMaticies;
 
-  mutable TRandom3 _random;
+	mutable TRandom3 _random;
 
 };
 
 //! Implements systematic error descriped as function of chi and mjj
-class Systematic_Effect: public Effect {
+class Experimental_Systematic_Effect: public Effect {
 public:
-  Systematic_Effect();
-  Systematic_Effect( const std::string& );
-  virtual ~Systematic_Effect();
-  //! implementation of function from Effect interface
-  virtual double apply( const double&, const double&, const double&, const double& ) const;
+	Experimental_Systematic_Effect();
+	Experimental_Systematic_Effect(const std::string&);
+	virtual ~Experimental_Systematic_Effect();
+
+	//! implementation of function from Effect interface
+	virtual double apply(const double&, const double&, const double&,
+			const double&) const;
+
 protected:
-  double _nSigma;
+	double _nSigma;
 private:
-  TFile * _file;
-  std::map< double, std::map< double, std::map< double, TH1* > > > _errors;
+	TFile * _file;
+	std::map<double, std::map<double, std::map<double, TH1*> > > _errors;
 };
 
-class JES_Systematic_Effect : public Systematic_Effect {
+class JES_Effect: public Experimental_Systematic_Effect {
 public:
-  JES_Systematic_Effect();
-  JES_Systematic_Effect( const std::string& );
-  virtual ~JES_Systematic_Effect();
-  virtual void newPE(); //< select new _nSigma
+	JES_Effect();
+	JES_Effect(const std::string&);
+	virtual ~JES_Effect();
+	virtual void newPE(); //< select new _nSigma
 private:
-  TRandom3 _random;
+	TRandom3 _random;
 };
 
-
-class JER_Systematic_Effect : public Systematic_Effect {
+class JER_Effect: public Experimental_Systematic_Effect {
 public:
-  JER_Systematic_Effect();
-  JER_Systematic_Effect( const std::string& );
-  virtual ~JER_Systematic_Effect();
-  virtual void newPE(); //< select new _nSigma
+	JER_Effect();
+	JER_Effect(const std::string&);
+	virtual ~JER_Effect();
+	virtual void newPE(); //< select new _nSigma
 private:
-  TRandom3 _random;
+	TRandom3 _random;
 };
+
 
 #endif // EFFECT_HPP
