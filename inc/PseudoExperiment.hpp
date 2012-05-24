@@ -88,7 +88,7 @@ private:
 class PseudoExperimentFactory {
 
 public:
-  PseudoExperimentFactory( const Prediction* pdf, const Experiment& graft, unsigned int seed = 65539 );
+  PseudoExperimentFactory( const Prediction* pdf, const Experiment& graft );
   virtual ~PseudoExperimentFactory();
   std::vector< PseudoExperiment > build( const double& alpha, const int& n );
   PseudoExperiment build( const double& alpha );

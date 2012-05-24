@@ -226,7 +226,7 @@ int Prediction::nData( const double& mjj ) const {
 }
 
 //_____________________________________________________________________________________________________________________
-double Prediction::labelChi( const double& chi ) const {
+double Prediction::labelChi( const double& chi ) {
   return int( chi * 100 ) % 10 > 4 ?
       ceil( chi * 10 ) / 10. :
       floor( chi * 10 ) / 10.;

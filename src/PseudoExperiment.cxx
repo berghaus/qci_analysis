@@ -252,10 +252,9 @@ PseudoExperimentFactory::PseudoExperimentFactory() :
     _pdf( 0 ) {
 }
 
-PseudoExperimentFactory::PseudoExperimentFactory( const Prediction* pdf, const Experiment& graft, unsigned int seed ) :
+PseudoExperimentFactory::PseudoExperimentFactory( const Prediction* pdf, const Experiment& graft ) :
     _pdf( pdf ),
-    _graft( graft ),
-    _random( seed ) {
+    _graft( graft ) {
 }
 
 PseudoExperimentFactory::~PseudoExperimentFactory() {

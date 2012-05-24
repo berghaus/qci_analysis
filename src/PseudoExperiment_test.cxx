@@ -52,9 +52,8 @@ BOOST_AUTO_TEST_CASE( constructors_test ) {
   MjjExperiment atlas( *dataHist );
   TFile * input = TFile::Open( "~/docs/comp/analysis/vanilla.root", "READ" );
   Prediction pdf( input, atlas.integral() );
-  // int pefSeed = 1;
   // int nPE = 10;
-  // PseudoExperimentFactory pef0( &pdf, atlas , pefSeed );
+  // PseudoExperimentFactory pef0( &pdf, atlas );
 
   input->Close();
   dataF->Close();

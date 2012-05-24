@@ -69,10 +69,11 @@ int main( int argc, char* argv[] ) {
       "list of input files containing background likelihood distributions" )( "outDir,o", po::value< string >(),
                                                                               "output directory for plots" )(
       "data,d", po::value< string >(), "ROOT file containing data event distribution" )(
-      "pdf,p", po::value< string >(), "ROOT file containing expected event distributions" )(
+      "prediction,p", po::value< string >(), "ROOT file containing expected event distributions" )(
       "stochastic", "include error due to limited statistics in QCD and QCI MC" )(
       "jes", po::value< string >(), "include error due to jet energy scale uncertainty described in given root file" )(
-      "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" );
+      "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" )(
+      "pdf", po::value< string >(), "include error due to PDF sets as described in given root file" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -155,15 +156,15 @@ int main( int argc, char* argv[] ) {
   Experiment data( dataHists );
   //data.plot();
 
-  string pdfFileName;
-  if ( vm.count( "pdf" ) ) {
-    pdfFileName = vm["pdf"].as< string >();
+  string predictionFileName;
+  if ( vm.count( "prediction" ) ) {
+    predictionFileName = vm["prediction"].as< string >();
   } else {
     cout << "No predicted event distributions supplied. Aborting.\n";
     return ERROR_NO_PDF;
   }
   // read in our PDF from file
-  TFile * pdfFile = TFile::Open( pdfFileName.c_str(), "READ" );
+  TFile * pdfFile = TFile::Open( predictionFileName.c_str(), "READ" );
   typedef map< double, TDirectoryFile* > tDirFileMap_t;
   tDirFileMap_t pdfDirs = GetDirs( pdfFile );
   tDirFileMap_t::iterator predIt = pdfDirs.begin();
@@ -200,6 +201,17 @@ int main( int argc, char* argv[] ) {
     Effect * eff = dynamic_cast< Effect* >( sysEff );
     if ( eff ) pdf->addEffect( eff );
     else cout << "failed to downcast JER_Systematic_Effect to Effect\n";
+  }
+
+  if( vm.count( "pdf" ) ) {
+    cout << "including errors arising from PDF fit\n";
+    string pdfErrorFileName = vm["pdf"].as< string > ();
+    PDF_Effect * sysEff = new PDF_Effect( pdfErrorFileName );
+    Effect * eff = dynamic_cast< Effect* > ( sysEff );
+    if( eff )
+      pdf->addEffect( eff );
+    else
+      cout << "failed to downcast PDF_Effect to Effect\n";
   }
 
   //---------------------------------------------------------------------------

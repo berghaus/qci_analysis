@@ -153,7 +153,7 @@ public:
   void setMjj( const double& ) const;
 
   //! translate given chi to one used as label in the maps
-  double labelChi( const double& ) const;
+  static double labelChi( const double& );
 
 private:
 
