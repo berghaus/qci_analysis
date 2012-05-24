@@ -26,12 +26,20 @@
 #include <TClass.h>
 #include <TGraphAsymmErrors.h>
 
+#include <appl_grid/appl_grid.h>
+#include <LHAPDF/LHAPDF.h>
+
 #include "Prediction.hpp"
 
 using boost::format;
 
 using namespace std;
 using namespace boost::assign;
+
+extern "C" {
+void evolvepdf_( const double&, const double&, double* );
+double alphaspdf_( const double& );
+}
 
 //=====================================================================================================================
 //=====================================    Statitical_Effect   ========================================================
@@ -345,5 +353,65 @@ double PDF_Effect::apply( double mu, const double& lambda, const double& chi, co
 //_____________________________________________________________________________________________________________________
 void PDF_Effect::newPE() {
   _nSigma = _random.Gaus( 0., 1. );
+}
+
+//_____________________________________________________________________________________________________________________
+Scale_Effect::Scale_Effect() :
+  _nLoops( 1 ), _eScale( 1. ), _changed( 0 ), _distribution( new TF1( "ScaleDistribution", "1./x", 0.5, 2.0 ) ) {
+}
+
+//_____________________________________________________________________________________________________________________
+Scale_Effect::Scale_Effect( const vector< string >& names ) :
+  _nLoops( 1 ), _eScale( 1. ), _muf( 1. ), _mur( 1. ), _grid( 0 ), _changed( 0 ),
+      _distribution( new TF1( "ScaleDistribution", "1./x", 0.5, 2.0 ) ) {
+
+  // Setup parton distribution function
+  LHAPDF::initPDFSet( "cteq66.LHgrid", 0 );
+
+  // add given grids
+  vector< string >::const_iterator itr = ++ ( names.begin() );
+  vector< string >::const_iterator end = names.end();
+  _grid = new appl::grid( names.at( 0 ).c_str() );
+  for( ; itr != end; ++itr ) {
+    appl::grid g( itr->c_str() );
+    if( *_grid == g ) ( *_grid ) += g;
+  }
+
+  // get nominal prediction
+  _nominal = _grid->convolute( _eScale, evolvepdf_, alphaspdf_, _nLoops, _mur, _muf );
+  _nominal->SetName( "ScaleNominal" );
+
+  // set up for first application
+  newPE();
+
+}
+
+//_____________________________________________________________________________________________________________________
+Scale_Effect::~Scale_Effect() {
+  delete _nominal;
+  delete _changed;
+  delete _distribution;
+  delete _grid;
+}
+
+//_____________________________________________________________________________________________________________________
+double Scale_Effect::apply( double mu, const double& lambda, const double& chi, const double& mjj ) const {
+
+  int bin = _changed->FindBin( chi );
+  mu *= _changed->GetBinContent( bin );
+
+  return mu;
+
+}
+
+//_____________________________________________________________________________________________________________________
+void Scale_Effect::newPE() {
+  if( _changed ) delete _changed;
+  _muf = _distribution->GetRandom();
+  _mur = _distribution->GetRandom();
+
+  _changed = _grid->convolute( _eScale, evolvepdf_, alphaspdf_, _nLoops, _mur, _muf );
+  _changed->Divide( _nominal );
+
 }
 

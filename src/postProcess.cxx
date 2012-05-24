@@ -73,7 +73,8 @@ int main( int argc, char* argv[] ) {
       "stochastic", "include error due to limited statistics in QCD and QCI MC" )(
       "jes", po::value< string >(), "include error due to jet energy scale uncertainty described in given root file" )(
       "jer", po::value< string >(), "include error due to jet p_T resolution described in given root file" )(
-      "pdf", po::value< string >(), "include error due to PDF sets as described in given root file" );
+      "pdf", po::value< string >(), "include error due to PDF sets as described in given root file" )(
+      "appl", po::value< vector< string > >()->multitoken(), "include error due to scale choices as described in given grid files" );
 
   po::variables_map vm;
   po::store( po::parse_command_line( argc, argv, desc ), vm );
@@ -212,6 +213,17 @@ int main( int argc, char* argv[] ) {
       pdf->addEffect( eff );
     else
       cout << "failed to downcast PDF_Effect to Effect\n";
+  }
+
+  if( vm.count( "appl" ) ) {
+    cout << "including errors arising from scale choice\n";
+    vector< string > gridNames = vm["appl"].as< vector< string > > ();
+    Scale_Effect * sysEff = new Scale_Effect( gridNames );
+    Effect * eff = dynamic_cast< Effect* > ( sysEff );
+    if( eff )
+      pdf->addEffect( eff );
+    else
+      cout << "failed to downcast Scale_Effect to Effect\n";
   }
 
   //---------------------------------------------------------------------------

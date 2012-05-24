@@ -14,6 +14,10 @@
 class TF1;
 class TH1;
 class TFile;
+namespace appl {
+class grid;
+}
+;
 
 //! Interface for systematic and stochastic errors
 /*! \class Error
@@ -119,6 +123,27 @@ private:
   TRandom3 _random;
   TFile * _file;
   std::map< double, std::pair< double, double > > _errors; //< key = label chi, val = + / - error
+};
+
+
+class Scale_Effect: public Effect {
+public:
+  Scale_Effect();
+  Scale_Effect( const std::vector< std::string >& );
+  virtual ~Scale_Effect();
+
+  virtual double apply( double, const double&, const double&, const double& ) const;
+  virtual void newPE(); //< select new _nSigma
+private:
+  int _nLoops;
+  double _eScale;
+  double _muf;
+  double _mur;
+  TRandom3 _random;
+  appl::grid * _grid;
+  TH1 * _nominal;
+  TH1 * _changed;
+  TF1 * _distribution;
 };
 
 #endif // EFFECT_HPP
