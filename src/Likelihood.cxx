@@ -24,14 +24,13 @@ using namespace ROOT::Minuit2;
 using boost::lexical_cast;
 
 Neg2LogLikelihood_FCN::Neg2LogLikelihood_FCN() :
-    _data( 0 ) {
+  _data( 0 ) {
 
   _pars.Add( "alpha", 0., 2.e-4, 0., 16. );
 }
 
 Neg2LogLikelihood_FCN::Neg2LogLikelihood_FCN( const Experiment* data, const Prediction* pdf, const double alpha ) :
-    _data( data ),
-    _pdf( pdf ) {
+  _data( data ), _pdf( pdf ) {
 
   _pars.Add( "alpha", alpha, 2.e-4, 0., 16. );
 
@@ -50,15 +49,16 @@ double Neg2LogLikelihood_FCN::operator()( const std::vector< double >& par ) con
 
   const Prediction& pdf = *_pdf;
   double result = 0.;
-  foreach( const double& mjj, _data->mjjs() ) {
-    const MjjExperiment& mjjData = (*_data)[mjj];
-    for( int bin = 0; bin < mjjData.chi().size(); ++bin ) {
-      double x = mjjData.chi( bin );
-      int n = mjjData.n( bin );
-      double logProb = pdf( mjj, x, n, par );
-      result += -2 * logProb;
-    }
-  }
+  foreach( const double& mjj, _data->mjjs() )
+        {
+          const MjjExperiment& mjjData = ( *_data )[mjj];
+          for( int bin = 0; bin < mjjData.chi().size(); ++bin ) {
+            double x = mjjData.chi( bin );
+            int n = mjjData.n( bin );
+            double logProb = pdf( mjj, x, n, par );
+            result += -2 * logProb;
+          }
+        }
 
   return result;
 }
@@ -93,8 +93,8 @@ double Neg2LogLikelihood_FCN::Minimize() {
 
 double Neg2LogLikelihood_FCN::Minimize( MnUserParameters& pars ) {
 
-//  cout << "Experiment: " << _data->name() << '\n';
-//  cout << "start value L( " << pars.Params().at( 0 ) << " ) = " << ( *this )( pars.Params() ) << '\n';
+  //  cout << "Experiment: " << _data->name() << '\n';
+  //  cout << "start value L( " << pars.Params().at( 0 ) << " ) = " << ( *this )( pars.Params() ) << '\n';
 
   bool isFirst = true;
   vector< double > initVal = pars.Params();
@@ -105,8 +105,8 @@ double Neg2LogLikelihood_FCN::Minimize( MnUserParameters& pars ) {
   _pars = pars = minResults.UserParameters();
   _isMinimized = minResults.IsValid();
 
-//  cout << "final value L( " << pars.Params().at( 0 ) << " ) = " << ( *this )( pars.Params() ) << '\n';
-  if ( !_isMinimized ) cout << "invalid fit!\n";
+  //  cout << "final value L( " << pars.Params().at( 0 ) << " ) = " << ( *this )( pars.Params() ) << '\n';
+  if( !_isMinimized ) cout << "invalid fit!\n";
   return pars.Params().at( 0 );
 
 }
@@ -118,7 +118,7 @@ vector< double > Neg2LogLikelihood_FCN::pars() const {
 void Neg2LogLikelihood_FCN::pars( const vector< double >& p ) {
 
   for( int i = 0; i < _pars.Params().size() && i < p.size(); ++i ) {
-//    cout << "setting " << _pars.GetName( i ) << " to: " << p.at( i ) << '\n';
+    //    cout << "setting " << _pars.GetName( i ) << " to: " << p.at( i ) << '\n';
     _pars.SetValue( i, p.at( i ) );
   }
 
@@ -133,64 +133,16 @@ void Neg2LogLikelihood_FCN::accept( TestStatMonitor& mon ) {
 //--------------------------------------------------------------------------------
 
 Neg2LogLikelihoodRatio::Neg2LogLikelihoodRatio() :
-    _data( 0 ),
-    _inCaseShitMonitor( 0 ) {
+  _data( 0 ) {
 }
 
 Neg2LogLikelihoodRatio::Neg2LogLikelihoodRatio( const Experiment* data, const Prediction* pdf, const double& alpha ) :
-    _data( data ),
-    _pdf( pdf ),
-    _numerator( data, pdf, alpha ),
-    _denominator( data, pdf, alpha ),
-    _inCaseShitMonitor( 0 ) {
-
-  init();
+  _data( data ), _pdf( pdf ), _numerator( data, pdf, alpha ), _denominator( data, pdf, alpha ) {
 
 }
 
 Neg2LogLikelihoodRatio::~Neg2LogLikelihoodRatio() {
   delete _pdf;
-  delete _inCaseShitMonitor;
-}
-
-void Neg2LogLikelihoodRatio::init() {
-  _denominator.Minimize();
-}
-
-double Neg2LogLikelihoodRatio::operator()( const std::vector< double >& par ) {
-
-  // would nomlize denominator over nuisance parameters .. but none for now
-  if ( !_denominator.isMinimized() ) _denominator.Minimize();
-  if ( !_denominator.isMinimized() || _numerator( par ) - _denominator() < 0. ) {
-
-    // try to re-minimize to new value
-    _denominator.pars( par );
-    _denominator.Minimize();
-
-    // problem?
-    if ( _numerator( par ) - _denominator() < -0.01 ) {
-      // map out the likelihood
-      _inCaseShitMonitor = new TestStatMonitor( par.at( 0 ), "figures/", ".png" );
-      _numerator.accept( *_inCaseShitMonitor );
-      _denominator.accept( *_inCaseShitMonitor );
-      _inCaseShitMonitor->finalize();
-
-      cout << "alpha = " << par.at( 0 ) << "\noptimized = " << _denominator.pars().at( 0 ) << "\n numerator   = "
-           << _numerator( par ) << "\n denominator = " << _denominator() << "\n ratio       = "
-           << _numerator( par ) - _denominator() << '\n';
-
-      // _pdf->plot( *_data ); make an experiment visitor for this
-      cout << *_data << endl;
-
-      // throw up
-      throw runtime_error(
-          lexical_cast< string >( __FILE__ ) + " line " + lexical_cast< string >( __LINE__ )
-          + ": Could not minimize denominator." );
-    }
-  }
-
-  return _numerator( par ) - _denominator();
-
 }
 
 double Neg2LogLikelihoodRatio::Up() const {
@@ -201,14 +153,12 @@ void Neg2LogLikelihoodRatio::data( const Experiment* data ) {
   _data = data;
   _numerator.data( data );
   _denominator.data( data );
-  init();
 }
 
 void Neg2LogLikelihoodRatio::pdf( const Prediction* pdf ) {
   _pdf = pdf;
   _numerator.pdf( pdf );
   _denominator.pdf( pdf );
-  init();
 }
 
 const Experiment* Neg2LogLikelihoodRatio::data() const {
@@ -229,4 +179,101 @@ Neg2LogLikelihood_FCN Neg2LogLikelihoodRatio::numerator() const {
 
 Neg2LogLikelihood_FCN Neg2LogLikelihoodRatio::denominator() const {
   return _denominator;
+}
+
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+Neg2LogMaximumLikelihoodRatio::Neg2LogMaximumLikelihoodRatio() :
+  Neg2LogLikelihoodRatio(), _inCaseShitMonitor( 0 ) {
+}
+
+Neg2LogMaximumLikelihoodRatio::Neg2LogMaximumLikelihoodRatio( const Experiment* data, const Prediction* pdf,
+                                                              const double& alpha ) :
+  Neg2LogLikelihoodRatio( data, pdf, alpha ), _inCaseShitMonitor( 0 ) {
+
+  init();
+
+}
+
+Neg2LogMaximumLikelihoodRatio::~Neg2LogMaximumLikelihoodRatio() {
+  delete _inCaseShitMonitor;
+}
+
+void Neg2LogMaximumLikelihoodRatio::init() {
+  _denominator.Minimize();
+}
+
+double Neg2LogMaximumLikelihoodRatio::operator()( const std::vector< double >& par ) {
+
+  // would nomlize denominator over nuisance parameters .. but none for now
+  if( !_denominator.isMinimized() ) _denominator.Minimize();
+  if( !_denominator.isMinimized() || _numerator( par ) - _denominator() < 0. ) {
+
+    // try to re-minimize to new value
+    _denominator.pars( par );
+    _denominator.Minimize();
+
+    // problem?
+    if( _numerator( par ) - _denominator() < -0.01 ) {
+      // map out the likelihood
+      _inCaseShitMonitor = new TestStatMonitor( par.at( 0 ), "figures/", ".png" );
+      _numerator.accept( *_inCaseShitMonitor );
+      _denominator.accept( *_inCaseShitMonitor );
+      _inCaseShitMonitor->finalize();
+
+      cout << "alpha = " << par.at( 0 ) << "\noptimized = " << _denominator.pars().at( 0 ) << "\n numerator   = "
+          << _numerator( par ) << "\n denominator = " << _denominator() << "\n ratio       = " << _numerator( par )
+          - _denominator() << '\n';
+
+      // _pdf->plot( *_data ); make an experiment visitor for this
+      cout << *_data << endl;
+
+      // throw up
+      throw runtime_error(
+                           lexical_cast< string > ( __FILE__ ) + " line " + lexical_cast< string > ( __LINE__ )
+                               + ": Could not minimize denominator." );
+    }
+  }
+
+  return _numerator( par ) - _denominator();
+
+}
+
+void Neg2LogMaximumLikelihoodRatio::data( const Experiment* data ) {
+  _data = data;
+  _numerator.data( data );
+  _denominator.data( data );
+  init();
+}
+
+void Neg2LogMaximumLikelihoodRatio::pdf( const Prediction* pdf ) {
+  _pdf = pdf;
+  _numerator.pdf( pdf );
+  _denominator.pdf( pdf );
+  init();
+}
+
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
+Neg2LogSimpleLikelihoodRatio::Neg2LogSimpleLikelihoodRatio() :
+  Neg2LogLikelihoodRatio() {
+
+}
+
+Neg2LogSimpleLikelihoodRatio::Neg2LogSimpleLikelihoodRatio( const Experiment* data, const Prediction* pdf,
+                                                            const double& alpha ) :
+  Neg2LogLikelihoodRatio( data, pdf, alpha ) {
+
+  _denominator.pars( vector< double > ( 1, 0. ) );
+
+}
+
+Neg2LogSimpleLikelihoodRatio::~Neg2LogSimpleLikelihoodRatio() {
+
+}
+
+double Neg2LogSimpleLikelihoodRatio::operator()( const std::vector< double >& par ) {
+  return _numerator( par ) - _denominator();
 }

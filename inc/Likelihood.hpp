@@ -17,6 +17,14 @@ class TFitterMinuit;
 class Prediction;
 class TestStatMonitor;
 
+//! Implementation of binned Poisson likelihood
+/*! \class Neg2LogLikelihood_FCN
+ *
+ * binned Poisson likelihood comparing the Experiment given to the constructor to the prediction (also from the
+ * constructor) at the given value of the prediction parameter to.  Used in the analysis through the likelihood ratio
+ * defined below.
+ *
+ */
 class Neg2LogLikelihood_FCN: public ROOT::Minuit2::FCNBase {
 
 public:
@@ -57,40 +65,87 @@ private:
 
 };
 
+//! Interface for likelihood ratio
+/*! \class Neg2LogLikelihoodRatio
+ *
+ * Interface for likelihood ratio implementation.
+ *
+ */
 class Neg2LogLikelihoodRatio {
-
 public:
-
   Neg2LogLikelihoodRatio();
-
-  // assume ownership of TH1 but not the PDF
   Neg2LogLikelihoodRatio( const Experiment* data, const Prediction* pdf, const double& alpha = 0. );
   virtual ~Neg2LogLikelihoodRatio();
 
-  double operator()( const std::vector< double >& );
+  virtual double operator()( const std::vector< double >& ) = 0;
+  virtual double Up() const;
 
-  double Up() const;
+  virtual void data( const Experiment* );
+  virtual void pdf( const Prediction* );
 
-  void data( const Experiment* );
-  void pdf( const Prediction* );
+  virtual const Experiment* data() const;
+  virtual const Prediction* pdf() const;
+  virtual Neg2LogLikelihood_FCN numerator() const;
+  virtual Neg2LogLikelihood_FCN denominator() const;
+  virtual void accept( TestStatMonitor& );
 
-  const Experiment* data() const;
-  const Prediction* pdf() const;
-  Neg2LogLikelihood_FCN numerator() const;   // fit over nuisance parameters
-  Neg2LogLikelihood_FCN denominator() const; // global fit
+protected:
+  const Experiment* _data;
+  const Prediction* _pdf;
 
-  void accept( TestStatMonitor& );
+  Neg2LogLikelihood_FCN _numerator;
+  Neg2LogLikelihood_FCN _denominator;
+
+};
+
+//! Implementation of maximum likelihood ratio as described in the PDG
+/*! \class Neg2LogMaximumLikelihoodRatio
+ *
+ * The denominator of this likelihood ratio is maximised using MINUIT.
+ *
+ */
+class Neg2LogMaximumLikelihoodRatio: public Neg2LogLikelihoodRatio {
+
+public:
+
+  Neg2LogMaximumLikelihoodRatio();
+
+  // assume ownership of TH1 but not the PDF
+  Neg2LogMaximumLikelihoodRatio( const Experiment* data, const Prediction* pdf, const double& alpha = 0. );
+  virtual ~Neg2LogMaximumLikelihoodRatio();
+
+  virtual double operator()( const std::vector< double >& );
+
+  virtual void data( const Experiment* );
+  virtual void pdf( const Prediction* );
 
 private:
 
   void init();
-
-  const Experiment* _data;
-  const Prediction* _pdf;
-  Neg2LogLikelihood_FCN _numerator;   // fit over nuisance parameters
-  Neg2LogLikelihood_FCN _denominator; // global fit
   TestStatMonitor * _inCaseShitMonitor; // monitor likelihood denominator fails fit
 
 };
+
+
+//! Implementation of simple likelihood ratio used by ATLAS and CMS before
+/*! \class Neg2LogSimpleLikelihoodRatio
+ *
+ * The denominator of this likelihood ratio is evaluated against the QCD prediction.
+ *
+ */
+class Neg2LogSimpleLikelihoodRatio: public Neg2LogLikelihoodRatio {
+
+public:
+
+  Neg2LogSimpleLikelihoodRatio();
+
+  // assume ownership of TH1 but not the PDF
+  Neg2LogSimpleLikelihoodRatio( const Experiment* data, const Prediction* pdf, const double& alpha = 0. );
+  virtual ~Neg2LogSimpleLikelihoodRatio();
+
+  virtual double operator()( const std::vector< double >& );
+
+};
+
 
 #endif // LIKELIHOOD_HPP

@@ -14,7 +14,7 @@ analysis_SOURCES = analysis.cxx Prediction.cxx Likelihood.cxx PValueTest.cxx Pse
 	AtlasStyle.cxx TestStatMonitor.cxx PredictionMonitor.cxx ControlFrame.cxx ControlFrameDict.cxx \
 	CertaintyLevel.cxx Effect.cxx
 analysis_CPPFLAGS = `root-config --cflags` -I ../inc -pthread -fopenmp -I ../../applgrid/include/ `lhapdf-config --incdir`
-analysis_LDADD   = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2 -L../../applgrid/lib -lAPPLgrid -lfAPPLgrid -lLHAPDF
+analysis_LDADD = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2 -L../../applgrid/lib -lAPPLgrid -lfAPPLgrid -lLHAPDF
 
 # post-processing/merging program
 postProcessdir = ../bin
@@ -28,7 +28,7 @@ plotErrorsdir = ../bin
 plotErrors_SOURCES = plotErrors.cxx Prediction.cxx PseudoExperiment.cxx \
 	AtlasStyle.cxx PredictionMonitor.cxx Effect.cxx
 plotErrors_CPPFLAGS = `root-config --cflags` -I ../inc  -I ../../applgrid/include/ `lhapdf-config --incdir` 
-plotErrors_LDADD   = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2 -L../../applgrid/lib -lAPPLgrid -lfAPPLgrid -lLHAPDF
+plotErrors_LDADD  = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2 -L../../applgrid/lib -lAPPLgrid -lfAPPLgrid -lLHAPDF
 
 
 #testPE_SOURCES = PseudoExperiment_test.cxx PseudoExperiment.cxx Prediction.cxx

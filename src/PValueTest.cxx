@@ -20,7 +20,7 @@
 using namespace std;
 using boost::format;
 
-PValueTest::PValueTest( const double alpha, const vector< Neg2LogLikelihoodRatio* >& lambdas ) :
+PValueTest::PValueTest( const double alpha, const vector< Neg2LogMaximumLikelihoodRatio* >& lambdas ) :
     _alpha( alpha ),
     _lambdas( lambdas ),
     _dataLLR( 0 ) {
@@ -40,7 +40,7 @@ void PValueTest::init( const int& nPE, PseudoExperimentFactory& peFactory ) {
     PseudoExperiment pe = peFactory.build( _alpha );
     Prediction * pePDF = new Prediction( *peFactory.pdf() );
     pePDF->nData( pe );
-    Neg2LogLikelihoodRatio n2llr( &pe, pePDF, _alpha );
+    Neg2LogMaximumLikelihoodRatio n2llr( &pe, pePDF, _alpha );
     for( double scale = 2.; scale < 8.; scale += 0.1 )
       n2llr( vector< double >( 1, scale ) );
 
@@ -53,9 +53,9 @@ void PValueTest::init() {
 
   vector< double > par( 1, _alpha );
   _testStats.reserve( _lambdas.size() );
-  foreach( Neg2LogLikelihoodRatio* lambda, _lambdas )
+  foreach( Neg2LogMaximumLikelihoodRatio* lambda, _lambdas )
   {
-    Neg2LogLikelihoodRatio& l = *lambda;
+    Neg2LogMaximumLikelihoodRatio& l = *lambda;
     _testStats.push_back( l( par ) );
   }
   sort( _testStats.begin(), _testStats.end() );
@@ -70,7 +70,7 @@ PValueTest::PValueTest() :
 PValueTest::~PValueTest() {
 }
 
-double PValueTest::operator()( Neg2LogLikelihoodRatio& lambda ) {
+double PValueTest::operator()( Neg2LogMaximumLikelihoodRatio& lambda ) {
 
   vector< double > par( 1, _alpha );
 

@@ -239,7 +239,7 @@ int main( int argc, char* argv[] ) {
 
   try {
 
-    Neg2LogLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
+    Neg2LogMaximumLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
 
     // --- make sure we get something reasonable across interesting scale values
     for( double scale = 0.5; scale < 10.; scale += 0.1 )
@@ -260,13 +260,13 @@ int main( int argc, char* argv[] ) {
 
     // create PEs for background likelihood distribution
     vector< PseudoExperiment > bgPEs = peFactory.build( 0., nPE );
-    vector< Neg2LogLikelihoodRatio* > bgLikelihoodRatios;
+    vector< Neg2LogMaximumLikelihoodRatio* > bgLikelihoodRatios;
     bgLikelihoodRatios.reserve( bgPEs.size() );
     foreach( const PseudoExperiment& pe, bgPEs )
     {
       Prediction * pePDF = new Prediction( *pdf );
       pePDF->nData( dynamic_cast< const Experiment& >( pe ) );
-      Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, 0. );
+      Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePDF, 0. );
       for( double scale = 0.5; scale < 10.; scale += 0.1 )
         ( *l )( vector< double >( 1, scale ) );
       bgLikelihoodRatios.push_back( l );
@@ -284,13 +284,13 @@ int main( int argc, char* argv[] ) {
 
       // create signal PEs
       vector< PseudoExperiment > sigPEs = peFactory.build( alpha, nPE );
-      vector< Neg2LogLikelihoodRatio* > sigLikelihoodRatios;
+      vector< Neg2LogMaximumLikelihoodRatio* > sigLikelihoodRatios;
       sigLikelihoodRatios.reserve( sigPEs.size() );
       foreach( const PseudoExperiment& pe, sigPEs )
       {
         Prediction * pePDF = new Prediction( *pdf );
         pePDF->nData( dynamic_cast< const Experiment& >( pe ) );
-        Neg2LogLikelihoodRatio * l = new Neg2LogLikelihoodRatio( &pe, pePDF, alpha );
+        Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePDF, alpha );
         for( double s = 0.5; s < 10.; s += 0.1 )
           ( *l )( vector< double >( 1, s ) );
         sigLikelihoodRatios.push_back( l );
@@ -319,7 +319,7 @@ int main( int argc, char* argv[] ) {
 
     // clean up background Likelihoods
     for_each( bgLikelihoodRatios.begin(), bgLikelihoodRatios.end(),
-              boost::checked_deleter< Neg2LogLikelihoodRatio >() );
+              boost::checked_deleter< Neg2LogMaximumLikelihoodRatio >() );
 
     // close output files
     signalOutFile.close();

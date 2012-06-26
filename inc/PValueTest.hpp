@@ -14,11 +14,11 @@ class PValueTest {
 
 public:
   PValueTest();
-  PValueTest( const double, const std::vector< Neg2LogLikelihoodRatio* >& );
+  PValueTest( const double, const std::vector< Neg2LogMaximumLikelihoodRatio* >& );
   PValueTest( const double&, const int&, PseudoExperimentFactory& );
   virtual ~PValueTest();
 
-  double operator()( Neg2LogLikelihoodRatio& );
+  double operator()( Neg2LogMaximumLikelihoodRatio& );
   double operator()( const double& );
   void finalize( const std::string& dir = "./" );
   double alpha() const;
@@ -34,7 +34,7 @@ private:
   void clear(); //<- purge all information in PValueTest
 
   double _alpha; // alpha used for PEs
-  std::vector< Neg2LogLikelihoodRatio* > _lambdas;
+  std::vector< Neg2LogMaximumLikelihoodRatio* > _lambdas;
   double _dataLLR;
 
   TH1 * _minus2LnLikelihoodDistribution;
