@@ -43,13 +43,14 @@ TStyle* AtlasStyle() {
   atlasStyle->SetPadLeftMargin( 0.16 );
 
   // set title offsets (for axis label)
-  atlasStyle->SetTitleXOffset( 1.4 );
-  atlasStyle->SetTitleYOffset( 1.4 );
+  atlasStyle->SetTitleXOffset( 0.78 );
+  atlasStyle->SetTitleYOffset( 0.78 );
 
   // use large fonts
   //Int_t font=72; // Helvetica italics
   Int_t font = 42; // Helvetica
-  Double_t tsize = 0.05;
+  Double_t tsize=0.09;
+  Double_t lsize=0.07;
   atlasStyle->SetTextFont( font );
 
   atlasStyle->SetTextSize( tsize );
@@ -60,11 +61,11 @@ TStyle* AtlasStyle() {
   atlasStyle->SetLabelFont( font, "z" );
   atlasStyle->SetTitleFont( font, "z" );
 
-  atlasStyle->SetLabelSize( tsize, "x" );
+  atlasStyle->SetLabelSize( lsize, "x" );
   atlasStyle->SetTitleSize( tsize, "x" );
-  atlasStyle->SetLabelSize( tsize, "y" );
+  atlasStyle->SetLabelSize( lsize, "y" );
   atlasStyle->SetTitleSize( tsize, "y" );
-  atlasStyle->SetLabelSize( tsize, "z" );
+  atlasStyle->SetLabelSize( lsize, "z" );
   atlasStyle->SetTitleSize( tsize, "z" );
 
   // use bold lines and markers

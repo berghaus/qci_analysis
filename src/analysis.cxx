@@ -253,7 +253,7 @@ int main( int argc, char* argv[] ) {
     tm.finalize();
 
     // Monitor data PDF
-    PredictionMonitor pdfMon( figureDir + "/PDF/", ".eps" );
+    PredictionMonitor pdfMon( figureDir + "/PDF/", ".pdf" );
     pdf->accept( pdfMon );
 
     PseudoExperimentFactory peFactory( pdf, data );

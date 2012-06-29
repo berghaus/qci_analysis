@@ -25,26 +25,26 @@ using namespace boost;
 PredictionMonitor::PredictionMonitor() :
     _folder( "figures/PDF/" ),
     _ext( ".pdf" ),
-    _pdfCanvas( "PDFMonCanvas", "", 800, 600 ),
-    _interpolCanvas( "InterpolCanvas", "", 800, 600 ),
-    _fitResultCanvas( "FitResultCanvas", "", 800, 600 ),
+    _pdfCanvas( "PDFMonCanvas", "", 850, 1100 ),
+    _interpolCanvas( "InterpolCanvas", "", 850, 1100 ),
+    _fitResultCanvas( "FitResultCanvas", "", 850, 1100 ),
     _parameterCanvas( "ParameterCanvas", "", 500, 500 ) {
-  _pdfCanvas.Divide( 4, 3 );
-  _interpolCanvas.Divide( 4, 3 );
-  _fitResultCanvas.Divide( 4, 3 );
+  _pdfCanvas.Divide( 3, 4, 0, 0 );
+  _interpolCanvas.Divide( 3, 4, 0, 0 );
+  _fitResultCanvas.Divide( 3, 4, 0, 0 );
 }
 
 //_____________________________________________________________________________________________________________________
 PredictionMonitor::PredictionMonitor( const string& folder, const string ext ) :
     _folder( folder ),
     _ext( ext ),
-    _pdfCanvas( "PDFMonCanvas", "", 800, 600 ),
-    _interpolCanvas( "InterpolCanvas", "", 800, 600 ),
-    _fitResultCanvas( "FitResultCanvas", "", 800, 600 ),
+    _pdfCanvas( "PDFMonCanvas", "", 850, 1100 ),
+    _interpolCanvas( "InterpolCanvas", "", 850, 1100 ),
+    _fitResultCanvas( "FitResultCanvas", "", 850, 1100 ),
     _parameterCanvas( "ParameterCanvas", "", 500, 500 ) {
-  _pdfCanvas.Divide( 4, 3 );
-  _interpolCanvas.Divide( 4, 3 );
-  _fitResultCanvas.Divide( 4, 3 );
+  _pdfCanvas.Divide( 3, 4, 0, 0 );
+  _interpolCanvas.Divide( 3, 4, 0, 0 );
+  _fitResultCanvas.Divide( 3, 4, 0, 0 );
 }
 
 //_____________________________________________________________________________________________________________________
@@ -103,37 +103,41 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
     ++nPad;
   }
 
+  TH1 * dummy = new TH1D( "dummy", "", 2, 0.5, 11.5 );
+  dummy->SetMaximum( 4.5 );
+  dummy->SetMinimum( -7.5 );
+  dummy->SetXTitle( "#Lambda Index" );
+  dummy->SetYTitle( "[ #mu^{MC}(#Lambda) - #mu^{fit}(#Lambda) ] / #sigma^{MC}" );
   nPad = 1;
   foreach( chiGraphMap_t::value_type ec, graphs )
-  {
-    double chi = ec.first;
-    TGraphErrors *graph = ec.second;
-    string title = str( format( "#chi = %2.1f" ) % chi );
-    TVirtualPad * pad = _fitResultCanvas.cd( nPad );
-    TF1 * func = graph->GetFunction( "PDFFit" );
-    int n = graph->GetN();
-    double * xArr = graph->GetX();
-    double * yArr = graph->GetY();
-    double * eyArr = graph->GetEY();
-    vector< double > index;
-    vector< double > offset;
-    index.reserve( n );
-    offset.reserve( n );
-    for( int i = 0; i < n; ++i ) {
-      index.push_back( n - i ); // remember reverse ordering for alpha
-      double graphY = yArr[i];
-      double funcY = func->Eval( xArr[i] );
-      offset.push_back( ( graphY - funcY ) / eyArr[i] );
-    }
-    TGraph * fitResult = new TGraph( n, &index[0], &offset[0] );
-    _fitResults.push_back( fitResult );
-    fitResult->SetMarkerColor( kRed );
-    fitResult->SetTitle( title.c_str() );
-    fitResult->GetXaxis()->SetTitle( "#Lambda Index" );
-    fitResult->GetYaxis()->SetTitle( "[ #mu^{MC}(#Lambda) - #mu^{fit}(#Lambda) ] / #sigma^{MC}" );
-    fitResult->Draw( "AP" );
-    ++nPad;
-  }
+        {
+          double chi = ec.first;
+          TGraphErrors *graph = ec.second;
+          string title = str( format( "#chi = %2.1f" ) % chi );
+          TVirtualPad * pad = _fitResultCanvas.cd( nPad );
+          TF1 * func = graph->GetFunction( "PDFFit" );
+          int n = graph->GetN();
+          double * xArr = graph->GetX();
+          double * yArr = graph->GetY();
+          double * eyArr = graph->GetEY();
+          vector< double > index;
+          vector< double > offset;
+          index.reserve( n );
+          offset.reserve( n );
+          for( int i = 0; i < n; ++i ) {
+            index.push_back( n - i ); // remember reverse ordering for alpha
+            double graphY = yArr[i];
+            double funcY = func->Eval( xArr[i] );
+            offset.push_back( ( graphY - funcY ) / eyArr[i] );
+          }
+          TGraph * fitResult = new TGraph( n, &index[0], &offset[0] );
+          _fitResults.push_back( fitResult );
+          fitResult->SetMarkerColor( kRed );
+          fitResult->SetTitle( title.c_str() );
+          dummy->Draw();
+          fitResult->Draw( "P" );
+          ++nPad;
+        }
 
   typedef map< double, vector< double > > ParMap_t;
   ParMap_t params = pdf.pdfFitParams( mjj );
@@ -156,27 +160,30 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
     cout << "PDFMon chi = " << chis.back() << '\n' << "       qcd = " << qcdPars.back() << '\n' << "       qci = "
          << qciPars.back() << '\n' << "       int = " << interferencePars.back() << '\n';
   }
-  _parameterCanvas.cd();
-  TGraph * qcd = new TGraph( chis.size(), &chis[0], &qcdPars[0] );
-  qcd->SetLineColor( kBlack );
-  qcd->SetLineWidth( 2 );
-  qcd->SetName( "QCD" );
-  _parameters.push_back( qcd );
-  TGraph * qci = new TGraph( chis.size(), &chis[0], &qciPars[0] );
-  qci->SetLineColor( kBlue );
-  qci->SetLineWidth( 2 );
-  qci->SetName( "CI" );
-  _parameters.push_back( qci );
-  TGraph * interference = new TGraph( chis.size(), &chis[0], &interferencePars[0] );
-  interference->SetLineColor( kRed );
-  interference->SetLineWidth( 2 );
-  interference->SetName( "Interference" );
-  _parameters.push_back( interference );
-  TH2D* dummy = new TH2D( "paramMonDummy", "", 11, 0.9, 26, 100, -0.5, 1.5 );
-  dummy->Draw();
-  qcd->Draw( "LSAME" );
-  qci->Draw( "LSAME" );
-  interference->Draw( "LSAME" );
+
+  {
+    _parameterCanvas.cd();
+    TGraph * qcd = new TGraph( chis.size(), &chis[0], &qcdPars[0] );
+    qcd->SetLineColor( kBlack );
+    qcd->SetLineWidth( 2 );
+    qcd->SetName( "QCD" );
+    _parameters.push_back( qcd );
+    TGraph * qci = new TGraph( chis.size(), &chis[0], &qciPars[0] );
+    qci->SetLineColor( kBlue );
+    qci->SetLineWidth( 2 );
+    qci->SetName( "CI" );
+    _parameters.push_back( qci );
+    TGraph * interference = new TGraph( chis.size(), &chis[0], &interferencePars[0] );
+    interference->SetLineColor( kRed );
+    interference->SetLineWidth( 2 );
+    interference->SetName( "Interference" );
+    _parameters.push_back( interference );
+    TH2D* dummy = new TH2D( "paramMonDummy", "", 11, 0.9, 26, 100, -0.5, 1.5 );
+    dummy->Draw();
+    qcd->Draw( "LSAME" );
+    qci->Draw( "LSAME" );
+    interference->Draw( "LSAME" );
+  }
 
   _pdfCanvas.Print( ( _folder + "PDFs" + _ext ).c_str() );
   _interpolCanvas.Print( ( _folder + "Interpolation" + _ext ).c_str() );
