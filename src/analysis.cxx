@@ -36,6 +36,7 @@
 #include <TKey.h>
 #include <TDirectoryFile.h>
 #include <TClass.h>
+#include <TGraphErrors.h>
 
 #include "Likelihood.hpp"
 #include "Prediction.hpp"
@@ -63,6 +64,8 @@ map< double, TH1* > GetHists( const TFile* );
 template< class T > bool compByName( const T* x, const T* y ) {
   return string( x->GetName() ) < string( y->GetName() );
 }
+
+void PlotPredictionError( Experiment&, Prediction *, Statitical_Effect * );
 
 int main( int argc, char* argv[] ) {
 
@@ -185,6 +188,8 @@ int main( int argc, char* argv[] ) {
     Effect * eff = dynamic_cast< Effect* >( statEff );
     if ( eff ) pdf->addEffect( eff );
     else cout << "failed to downcast Statitical_Effect to Effect\n";
+
+    PlotPredictionError( data, pdf, statEff );
 
   }
 
@@ -395,3 +400,55 @@ map< double, TH1* > GetHists( const TFile* file ) {
 
 }
 
+void PlotPredictionError( Experiment& d, Prediction * p, Statitical_Effect * e ) {
+
+  SetAtlasStyle();
+
+  p->setMjj( 7000. );
+
+  int nBins = 1000;
+  double chiMin = 2.;
+  double chiMax = 8.;
+  vector<double> scales;
+  vector<double> y;
+  vector<double> ex;
+  vector<double> ey;
+
+  TCanvas canvas( "fitErrorCan", "", 850, 1100 );
+  canvas.Divide( 3, 4, 0, 0 );
+
+  for ( int i = 0; i <= nBins; ++i ) {
+    scales.push_back( chiMin + double(i) * ( chiMax - chiMin ) / double( nBins ) );
+  }
+
+  TH1D dummy("dummy","",2, chiMin, chiMax + 0.5 );
+  dummy.SetMinimum(  1. );
+  dummy.SetMaximum( 85. );
+  dummy.SetXTitle( "#Lambda [TeV]" );
+  dummy.SetYTitle( "#mu_{j}(#Lambda)" );
+
+  for( int bin = 0; bin < d[7000.].chi().size(); ++bin ) {
+    y.clear();
+    ex.clear();
+    ey.clear();
+
+    double chi = Prediction::labelChi( d[7000.].chi( bin ) );
+    foreach( double l, scales ) {
+      double alpha = pow( l, -4 );
+      double expectedN = p->interpolate( chi, alpha);
+      y.push_back( expectedN );
+      ex.push_back( ( chiMax - chiMin ) / double( nBins ) / 2. );
+      ey.push_back( e->error(expectedN, l, chi, 7000.) );
+    }
+
+    canvas.cd( bin+1 );
+    dummy.Draw();
+    TGraphErrors * g = new TGraphErrors( nBins, &scales[0], &y[0], &ex[0], &ey[0]);
+    g->SetLineColor( kBlue );
+    g->SetFillColor( kBlue );
+    g->Draw("3");
+  }
+
+  canvas.Print( "fitErrors.pdf" );
+
+}
