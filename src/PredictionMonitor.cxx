@@ -2,12 +2,16 @@
 #include <algorithm>
 #include <functional>
 #include <cmath>
+#include <iomanip>
 #include <map>
 #include <string>
 #include <vector>
+#include <sstream>
 #include <boost/foreach.hpp>
 #include <boost/format.hpp>
 #include <boost/checked_delete.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/assign/list_of.hpp>
 
 #include "TCanvas.h"
 #include "TGraph.h"
@@ -15,20 +19,30 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
+#include "TLine.h"
+
 
 #include "Prediction.hpp"
 using namespace std;
 #define foreach BOOST_FOREACH
 using namespace boost;
 
+template<class C>
+string CastToString( C& n ){
+  ostringstream ss;
+  ss << fixed << setprecision(2) << n;
+  return ss.str();
+}
+
+
 //_____________________________________________________________________________________________________________________
 PredictionMonitor::PredictionMonitor() :
     _folder( "figures/PDF/" ),
     _ext( ".pdf" ),
-    _pdfCanvas( "PDFMonCanvas", "", 850, 1100 ),
-    _interpolCanvas( "InterpolCanvas", "", 850, 1100 ),
-    _fitResultCanvas( "FitResultCanvas", "", 850, 1100 ),
-    _parameterCanvas( "ParameterCanvas", "", 500, 500 ) {
+    _pdfCanvas( "PDFMonCanvas", "", 1800, 2400 ),
+    _interpolCanvas( "InterpolCanvas", "", 1800, 2400 ),
+    _fitResultCanvas( "FitResultCanvas", "", 1800, 2400 ),
+    _parameterCanvas( "ParameterCanvas", "", 1800, 2400 ) {
   _pdfCanvas.Divide( 3, 4, 0, 0 );
   _interpolCanvas.Divide( 3, 4, 0, 0 );
   _fitResultCanvas.Divide( 3, 4, 0, 0 );
@@ -38,10 +52,10 @@ PredictionMonitor::PredictionMonitor() :
 PredictionMonitor::PredictionMonitor( const string& folder, const string ext ) :
     _folder( folder ),
     _ext( ext ),
-    _pdfCanvas( "PDFMonCanvas", "", 850, 1100 ),
-    _interpolCanvas( "InterpolCanvas", "", 850, 1100 ),
-    _fitResultCanvas( "FitResultCanvas", "", 850, 1100 ),
-    _parameterCanvas( "ParameterCanvas", "", 500, 500 ) {
+    _pdfCanvas( "PDFMonCanvas", "", 1800, 2400 ),
+    _interpolCanvas( "InterpolCanvas", "", 1800, 2400 ),
+    _fitResultCanvas( "FitResultCanvas", "", 1800, 2400 ),
+    _parameterCanvas( "ParameterCanvas", "", 1800, 2400 ) {
   _pdfCanvas.Divide( 3, 4, 0, 0 );
   _interpolCanvas.Divide( 3, 4, 0, 0 );
   _fitResultCanvas.Divide( 3, 4, 0, 0 );
@@ -97,17 +111,28 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
     _interpolations.push_back( interpolation );
     interpolation->SetLineColor( kBlue );
     interpolation->SetTitle( title.c_str() );
-    interpolation->GetXaxis()->SetTitle( "#Lambda [TeV]" );
+    interpolation->GetXaxis()->SetTitle( " [TeV]" );
     interpolation->GetYaxis()->SetTitle( "n(#Lambda)" );
     interpolation->Draw( "AL" );
     ++nPad;
   }
 
-  TH1 * dummy = new TH1D( "dummy", "", 2, 0.5, 11.5 );
+  TH1 * dummy = new TH1D( "dummy", "", 11, 0.5, 11.5 );
   dummy->SetMaximum( 4.5 );
   dummy->SetMinimum( -7.5 );
-  dummy->SetXTitle( "#Lambda Index" );
+  dummy->SetXTitle( "#Lambda [TeV]" );
   dummy->SetYTitle( "[ #mu^{MC}(#Lambda) - #mu^{fit}(#Lambda) ] / #sigma^{MC}" );
+  vector<string> labels = assign::list_of("#infty")("8")("7")
+      ("6")("5")("4")("3")("1.5")
+      ("1")(".8")(".5");
+  for( int bin = 1; bin <= dummy->GetNbinsX(); ++bin ) {
+    dummy->GetXaxis()->SetBinLabel( bin, labels[bin-1].c_str() );
+  }
+  dummy->SetLabelSize( 0.08 );
+
+  TLine line( 0.5, 0, 11.5, 0 );
+  line.SetLineWidth( 2 );
+  line.SetLineStyle( 2 );
   nPad = 1;
   foreach( chiGraphMap_t::value_type ec, graphs )
         {
@@ -134,8 +159,10 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
           _fitResults.push_back( fitResult );
           fitResult->SetMarkerColor( kRed );
           fitResult->SetTitle( title.c_str() );
-          dummy->Draw();
+          dummy->Draw("AXIS");
+          line.Draw();
           fitResult->Draw( "P" );
+          _latex.DrawLatex( 4, -5.0, ("#chi = " + CastToString<double>( chi )).c_str() );
           ++nPad;
         }
 
@@ -157,8 +184,8 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
     qcdPars.push_back( a0 / e2 );
     qciPars.push_back( a1 );
     interferencePars.push_back( a2 * e2 );
-    cout << "PDFMon chi = " << chis.back() << '\n' << "       qcd = " << qcdPars.back() << '\n' << "       qci = "
-         << qciPars.back() << '\n' << "       int = " << interferencePars.back() << '\n';
+    //cout << "PDFMon chi = " << chis.back() << '\n' << "       qcd = " << qcdPars.back() << '\n' << "       qci = "
+    //     << qciPars.back() << '\n' << "       int = " << interferencePars.back() << '\n';
   }
 
   {

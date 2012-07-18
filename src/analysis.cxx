@@ -250,7 +250,7 @@ int main( int argc, char* argv[] ) {
     for( double scale = 0.5; scale < 10.; scale += 0.1 )
       dataLikelihoodRatio( vector< double >( 1, scale ) );
 
-    TestStatMonitor tm( -1., figureDir + "/Likelihood/", ".eps" );
+    TestStatMonitor tm( -1., figureDir + "/Likelihood/", ".pdf" );
     for( int i = 0; i < 10; ++i ) {
       dataLikelihoodRatio.accept( tm );
       dataLikelihoodRatio.denominator().accept( tm );

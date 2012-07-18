@@ -115,7 +115,7 @@ void PValueTest::finalize( const std::string& dir ) {
   _minus2LnLikelihoodDistribution->Draw();
   dataLine->Draw();
   string cName = _minus2LnLikelihoodDistribution->GetName();
-  pvc->Print( ( dir + cName + ".eps" ).c_str() );
+  pvc->Print( ( dir + cName + ".pdf" ).c_str() );
 }
 
 double PValueTest::alpha() const {

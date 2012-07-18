@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <TCanvas.h>
+#include <TLatex.h>
 
 class Prediction;
 class TGraph;
@@ -29,6 +30,8 @@ private:
   TCanvas _interpolCanvas;
   TCanvas _fitResultCanvas;
   TCanvas _parameterCanvas;
+
+  TLatex _latex;
 
 };
 

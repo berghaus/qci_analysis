@@ -288,6 +288,7 @@ Prediction::MjjPrediction::MjjPrediction( TDirectoryFile* dir, const double nDat
     TObject * obj = key->ReadObj();
     if ( obj->IsA()->InheritsFrom( "TGraph" ) ) {
       double chi = lexical_cast< double >( name.substr( 7 ) );
+      chi = (chi - int(chi)) > 0.5 ? ceil( chi*10 ) / 10. : floor(chi*10) / 10.;
       TGraphErrors * graph = (TGraphErrors*) obj;
       _eventCounts[chi] = graph;
       TFitResultPtr fitResult = graph->Fit( _pdfFit, "QS" );
