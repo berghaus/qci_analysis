@@ -5,9 +5,8 @@ AM_LDFLAGS   = `root-config --libs`
 ## files, in order to avoid collisions when non-recursive make is used.
 AUTOMAKE_OPTIONS = subdir-objects
 
-bin_PROGRAMS = analysis postProcess plotErrors # testPE
+bin_PROGRAMS = analysis postProcess plotErrors pValueTest # testPE
 
-# --- build my programs ---
 # parallel analysis program
 analysisdir = ../bin
 analysis_SOURCES = analysis.cxx Prediction.cxx Likelihood.cxx PValueTest.cxx PseudoExperiment.cxx \
@@ -29,6 +28,14 @@ plotErrors_SOURCES = plotErrors.cxx Prediction.cxx PseudoExperiment.cxx \
 	AtlasStyle.cxx PredictionMonitor.cxx Effect.cxx
 plotErrors_CPPFLAGS = `root-config --cflags` -I ../inc  -I ../../applgrid/include/ `lhapdf-config --incdir` 
 plotErrors_LDADD  = -lboost_program_options -lGui -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2 -L../../applgrid/lib -lAPPLgrid -lfAPPLgrid -lLHAPDF
+
+# --- build my programs ---
+# p-value test only program
+pValueTestdir = ../bin
+pValueTest_SOURCES = pValueTest.cxx Prediction.cxx Likelihood.cxx PValueTest.cxx PseudoExperiment.cxx \
+	AtlasStyle.cxx TestStatMonitor.cxx PredictionMonitor.cxx
+pValueTest_CPPFLAGS = `root-config --cflags` -I ../inc
+pValueTest_LDADD = -lboost_program_options -lGpad -lHist -lGraf -lGraf3d -lTree -lRint -lPostscript -lMatrix -lPhysics -lMathCore -lRIO -lNet -lThread -lCore -lCint -lm -ldl -lMinuit2
 
 
 #testPE_SOURCES = PseudoExperiment_test.cxx PseudoExperiment.cxx Prediction.cxx

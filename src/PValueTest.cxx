@@ -99,7 +99,8 @@ void PValueTest::finalize( const std::string& dir ) {
 
   string hName = str( format( "Likelihood_FCN-scale%2.2e" ) % pow( _alpha, -0.25 ) );
   _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", nBins, -off, histMax - off );
-  string xTitle = str( format( "-2ln#lambda( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
+  string xTitle = _alpha == 0 ? "-2ln#lambda( #Lambda = #infty TeV )"
+                              : str( format( "-2ln#lambda( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
 
   foreach( const double& x, _testStats )
@@ -111,6 +112,7 @@ void PValueTest::finalize( const std::string& dir ) {
   dataLine->SetLineWidth( 2 );
 
   TCanvas* pvc = new TCanvas( ( hName + "Canvas" ).c_str(), "", 500, 500 );
+  pvc->SetLogy();
   pvc->cd();
   _minus2LnLikelihoodDistribution->Draw();
   dataLine->Draw();

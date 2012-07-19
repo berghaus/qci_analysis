@@ -58,6 +58,7 @@ PredictionMonitor::PredictionMonitor( const string& folder, const string ext ) :
     _parameterCanvas( "ParameterCanvas", "", 1800, 2400 ) {
   _pdfCanvas.Divide( 3, 4, 0, 0 );
   _interpolCanvas.Divide( 3, 4, 0, 0 );
+  _fitResultCanvas.SetBottomMargin(0.2);
   _fitResultCanvas.Divide( 3, 4, 0, 0 );
 }
 
@@ -122,13 +123,15 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
   dummy->SetMinimum( -7.5 );
   dummy->SetXTitle( "#Lambda [TeV]" );
   dummy->SetYTitle( "[ #mu^{MC}(#Lambda) - #mu^{fit}(#Lambda) ] / #sigma^{MC}" );
-  vector<string> labels = assign::list_of("#infty")("8")("7")
-      ("6")("5")("4")("3")("1.5")
-      ("1")(".8")(".5");
+  vector<string> labels = assign::list_of("#infty")("8.00")("7.00")
+      ("6.00")("5.00")("4.00")("3.00")("1.50")
+      ("1.00")("0.75")("0.50");
   for( int bin = 1; bin <= dummy->GetNbinsX(); ++bin ) {
     dummy->GetXaxis()->SetBinLabel( bin, labels[bin-1].c_str() );
   }
-  dummy->SetLabelSize( 0.08 );
+  dummy->GetXaxis()->SetLabelSize( 0.1 );
+  dummy->GetXaxis()->LabelsOption("v");
+  dummy->GetXaxis()->SetTitleOffset(1.6);
 
   TLine line( 0.5, 0, 11.5, 0 );
   line.SetLineWidth( 2 );
