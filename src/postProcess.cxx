@@ -47,7 +47,7 @@ namespace po = boost::program_options;
 using namespace std;
 using namespace boost;
 
-void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest >& );
+void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest<Neg2LogMaximumLikelihoodRatio> >& );
 map< double, TDirectoryFile* > GetDirs( const TFile* );
 map< double, TH1* > GetHists( const TFile* );
 template< class T > bool compByName( const T* x, const T* y ) {
@@ -115,7 +115,7 @@ int main( int argc, char* argv[] ) {
     cout << "no signal input given. Aborting.\n";
     return ERROR_NO_SIGNAL_INPUT;
   }
-  vector< PValueTest > sigLLDistributions;
+  vector< PValueTest<Neg2LogMaximumLikelihoodRatio> > sigLLDistributions;
   ReadPValueTestsFromFile( sigFileNames, sigLLDistributions );
 
   vector< string > bkgFileNames;
@@ -129,7 +129,7 @@ int main( int argc, char* argv[] ) {
     cout << "no background input given. disabeling CL_s computation.\n";
     doCLs = false;
   }
-  vector< PValueTest > bkgLLDistributions;
+  vector< PValueTest<Neg2LogMaximumLikelihoodRatio> > bkgLLDistributions;
   ReadPValueTestsFromFile( bkgFileNames, bkgLLDistributions );
 
   string folder = "./";
@@ -275,13 +275,13 @@ int main( int argc, char* argv[] ) {
   return 0;
 }
 
-void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest >& pvs ) {
+void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest<Neg2LogMaximumLikelihoodRatio> >& pvs ) {
 
   foreach( const string& fn, names )
   {
     ifstream file;
     file.open( fn.c_str(), ios::binary );
-    PValueTest buffer;
+    PValueTest<Neg2LogMaximumLikelihoodRatio> buffer;
     while ( file >> buffer )
       pvs.push_back( buffer );
     file.close();

@@ -10,31 +10,34 @@ class TFitterMinuit;
 class TH1;
 class Prediction;
 
+template< typename Likelihood >
 class PValueTest {
 
 public:
   PValueTest();
-  PValueTest( const double, const std::vector< Neg2LogMaximumLikelihoodRatio* >& );
-  PValueTest( const double&, const int&, PseudoExperimentFactory& );
+  PValueTest( const double, const std::vector< Likelihood* >& );
+
   virtual ~PValueTest();
 
-  double operator()( Neg2LogMaximumLikelihoodRatio& );
+  double operator()( Likelihood& );
   double operator()( const double& );
   void finalize( const std::string& dir = "./" );
   double alpha() const;
   void alpha( const double& );
 
-  friend std::ostream& operator<<( std::ostream&, const PValueTest& );
-  friend std::istream& operator>>( std::istream&, PValueTest& );
+  template< typename L >
+  friend std::ostream& operator<<( std::ostream&, const PValueTest<L>& );
+
+  template< typename L >
+  friend std::istream& operator>>( std::istream&, PValueTest<L>& );
 
 private:
 
   void init();
-  void init( const int&, PseudoExperimentFactory& ); //<- construct likelihood distribution from PEs
   void clear(); //<- purge all information in PValueTest
 
   double _alpha; // alpha used for PEs
-  std::vector< Neg2LogMaximumLikelihoodRatio* > _lambdas;
+  std::vector< Likelihood* > _lambdas;
   double _dataLLR;
 
   TH1 * _minus2LnLikelihoodDistribution;

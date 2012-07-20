@@ -20,57 +20,42 @@
 using namespace std;
 using boost::format;
 
-PValueTest::PValueTest( const double alpha, const vector< Neg2LogMaximumLikelihoodRatio* >& lambdas ) :
+
+template< typename Likelihood >
+PValueTest<Likelihood>::PValueTest( const double alpha, const vector< Likelihood* >& lambdas ) :
     _alpha( alpha ),
     _lambdas( lambdas ),
     _dataLLR( 0 ) {
   init();
 }
 
-PValueTest::PValueTest( const double& alpha, const int& nPE, PseudoExperimentFactory& peFactory ) :
-    _alpha( alpha ),
-    _dataLLR( 0 ) {
-  init( nPE, peFactory );
-}
 
-void PValueTest::init( const int& nPE, PseudoExperimentFactory& peFactory ) {
-
-  vector< double > par( 1, _alpha );
-  for( int i = 0; i < nPE; ++i ) {
-    PseudoExperiment pe = peFactory.build( _alpha );
-    Prediction * pePDF = new Prediction( *peFactory.pdf() );
-    pePDF->nData( pe );
-    Neg2LogMaximumLikelihoodRatio n2llr( &pe, pePDF, _alpha );
-    for( double scale = 2.; scale < 8.; scale += 0.1 )
-      n2llr( vector< double >( 1, scale ) );
-
-    _testStats.push_back( n2llr( par ) );
-  }
-
-}
-
-void PValueTest::init() {
+template< typename Likelihood >
+void PValueTest<Likelihood>::init() {
 
   vector< double > par( 1, _alpha );
   _testStats.reserve( _lambdas.size() );
-  foreach( Neg2LogMaximumLikelihoodRatio* lambda, _lambdas )
+  foreach( Likelihood* lambda, _lambdas )
   {
-    Neg2LogMaximumLikelihoodRatio& l = *lambda;
+    Likelihood& l = *lambda;
     _testStats.push_back( l( par ) );
   }
   sort( _testStats.begin(), _testStats.end() );
 
 }
 
-PValueTest::PValueTest() :
+template< typename Likelihood >
+PValueTest<Likelihood>::PValueTest() :
     _alpha( 0 ),
     _dataLLR( 0 ) {
 }
 
-PValueTest::~PValueTest() {
+template< typename Likelihood >
+PValueTest<Likelihood>::~PValueTest() {
 }
 
-double PValueTest::operator()( Neg2LogMaximumLikelihoodRatio& lambda ) {
+template< typename Likelihood >
+double PValueTest<Likelihood>::operator()( Likelihood& lambda ) {
 
   vector< double > par( 1, _alpha );
 
@@ -78,7 +63,8 @@ double PValueTest::operator()( Neg2LogMaximumLikelihoodRatio& lambda ) {
 
 }
 
-double PValueTest::operator()( const double& llr ) {
+template< typename Likelihood >
+double PValueTest<Likelihood>::operator()( const double& llr ) {
 
   _dataLLR = llr;
   vector< double >::iterator itr = lower_bound( _testStats.begin(), _testStats.end(), _dataLLR );
@@ -88,7 +74,8 @@ double PValueTest::operator()( const double& llr ) {
 
 }
 
-void PValueTest::finalize( const std::string& dir ) {
+template< typename Likelihood >
+void PValueTest<Likelihood>::finalize( const std::string& dir ) {
 
   double histMax = _testStats[_testStats.size() / 2] > _dataLLR ?
       2 * _testStats[_testStats.size() / 2] :
@@ -106,7 +93,7 @@ void PValueTest::finalize( const std::string& dir ) {
   foreach( const double& x, _testStats )
     _minus2LnLikelihoodDistribution->Fill( x );
   TLine* dataLine = new TLine( _dataLLR, _minus2LnLikelihoodDistribution->GetMinimum(), _dataLLR,
-                               _minus2LnLikelihoodDistribution->GetMaximum() );
+                               _minus2LnLikelihoodDistribution->GetMaximum() * 2 );
 
   dataLine->SetLineColor( kRed );
   dataLine->SetLineWidth( 2 );
@@ -120,14 +107,18 @@ void PValueTest::finalize( const std::string& dir ) {
   pvc->Print( ( dir + cName + ".pdf" ).c_str() );
 }
 
-double PValueTest::alpha() const {
+template< typename Likelihood >
+double PValueTest<Likelihood>::alpha() const {
   return _alpha;
 }
-void PValueTest::alpha( const double& alpha ) {
+
+template< typename Likelihood >
+void PValueTest<Likelihood>::alpha( const double& alpha ) {
   _alpha = alpha;
 }
 
-void PValueTest::clear() {
+template< typename Likelihood >
+void PValueTest<Likelihood>::clear() {
 
   _alpha = -1.;
   _lambdas.clear();
@@ -138,7 +129,8 @@ void PValueTest::clear() {
 
 }
 
-ostream& operator<<( ostream& out, const PValueTest& test ) {
+template< typename Likelihood >
+ostream& operator<<( ostream& out, const PValueTest<Likelihood>& test ) {
 
   out << test.alpha() << " ";
   vector< double >::const_iterator itr = test._testStats.begin();
@@ -150,7 +142,9 @@ ostream& operator<<( ostream& out, const PValueTest& test ) {
   return out;
 }
 
-istream& operator>>( istream& in, PValueTest& test ) {
+
+template< typename Likelihood >
+istream& operator>>( istream& in, PValueTest<Likelihood>& test ) {
 
   test.clear();
 
@@ -168,3 +162,13 @@ istream& operator>>( istream& in, PValueTest& test ) {
 
   return in;
 }
+
+
+template class PValueTest<Neg2LogLikelihood_FCN>;
+template typename std::ostream& operator<< <Neg2LogLikelihood_FCN>( std::ostream&, const PValueTest<Neg2LogLikelihood_FCN>& );
+template typename std::istream& operator>> <Neg2LogLikelihood_FCN>( std::istream&, PValueTest<Neg2LogLikelihood_FCN>& );
+
+template class PValueTest<Neg2LogMaximumLikelihoodRatio>;
+template typename std::ostream& operator<< <Neg2LogMaximumLikelihoodRatio>( std::ostream&, const PValueTest<Neg2LogMaximumLikelihoodRatio>& );
+template typename std::istream& operator>> <Neg2LogMaximumLikelihoodRatio>( std::istream&, PValueTest<Neg2LogMaximumLikelihoodRatio>& );
+

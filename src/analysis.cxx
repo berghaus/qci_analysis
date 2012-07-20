@@ -304,12 +304,12 @@ int main( int argc, char* argv[] ) {
 
       // -------
       // CL_s+b
-      PValueTest signalPlusBackgroundPValue( alpha, sigLikelihoodRatios );
+      PValueTest<Neg2LogMaximumLikelihoodRatio> signalPlusBackgroundPValue( alpha, sigLikelihoodRatios );
       signalOutFile << signalPlusBackgroundPValue << endl;
 
       // -----------
       // CL_s
-      PValueTest backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
+      PValueTest<Neg2LogMaximumLikelihoodRatio> backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
       bkgrndOutFile << backgroundPValue << endl;
 
       // ----------

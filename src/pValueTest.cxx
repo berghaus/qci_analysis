@@ -182,13 +182,13 @@ int main( int argc, char* argv[] ) {
 
       // -------
       // p-value from Poisson likelihood
-      PValueTest LLpValue( 0., lls );
+      PValueTest<Neg2LogLikelihood_FCN> LLpValue( 0., lls );
       cout << "\n\n   * p-value = " <<  LLpValue( dataLL ) << "\n\n";
       LLpValue.finalize( figureDir );
 
       // -------
       // p-value from likelihood ratio
-//      PValueTest LLRpValue( 0., llrs );
+//      PValueTest<Neg2LogMaximumLikelihoodRatio> LLRpValue( 0., llrs );
 //      cout << "\n\n   * p-value = " <<  LLRpValue( dataLLR ) << "\n\n";
 //      LLRpValue.finalize( figureDir );
 
