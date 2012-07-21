@@ -153,8 +153,8 @@ int main( int argc, char* argv[] ) {
       Neg2LogLikelihood_FCN dataLL( &data, prediction, 0. );
 
       // --- make sure we get something reasonable across interesting scale values
-      // for( double scale = 0.5; scale < 10.; scale += 0.1 )
-      //   dataLLR( vector< double >( 1, scale ) );
+     for( double scale = 5; scale < 5000.; scale += 100 )
+       dataLLR( vector< double >( 1, scale ) );
 
       PseudoExperimentFactory peFactory( prediction, data );
 
@@ -172,10 +172,10 @@ int main( int argc, char* argv[] ) {
         Neg2LogLikelihood_FCN * peLL = new Neg2LogLikelihood_FCN( &pe, prediction, 0. );
         lls.push_back( peLL );
 
-        // Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePrediction, 0. );
-//        for( double scale = 0.5; scale < 10.; scale += 0.1 )
-//          ( *l )( vector< double >( 1, scale ) );
-//        llrs.push_back( l );
+        Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePrediction, 0. );
+        for( double scale = 0.5; scale < 10.; scale += 0.1 )
+          ( *l )( vector< double >( 1, scale ) );
+        llrs.push_back( l );
 
 
       }
@@ -184,13 +184,13 @@ int main( int argc, char* argv[] ) {
       // p-value from Poisson likelihood
       PValueTest<Neg2LogLikelihood_FCN> LLpValue( 0., lls );
       cout << "\n\n   * p-value = " <<  LLpValue( dataLL ) << "\n\n";
-      LLpValue.finalize( figureDir );
+      LLpValue.finalize( figureDir + "/Poisson/" );
 
       // -------
       // p-value from likelihood ratio
-//      PValueTest<Neg2LogMaximumLikelihoodRatio> LLRpValue( 0., llrs );
-//      cout << "\n\n   * p-value = " <<  LLRpValue( dataLLR ) << "\n\n";
-//      LLRpValue.finalize( figureDir );
+      PValueTest<Neg2LogMaximumLikelihoodRatio> LLRpValue( 0., llrs );
+      cout << "\n\n   * p-value = " <<  LLRpValue( dataLLR ) << "\n\n";
+      LLRpValue.finalize( figureDir + "/ratio/" );
 
 
   } catch( ... ) {

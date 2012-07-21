@@ -442,11 +442,12 @@ void PlotPredictionError( Experiment& d, Prediction * p, Statitical_Effect * e )
     }
 
     canvas.cd( bin+1 );
-    dummy.Draw();
+    dummy.Draw("AXIS");
     TGraphErrors * g = new TGraphErrors( nBins, &scales[0], &y[0], &ex[0], &ey[0]);
     g->SetLineColor( kBlue );
     g->SetFillColor( kBlue );
     g->Draw("3");
+    dummy.Draw("SAMEAXIS");
   }
 
   canvas.Print( "fitErrors.pdf" );

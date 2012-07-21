@@ -11,7 +11,8 @@
 #include <TCanvas.h>
 #include <TFitterMinuit.h>
 #include <TH1.h>
-#include <TLine.h>
+#include <TArrow.h>
+#include <TText.h>
 
 #include "Prediction.hpp"
 #include "Likelihood.hpp"
@@ -82,27 +83,125 @@ void PValueTest<Likelihood>::finalize( const std::string& dir ) {
       2 * _dataLLR;
   if ( histMax < 1. ) histMax = 1.;
   int nBins = _testStats.size() / 100;
-  double off = 1.5 * histMax / double( nBins );
+  //double off = 1.5 * histMax / double( nBins );
+  double off = 0;
 
   string hName = str( format( "Likelihood_FCN-scale%2.2e" ) % pow( _alpha, -0.25 ) );
   _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", nBins, -off, histMax - off );
-  string xTitle = _alpha == 0 ? "-2ln#lambda( #Lambda = #infty TeV )"
-                              : str( format( "-2ln#lambda( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
+  string xTitle = _alpha == 0 ? "-2Likelihood( #Lambda = #infty TeV )"
+                              : str( format( "Likelihood( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
 
   foreach( const double& x, _testStats )
     _minus2LnLikelihoodDistribution->Fill( x );
-  TLine* dataLine = new TLine( _dataLLR, _minus2LnLikelihoodDistribution->GetMinimum(), _dataLLR,
-                               _minus2LnLikelihoodDistribution->GetMaximum() * 2 );
 
-  dataLine->SetLineColor( kRed );
-  dataLine->SetLineWidth( 2 );
+
+  double middle = (_minus2LnLikelihoodDistribution->GetMaximum() - _minus2LnLikelihoodDistribution->GetMinimum())/2;
+  TArrow* dataArrow = new TArrow( _dataLLR / 2, middle, _dataLLR*.99, middle*0.02  );
+
+  TText * dataText = new TText( _dataLLR / 3, middle*1.05,  "Data" );
+  dataArrow->SetLineWidth( 2 );
 
   TCanvas* pvc = new TCanvas( ( hName + "Canvas" ).c_str(), "", 500, 500 );
-  pvc->SetLogy();
   pvc->cd();
   _minus2LnLikelihoodDistribution->Draw();
-  dataLine->Draw();
+  int dataBin = _minus2LnLikelihoodDistribution->FindBin( _dataLLR );
+  int lastBin = _minus2LnLikelihoodDistribution->GetNbinsX();
+  TH1 * ldClone = (TH1*) _minus2LnLikelihoodDistribution->Clone();
+  ldClone->SetFillColor( kRed );
+  ldClone->SetFillStyle( 1001 );
+  ldClone->GetXaxis()->SetRange( dataBin, lastBin );
+  ldClone->Draw("SAME][");
+  dataArrow->Draw();
+  dataText->Draw();
+  string cName = _minus2LnLikelihoodDistribution->GetName();
+  pvc->Print( ( dir + cName + ".pdf" ).c_str() );
+}
+
+template<>
+void PValueTest<Neg2LogLikelihood_FCN>::finalize( const std::string& dir ) {
+
+  double histMax = _testStats[_testStats.size() / 2] > _dataLLR ?
+      2 * _testStats[_testStats.size() / 2] :
+      2 * _dataLLR;
+  if ( histMax < 1. ) histMax = 1.;
+  int nBins = _testStats.size() / 100;
+  //double off = 1.5 * histMax / double( nBins );
+  double off = 0;
+
+  string hName = str( format( "Likelihood_FCN-scale%2.2e" ) % pow( _alpha, -0.25 ) );
+  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", nBins, -off, histMax - off );
+  string xTitle = _alpha == 0 ? "-2lnL( n | #Lambda = #infty TeV )"
+                              : str( format( "-2lnL( n | #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
+  _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
+
+  foreach( const double& x, _testStats )
+    _minus2LnLikelihoodDistribution->Fill( x );
+
+
+  double middle = (_minus2LnLikelihoodDistribution->GetMaximum() - _minus2LnLikelihoodDistribution->GetMinimum())/2;
+  TArrow* dataArrow = new TArrow( _dataLLR / 2, middle, _dataLLR*.99, middle*0.02  );
+
+  TText * dataText = new TText( _dataLLR / 3, middle*1.05,  "Data" );
+  dataArrow->SetLineWidth( 2 );
+
+  TCanvas* pvc = new TCanvas( ( hName + "Canvas" ).c_str(), "", 500, 500 );
+  pvc->cd();
+  _minus2LnLikelihoodDistribution->Draw();
+  int dataBin = _minus2LnLikelihoodDistribution->FindBin( _dataLLR );
+  int lastBin = _minus2LnLikelihoodDistribution->GetNbinsX();
+  TH1 * ldClone = (TH1*) _minus2LnLikelihoodDistribution->Clone();
+  ldClone->SetFillColor( kRed );
+  ldClone->SetFillStyle( 1001 );
+  ldClone->GetXaxis()->SetRange( dataBin, lastBin );
+  ldClone->Draw("SAME][");
+  dataArrow->Draw();
+  dataText->Draw();
+  string cName = _minus2LnLikelihoodDistribution->GetName();
+  pvc->Print( ( dir + cName + ".pdf" ).c_str() );
+}
+
+template<>
+void PValueTest<Neg2LogMaximumLikelihoodRatio>::finalize( const std::string& dir ) {
+
+//  double histMax = _testStats[_testStats.size() / 2] > _dataLLR ?
+//      2 * _testStats[_testStats.size() / 2] :
+//      2 * _dataLLR;
+  double histMax = 0.1;
+  int nBins = _testStats.size() / 100;
+  double off = 0.5 * histMax / double( nBins );
+
+  string hName = str( format( "Likelihood_FCN-scale%2.2e" ) % pow( _alpha, -0.25 ) );
+  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", nBins, -off, histMax - off );
+  string xTitle = _alpha == 0 ? "-2lnQ( #Lambda = #infty TeV )"
+                              : str( format( "-2lnQ( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
+  _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
+  _minus2LnLikelihoodDistribution->GetXaxis()->SetNdivisions( 505 );
+
+  foreach( const double& x, _testStats )
+    _minus2LnLikelihoodDistribution->Fill( x );
+
+
+  double middle = (_minus2LnLikelihoodDistribution->GetMaximum() - _minus2LnLikelihoodDistribution->GetMinimum())/10;
+  TArrow* dataArrow = new TArrow( histMax / 2, middle, _dataLLR, 1.  );
+
+  TText * dataText = new TText( histMax / 2.5,  middle*1.2,  "Data" );
+  dataArrow->SetLineWidth( 2 );
+
+  TCanvas* pvc = new TCanvas( ( hName + "Canvas" ).c_str(), "", 500, 500 );
+  pvc->cd();
+  pvc->SetLogy();
+  _minus2LnLikelihoodDistribution->SetMinimum(0.9);
+  _minus2LnLikelihoodDistribution->Draw();
+  int dataBin = _minus2LnLikelihoodDistribution->FindBin( _dataLLR );
+  int lastBin = _minus2LnLikelihoodDistribution->GetNbinsX();
+  TH1 * ldClone = (TH1*) _minus2LnLikelihoodDistribution->Clone();
+  ldClone->SetFillColor( kRed );
+  ldClone->SetFillStyle( 1001 );
+  ldClone->GetXaxis()->SetRange( dataBin+1, lastBin );
+  ldClone->Draw("SAME][");
+  dataArrow->Draw();
+  dataText->Draw();
   string cName = _minus2LnLikelihoodDistribution->GetName();
   pvc->Print( ( dir + cName + ".pdf" ).c_str() );
 }
