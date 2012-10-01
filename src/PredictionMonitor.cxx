@@ -161,6 +161,7 @@ void PredictionMonitor::monitor( Prediction& pdf ) {
           TGraph * fitResult = new TGraph( n, &index[0], &offset[0] );
           _fitResults.push_back( fitResult );
           fitResult->SetMarkerColor( kRed );
+          fitResult->SetMarkerSize( 2 );
           fitResult->SetTitle( title.c_str() );
           dummy->Draw("AXIS");
           line.Draw();
