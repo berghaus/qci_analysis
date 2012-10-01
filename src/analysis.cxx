@@ -26,6 +26,7 @@
 #include <boost/program_options/value_semantic.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/version.hpp>
+#include <boost/format.hpp>
 
 #include <TApplication.h>
 #include <TCanvas.h>
@@ -37,6 +38,7 @@
 #include <TDirectoryFile.h>
 #include <TClass.h>
 #include <TGraphErrors.h>
+#include <TLatex.h>
 
 #include "Likelihood.hpp"
 #include "Prediction.hpp"
@@ -427,6 +429,8 @@ void PlotPredictionError( Experiment& d, Prediction * p, Statitical_Effect * e )
   dummy.SetXTitle( "#Lambda [TeV]" );
   dummy.SetYTitle( "#mu_{j}(#Lambda)" );
 
+  TLatex latex;
+  double textx = 60;
   for( int bin = 0; bin < d[7000.].chi().size(); ++bin ) {
     y.clear();
     ex.clear();
@@ -444,6 +448,8 @@ void PlotPredictionError( Experiment& d, Prediction * p, Statitical_Effect * e )
     canvas.cd( bin+1 );
     dummy.Draw("AXIS");
     TGraphErrors * g = new TGraphErrors( nBins, &scales[0], &y[0], &ex[0], &ey[0]);
+    if ( bin == 10 ) textx = 20;
+    latex.DrawLatex( 4, textx, str( boost::format( "#chi = %2.1f" ) % chi ).c_str() );
     g->SetLineColor( kBlue );
     g->SetFillColor( kBlue );
     g->Draw("3");
