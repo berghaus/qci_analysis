@@ -47,7 +47,7 @@ namespace po = boost::program_options;
 using namespace std;
 using namespace boost;
 
-void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest<Neg2LogMaximumLikelihoodRatio> >& );
+void ReadPValueTestsFromFile( const vector< string >&, vector< PValueTest<Neg2LogSimpleLikelihoodRatio> >& );
 map< double, TDirectoryFile* > GetDirs( const TFile* );
 map< double, TH1* > GetHists( const TFile* );
 template< class T > bool compByName( const T* x, const T* y ) {
@@ -115,7 +115,7 @@ int main( int argc, char* argv[] ) {
     cout << "no signal input given. Aborting.\n";
     return ERROR_NO_SIGNAL_INPUT;
   }
-  vector< PValueTest<Neg2LogMaximumLikelihoodRatio> > sigLLDistributions;
+  vector< PValueTest<Neg2LogSimpleLikelihoodRatio> > sigLLDistributions;
   ReadPValueTestsFromFile( sigFileNames, sigLLDistributions );
 
   vector< string > bkgFileNames;
@@ -129,7 +129,7 @@ int main( int argc, char* argv[] ) {
     cout << "no background input given. disabeling CL_s computation.\n";
     doCLs = false;
   }
-  vector< PValueTest<Neg2LogMaximumLikelihoodRatio> > bkgLLDistributions;
+  vector< PValueTest<Neg2LogSimpleLikelihoodRatio> > bkgLLDistributions;
   ReadPValueTestsFromFile( bkgFileNames, bkgLLDistributions );
 
   string folder = "./";
@@ -235,7 +235,7 @@ int main( int argc, char* argv[] ) {
     return ERROR_SIGNAL_BACKGROUND_MISMATCH;
   }
   // set up data likelihood distribution
-  Neg2LogMaximumLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
+  Neg2LogSimpleLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
   // --- make sure we get something reasonable across interesting scale values
   for( double scale = 2.; scale < 8.; scale += 0.1 )
     dataLikelihoodRatio( vector< double >( 1, scale ) );
@@ -244,13 +244,13 @@ int main( int argc, char* argv[] ) {
 
   // set up likelihood ratios for error bands
   vector< PseudoExperiment > errorBandPEs = peFactory.build( 0., nPE );
-  vector< Neg2LogMaximumLikelihoodRatio* > errorBandLRs;
+  vector< Neg2LogSimpleLikelihoodRatio* > errorBandLRs;
   errorBandLRs.reserve( errorBandPEs.size() );
   foreach( const PseudoExperiment& pe, errorBandPEs )
   {
     Prediction * pePDF = new Prediction( *pdf );
     pePDF->nData( pe );
-    Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePDF, 0. );
+    Neg2LogSimpleLikelihoodRatio * l = new Neg2LogSimpleLikelihoodRatio( &pe, pePDF, 0. );
     for( double scale = 2.; scale < 8.; scale += 0.1 )
       ( *l )( vector< double >( 1, scale ) );
     errorBandLRs.push_back( l );
@@ -270,18 +270,18 @@ int main( int argc, char* argv[] ) {
   }
 
   // clean up error bar likelihoods
-  for_each( errorBandLRs.begin(), errorBandLRs.end(), boost::checked_deleter< Neg2LogMaximumLikelihoodRatio >() );
+  for_each( errorBandLRs.begin(), errorBandLRs.end(), boost::checked_deleter< Neg2LogSimpleLikelihoodRatio >() );
 
   return 0;
 }
 
-void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest<Neg2LogMaximumLikelihoodRatio> >& pvs ) {
+void ReadPValueTestsFromFile( const vector< string >& names, vector< PValueTest<Neg2LogSimpleLikelihoodRatio> >& pvs ) {
 
   foreach( const string& fn, names )
   {
     ifstream file;
     file.open( fn.c_str(), ios::binary );
-    PValueTest<Neg2LogMaximumLikelihoodRatio> buffer;
+    PValueTest<Neg2LogSimpleLikelihoodRatio> buffer;
     while ( file >> buffer )
       pvs.push_back( buffer );
     file.close();

@@ -215,7 +215,7 @@ double Neg2LogMaximumLikelihoodRatio::operator()( const std::vector< double >& p
     _denominator.Minimize();
 
     // problem?
-    if( _numerator( par ) - _denominator() < -0.01 ) {
+    if( _numerator( par ) < _denominator() ) {
       // map out the likelihood
       _inCaseShitMonitor = new TestStatMonitor( par.at( 0 ), "figures/", ".png" );
       _numerator.accept( *_inCaseShitMonitor );
@@ -230,9 +230,10 @@ double Neg2LogMaximumLikelihoodRatio::operator()( const std::vector< double >& p
       cout << *_data << endl;
 
       // throw up
-      throw runtime_error(
-                           lexical_cast< string > ( __FILE__ ) + " line " + lexical_cast< string > ( __LINE__ )
-                               + ": Could not minimize denominator." );
+//      throw runtime_error(
+//                           lexical_cast< string > ( __FILE__ ) + " line " + lexical_cast< string > ( __LINE__ )
+//                               + ": Could not minimize denominator." );
+      _denominator.pars( par );
     }
   }
 

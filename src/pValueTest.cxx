@@ -153,7 +153,7 @@ int main( int argc, char* argv[] ) {
       Neg2LogLikelihood_FCN dataLL( &data, prediction, 0. );
 
       // --- make sure we get something reasonable across interesting scale values
-     for( double scale = 5; scale < 5000.; scale += 100 )
+     for( double scale = 5; scale < 5000.; scale += 10 )
        dataLLR( vector< double >( 1, scale ) );
 
       PseudoExperimentFactory peFactory( prediction, data );
@@ -173,7 +173,7 @@ int main( int argc, char* argv[] ) {
         lls.push_back( peLL );
 
         Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePrediction, 0. );
-        for( double scale = 0.5; scale < 10.; scale += 0.1 )
+        for( double scale = 5; scale < 5000.; scale += 10 )
           ( *l )( vector< double >( 1, scale ) );
         llrs.push_back( l );
 

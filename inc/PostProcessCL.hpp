@@ -13,7 +13,7 @@
 
 #include "PValueTest.hpp"
 
-class Neg2LogMaximumLikelihoodRatio;
+class Neg2LogSimpleLikelihoodRatio;
 class CertaintyLevel;
 
 class PostProcessCL {
@@ -21,11 +21,11 @@ class PostProcessCL {
 public:
   PostProcessCL();
   // Constructor for CLs+b limit only.  Does not rake ownership of likelihood ratios supplied
-  PostProcessCL( const std::vector< PValueTest<Neg2LogMaximumLikelihoodRatio> >&, std::vector< Neg2LogMaximumLikelihoodRatio* >&, Neg2LogMaximumLikelihoodRatio* );
+  PostProcessCL( const std::vector< PValueTest<Neg2LogSimpleLikelihoodRatio> >&, std::vector< Neg2LogSimpleLikelihoodRatio* >&, Neg2LogSimpleLikelihoodRatio* );
 
   // Constructor for CLs+b and CLs limit.  Does not rake ownership of likelihood ratios supplied
-  PostProcessCL( const std::vector< PValueTest<Neg2LogMaximumLikelihoodRatio> >&, const std::vector< PValueTest<Neg2LogMaximumLikelihoodRatio> >&,
-                 std::vector< Neg2LogMaximumLikelihoodRatio* >&, Neg2LogMaximumLikelihoodRatio* );
+  PostProcessCL( const std::vector< PValueTest<Neg2LogSimpleLikelihoodRatio> >&, const std::vector< PValueTest<Neg2LogSimpleLikelihoodRatio> >&,
+                 std::vector< Neg2LogSimpleLikelihoodRatio* >&, Neg2LogSimpleLikelihoodRatio* );
   virtual ~PostProcessCL();
 
   virtual void proc();
@@ -36,10 +36,10 @@ private:
 
   bool _doCLs;
 
-  std::vector< PValueTest<Neg2LogMaximumLikelihoodRatio> > _sigLL;
-  std::vector< PValueTest<Neg2LogMaximumLikelihoodRatio> > _bkgLL;
-  std::vector< Neg2LogMaximumLikelihoodRatio* > _errorLLRs;
-  Neg2LogMaximumLikelihoodRatio* _dataLLR;
+  std::vector< PValueTest<Neg2LogSimpleLikelihoodRatio> > _sigLL;
+  std::vector< PValueTest<Neg2LogSimpleLikelihoodRatio> > _bkgLL;
+  std::vector< Neg2LogSimpleLikelihoodRatio* > _errorLLRs;
+  Neg2LogSimpleLikelihoodRatio* _dataLLR;
 
   double _pValue;
   CertaintyLevel * _CLsb;

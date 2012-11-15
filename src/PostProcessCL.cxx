@@ -17,16 +17,16 @@ PostProcessCL::PostProcessCL() :
   _doCLs( false ), _pValue( 0 ), _CLsb( 0 ), _CLs( 0 ) {
 }
 
-PostProcessCL::PostProcessCL( const vector< PValueTest< Neg2LogMaximumLikelihoodRatio > >& sigLL,
-                              vector< Neg2LogMaximumLikelihoodRatio* >& errorLLRs,
-                              Neg2LogMaximumLikelihoodRatio* dataLLR ) :
+PostProcessCL::PostProcessCL( const vector< PValueTest< Neg2LogSimpleLikelihoodRatio > >& sigLL,
+                              vector< Neg2LogSimpleLikelihoodRatio* >& errorLLRs,
+                              Neg2LogSimpleLikelihoodRatio* dataLLR ) :
   _doCLs( false ), _sigLL( sigLL ), _errorLLRs( errorLLRs ), _dataLLR( dataLLR ), _pValue( 0 ), _CLsb( 0 ), _CLs( 0 ) {
 }
 
-PostProcessCL::PostProcessCL( const vector< PValueTest< Neg2LogMaximumLikelihoodRatio > >& sigLL,
-                              const vector< PValueTest< Neg2LogMaximumLikelihoodRatio > >& bkgLL,
-                              vector< Neg2LogMaximumLikelihoodRatio* >& errorLLRs,
-                              Neg2LogMaximumLikelihoodRatio* dataLLR ) :
+PostProcessCL::PostProcessCL( const vector< PValueTest< Neg2LogSimpleLikelihoodRatio > >& sigLL,
+                              const vector< PValueTest< Neg2LogSimpleLikelihoodRatio > >& bkgLL,
+                              vector< Neg2LogSimpleLikelihoodRatio* >& errorLLRs,
+                              Neg2LogSimpleLikelihoodRatio* dataLLR ) :
   _doCLs( sigLL.size() == bkgLL.size() ), _sigLL( sigLL ), _bkgLL( bkgLL ), _errorLLRs( errorLLRs ),
       _dataLLR( dataLLR ), _pValue( 0 ), _CLsb( 0 ), _CLs( 0 ) {
 
@@ -40,8 +40,8 @@ PostProcessCL::~PostProcessCL() {
 }
 
 // ensure PValue vectors are sorted in alpha
-bool compByAlpha( const PValueTest< Neg2LogMaximumLikelihoodRatio >& x,
-                  const PValueTest< Neg2LogMaximumLikelihoodRatio >& y ) {
+bool compByAlpha( const PValueTest< Neg2LogSimpleLikelihoodRatio >& x,
+                  const PValueTest< Neg2LogSimpleLikelihoodRatio >& y ) {
   return x.alpha() > y.alpha(); // want largest alpha (= lowest lambda) first
 }
 
@@ -51,7 +51,7 @@ void PostProcessCL::proc() {
   if( _doCLs ) sort( _bkgLL.begin(), _bkgLL.end(), compByAlpha );
 
   // --- p-value
-  PValueTest< Neg2LogMaximumLikelihoodRatio > pValueTest( 0., _errorLLRs );
+  PValueTest< Neg2LogSimpleLikelihoodRatio > pValueTest( 0., _errorLLRs );
   _pValue = pValueTest( *_dataLLR );
   pValueTest.finalize();
 
@@ -60,10 +60,10 @@ void PostProcessCL::proc() {
   if( _doCLs ) _CLs = new CertaintyLevel( "CL_{s}", _sigLL.size(), pow( _sigLL.front().alpha(), -0.25 ),
                                           pow( _sigLL.back().alpha(), -0.25 ) );
 
-  vector< PValueTest< Neg2LogMaximumLikelihoodRatio > >::iterator sigItr = _sigLL.begin();
-  vector< PValueTest< Neg2LogMaximumLikelihoodRatio > >::iterator sigEnd = _sigLL.end();
-  vector< PValueTest< Neg2LogMaximumLikelihoodRatio > >::iterator bkgItr = _bkgLL.begin();
-  vector< PValueTest< Neg2LogMaximumLikelihoodRatio > >::iterator bkgEnd = _bkgLL.end();
+  vector< PValueTest< Neg2LogSimpleLikelihoodRatio > >::iterator sigItr = _sigLL.begin();
+  vector< PValueTest< Neg2LogSimpleLikelihoodRatio > >::iterator sigEnd = _sigLL.end();
+  vector< PValueTest< Neg2LogSimpleLikelihoodRatio > >::iterator bkgItr = _bkgLL.begin();
+  vector< PValueTest< Neg2LogSimpleLikelihoodRatio > >::iterator bkgEnd = _bkgLL.end();
 
   while( sigItr != sigEnd && ( !_doCLs || bkgItr != bkgEnd ) ) {
 
@@ -81,7 +81,7 @@ void PostProcessCL::proc() {
 
     vector< double > clsb_expected;
     clsb_expected.reserve( _errorLLRs.size() );
-    foreach( Neg2LogMaximumLikelihoodRatio * l, _errorLLRs )
+    foreach( Neg2LogSimpleLikelihoodRatio * l, _errorLLRs )
             clsb_expected.push_back( ( *sigItr )( *l ) );
     sort( clsb_expected.begin(), clsb_expected.end() );
 
@@ -94,7 +94,7 @@ void PostProcessCL::proc() {
 
       vector< double > cls_expected;
       cls_expected.reserve( _errorLLRs.size() );
-      foreach( Neg2LogMaximumLikelihoodRatio* l, _errorLLRs )
+      foreach( Neg2LogSimpleLikelihoodRatio* l, _errorLLRs )
               cls_expected.push_back( ( *sigItr )( *l ) / ( *bkgItr )( *l ) );
       sort( cls_expected.begin(), cls_expected.end() );
 

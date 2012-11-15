@@ -246,11 +246,12 @@ int main( int argc, char* argv[] ) {
 
   try {
 
-    Neg2LogMaximumLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
+    //Neg2LogMaximumLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
+    Neg2LogSimpleLikelihoodRatio dataLikelihoodRatio( &data, pdf, 0. );
 
     // --- make sure we get something reasonable across interesting scale values
-    for( double scale = 0.5; scale < 10.; scale += 0.1 )
-      dataLikelihoodRatio( vector< double >( 1, scale ) );
+//    for( double scale = 0.5; scale < 10.; scale += 0.1 )
+//      dataLikelihoodRatio( vector< double >( 1, scale ) );
 
     TestStatMonitor tm( -1., figureDir + "/Likelihood/", ".pdf" );
     for( int i = 0; i < 10; ++i ) {
@@ -267,13 +268,15 @@ int main( int argc, char* argv[] ) {
 
     // create PEs for background likelihood distribution
     vector< PseudoExperiment > bgPEs = peFactory.build( 0., nPE );
-    vector< Neg2LogMaximumLikelihoodRatio* > bgLikelihoodRatios;
+//    vector< Neg2LogMaximumLikelihoodRatio* > bgLikelihoodRatios;
+    vector< Neg2LogSimpleLikelihoodRatio* > bgLikelihoodRatios;
     bgLikelihoodRatios.reserve( bgPEs.size() );
     foreach( const PseudoExperiment& pe, bgPEs )
     {
       Prediction * pePDF = new Prediction( *pdf );
       pePDF->nData( dynamic_cast< const Experiment& >( pe ) );
-      Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePDF, 0. );
+//      Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePDF, 0. );
+      Neg2LogSimpleLikelihoodRatio * l = new Neg2LogSimpleLikelihoodRatio( &pe, pePDF, 0. );
       for( double scale = 0.5; scale < 10.; scale += 0.1 )
         ( *l )( vector< double >( 1, scale ) );
       bgLikelihoodRatios.push_back( l );
@@ -291,13 +294,15 @@ int main( int argc, char* argv[] ) {
 
       // create signal PEs
       vector< PseudoExperiment > sigPEs = peFactory.build( alpha, nPE );
-      vector< Neg2LogMaximumLikelihoodRatio* > sigLikelihoodRatios;
+//      vector< Neg2LogMaximumLikelihoodRatio* > sigLikelihoodRatios;
+      vector< Neg2LogSimpleLikelihoodRatio* > sigLikelihoodRatios;
       sigLikelihoodRatios.reserve( sigPEs.size() );
       foreach( const PseudoExperiment& pe, sigPEs )
       {
         Prediction * pePDF = new Prediction( *pdf );
         pePDF->nData( dynamic_cast< const Experiment& >( pe ) );
-        Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePDF, alpha );
+//        Neg2LogMaximumLikelihoodRatio * l = new Neg2LogMaximumLikelihoodRatio( &pe, pePDF, alpha );
+        Neg2LogSimpleLikelihoodRatio * l = new Neg2LogSimpleLikelihoodRatio( &pe, pePDF, alpha );
         for( double s = 0.5; s < 10.; s += 0.1 )
           ( *l )( vector< double >( 1, s ) );
         sigLikelihoodRatios.push_back( l );
@@ -306,12 +311,14 @@ int main( int argc, char* argv[] ) {
 
       // -------
       // CL_s+b
-      PValueTest<Neg2LogMaximumLikelihoodRatio> signalPlusBackgroundPValue( alpha, sigLikelihoodRatios );
+      //PValueTest<Neg2LogMaximumLikelihoodRatio> signalPlusBackgroundPValue( alpha, sigLikelihoodRatios );
+      PValueTest<Neg2LogSimpleLikelihoodRatio> signalPlusBackgroundPValue( alpha, sigLikelihoodRatios );
       signalOutFile << signalPlusBackgroundPValue << endl;
 
       // -----------
       // CL_s
-      PValueTest<Neg2LogMaximumLikelihoodRatio> backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
+      //PValueTest<Neg2LogMaximumLikelihoodRatio> backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
+      PValueTest<Neg2LogSimpleLikelihoodRatio> backgroundPValue( alpha, bgLikelihoodRatios ); // = *pValueTest;
       bkgrndOutFile << backgroundPValue << endl;
 
       // ----------
@@ -325,8 +332,10 @@ int main( int argc, char* argv[] ) {
     }
 
     // clean up background Likelihoods
+//    for_each( bgLikelihoodRatios.begin(), bgLikelihoodRatios.end(),
+//              boost::checked_deleter< Neg2LogMaximumLikelihoodRatio >() );
     for_each( bgLikelihoodRatios.begin(), bgLikelihoodRatios.end(),
-              boost::checked_deleter< Neg2LogMaximumLikelihoodRatio >() );
+                  boost::checked_deleter< Neg2LogSimpleLikelihoodRatio >() );
 
     // close output files
     signalOutFile.close();

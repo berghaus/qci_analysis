@@ -167,25 +167,30 @@ void PValueTest<Neg2LogMaximumLikelihoodRatio>::finalize( const std::string& dir
 //  double histMax = _testStats[_testStats.size() / 2] > _dataLLR ?
 //      2 * _testStats[_testStats.size() / 2] :
 //      2 * _dataLLR;
-  double histMax = 0.1;
+  _dataLLR = fabs( _dataLLR );
+  double histMax = log10( _testStats.back() );
   int nBins = _testStats.size() / 100;
-  double off = 0.5 * histMax / double( nBins );
+  double off = -10;
+
+  cout << "dataLLR = " << _dataLLR << endl;
+  cout << "test stst front = " << _testStats.front() << " and back = " << _testStats.back() << endl;
+
 
   string hName = str( format( "Likelihood_FCN-scale%2.2e" ) % pow( _alpha, -0.25 ) );
-  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", nBins, -off, histMax - off );
-  string xTitle = _alpha == 0 ? "-2lnQ( #Lambda = #infty TeV )"
-                              : str( format( "-2lnQ( #Lambda = %2.2f TeV )" ) % pow( _alpha, -0.25 ) );
+  _minus2LnLikelihoodDistribution = new TH1D( hName.c_str(), "", nBins, off, histMax );
+  string xTitle = _alpha == 0 ? "ln( -2lnQ( #Lambda = #infty TeV ) )"
+                              : str( format( "log( -2lnQ( #Lambda = %2.2f TeV ) )" ) % pow( _alpha, -0.25 ) );
   _minus2LnLikelihoodDistribution->SetXTitle( xTitle.c_str() );
   _minus2LnLikelihoodDistribution->GetXaxis()->SetNdivisions( 505 );
 
   foreach( const double& x, _testStats )
-    _minus2LnLikelihoodDistribution->Fill( x );
+    _minus2LnLikelihoodDistribution->Fill( log10(fabs(x)) );
 
 
   double middle = (_minus2LnLikelihoodDistribution->GetMaximum() - _minus2LnLikelihoodDistribution->GetMinimum())/10;
-  TArrow* dataArrow = new TArrow( histMax / 2, middle, _dataLLR, 1.  );
+  TArrow* dataArrow = new TArrow( (histMax+off) / 2, middle*9.5, log10(_dataLLR) , 1.  );
 
-  TText * dataText = new TText( histMax / 2.5,  middle*1.2,  "Data" );
+  TText * dataText = new TText( (histMax+off) / 2,  middle*10,  "Data" );
   dataArrow->SetLineWidth( 2 );
 
   TCanvas* pvc = new TCanvas( ( hName + "Canvas" ).c_str(), "", 500, 500 );
@@ -193,7 +198,7 @@ void PValueTest<Neg2LogMaximumLikelihoodRatio>::finalize( const std::string& dir
   pvc->SetLogy();
   _minus2LnLikelihoodDistribution->SetMinimum(0.9);
   _minus2LnLikelihoodDistribution->Draw();
-  int dataBin = _minus2LnLikelihoodDistribution->FindBin( _dataLLR );
+  int dataBin = _minus2LnLikelihoodDistribution->FindBin( log10(_dataLLR) );
   int lastBin = _minus2LnLikelihoodDistribution->GetNbinsX();
   TH1 * ldClone = (TH1*) _minus2LnLikelihoodDistribution->Clone();
   ldClone->SetFillColor( kRed );
@@ -270,4 +275,8 @@ template typename std::istream& operator>> <Neg2LogLikelihood_FCN>( std::istream
 template class PValueTest<Neg2LogMaximumLikelihoodRatio>;
 template typename std::ostream& operator<< <Neg2LogMaximumLikelihoodRatio>( std::ostream&, const PValueTest<Neg2LogMaximumLikelihoodRatio>& );
 template typename std::istream& operator>> <Neg2LogMaximumLikelihoodRatio>( std::istream&, PValueTest<Neg2LogMaximumLikelihoodRatio>& );
+
+template class PValueTest<Neg2LogSimpleLikelihoodRatio>;
+template typename std::ostream& operator<< <Neg2LogSimpleLikelihoodRatio>( std::ostream&, const PValueTest<Neg2LogSimpleLikelihoodRatio>& );
+template typename std::istream& operator>> <Neg2LogSimpleLikelihoodRatio>( std::istream&, PValueTest<Neg2LogSimpleLikelihoodRatio>& );
 
